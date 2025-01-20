@@ -17,6 +17,12 @@ workflow_types = { git = "https://github.com/digiLab-ai/workflow-types.git", bra
 typeguard = "^4.4.1"
 requests = "^2.32.3"
 
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
