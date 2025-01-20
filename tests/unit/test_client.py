@@ -1,6 +1,6 @@
-from uncertainty_engine.client import Client, DEFAULT_DEPLOYMENT
 from unittest.mock import Mock, patch
 
+from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client
 
 # __init__
 

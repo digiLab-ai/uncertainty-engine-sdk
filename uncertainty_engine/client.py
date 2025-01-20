@@ -1,8 +1,7 @@
 from typing import Optional
 
-from typeguard import typechecked
 import requests
-
+from typeguard import typechecked
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
 
