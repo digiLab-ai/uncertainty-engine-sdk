@@ -82,3 +82,49 @@ def test_queue_node(test_user_email: str):
                 "input": {"key": "value"},
             },
         )
+
+
+# job_status
+
+
+def test_job_status(test_user_email: str):
+    """
+    Verify that the job_status method pokes the correct endpoint with the user defined job_id.
+
+    Args:
+        test_user_email: An email address for testing.
+    """
+    client = Client(email=test_user_email)
+
+    with patch("uncertainty_engine.client.requests.get") as mock_get:
+        mock_response = Mock()
+        mock_response.json.return_value = {"status": "running"}
+        mock_get.return_value = mock_response
+
+        response = client.job_status(job_id="job_id")
+
+        assert response == {"status": "running"}
+        mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id")
+
+
+# view_tokens
+
+
+def test_view_tokens(test_user_email: str):
+    """
+    Verify that the view_tokens method pokes the correct endpoint.
+
+    Args:
+        test_user_email: An email address for testing.
+    """
+    client = Client(email=test_user_email)
+
+    with patch("uncertainty_engine.client.requests.get") as mock_get:
+        mock_response = Mock()
+        mock_response.json.return_value = 10
+        mock_get.return_value = mock_response
+
+        response = client.view_tokens()
+
+        assert response == 10
+        mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/tokens/user/{test_user_email}")
