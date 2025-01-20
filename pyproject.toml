@@ -14,6 +14,7 @@ readme = "README.md"
 python = ">=3.10,<3.12"
 # TODO: Update workflow_types once the package is published
 workflow_types = { git = "https://github.com/digiLab-ai/workflow-types.git", branch = "main" }
+typeguard = "^4.4.1"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
