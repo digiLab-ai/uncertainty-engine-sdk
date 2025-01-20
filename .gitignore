@@ -1,0 +1,28 @@
+# macOS files
+.DS_Store
+
+# Temporary files
+tmp/
+
+# Files containg sensitive information
+.env
+
+# Automatically generated Python code
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Automatically generated markdown formatting code
+package-lock.json
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Personal VScode settings
+.vscode/
+
+# Node
+node_modules/
+
+# FastAPI
+openapitools.json
