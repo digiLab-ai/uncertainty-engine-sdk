@@ -52,3 +52,33 @@ def test_list_nodes(test_user_email: str):
 
         assert response == [{"node_a": "I'm a node."}]
         mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
+
+
+# queue_node
+
+
+def test_queue_node(test_user_email: str):
+    """
+    Verify that the queue_node method pokes the correct endpoint with the user defined input.
+
+    Args:
+        test_user_email: An email address for testing.
+    """
+    client = Client(email=test_user_email)
+
+    with patch("uncertainty_engine.client.requests.post") as mock_post:
+        mock_response = Mock()
+        mock_response.json.return_value = "job_id"
+        mock_post.return_value = mock_response
+
+        response = client.queue_node(node="node_a", input={"key": "value"})
+
+        assert response == "job_id"
+        mock_post.assert_called_once_with(
+            f"{DEFAULT_DEPLOYMENT}/nodes/queue",
+            json={
+                "email": test_user_email,
+                "node": "node_a",
+                "input": {"key": "value"},
+            },
+        )
