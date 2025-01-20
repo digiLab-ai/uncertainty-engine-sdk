@@ -1,6 +1,15 @@
 from unittest.mock import Mock, patch
 
+import pytest
+
 from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client
+
+
+@pytest.fixture(scope="class")
+def client(test_user_email):
+    """Fixture to initialize the Client class once per test class."""
+    return Client(email=test_user_email)
+
 
 # __init__
 
@@ -31,100 +40,85 @@ def test_init_custom(test_user_email: str):
     assert client.deployment == custom_deployment
 
 
-# list_nodes
+class TestClientMethods:
+    def test_list_nodes(self, client: Client):
+        """
+        Verify that the list_nodes method pokes the correct endpoint.
 
+        Args:
+            test_user_email: An email address for testing.
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = [{"node_a": "I'm a node."}]
+            mock_get.return_value = mock_response
 
-def test_list_nodes(test_user_email: str):
-    """
-    Verify that the list_nodes method pokes the correct endpoint.
+            response = client.list_nodes()
 
-    Args:
-        test_user_email: An email address for testing.
-    """
-    client = Client(email=test_user_email)
+            assert response == [{"node_a": "I'm a node."}]
+            mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
 
-    with patch("uncertainty_engine.client.requests.get") as mock_get:
-        mock_response = Mock()
-        mock_response.json.return_value = [{"node_a": "I'm a node."}]
-        mock_get.return_value = mock_response
+    def test_queue_node(self, client: Client):
+        """
+        Verify that the queue_node method pokes the correct endpoint with the user defined input.
 
-        response = client.list_nodes()
+        Args:
+            test_user_email: An email address for testing.
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.post") as mock_post:
+            mock_response = Mock()
+            mock_response.json.return_value = "job_id"
+            mock_post.return_value = mock_response
 
-        assert response == [{"node_a": "I'm a node."}]
-        mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
+            response = client.queue_node(node="node_a", input={"key": "value"})
 
+            assert response == "job_id"
+            mock_post.assert_called_once_with(
+                f"{DEFAULT_DEPLOYMENT}/nodes/queue",
+                json={
+                    "email": client.email,
+                    "node": "node_a",
+                    "input": {"key": "value"},
+                },
+            )
 
-# queue_node
+    def test_job_status(self, client: Client):
+        """
+        Verify that the job_status method pokes the correct endpoint with the user defined job_id.
 
+        Args:
+            test_user_email: An email address for testing.
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = {"status": "running"}
+            mock_get.return_value = mock_response
 
-def test_queue_node(test_user_email: str):
-    """
-    Verify that the queue_node method pokes the correct endpoint with the user defined input.
+            response = client.job_status(job_id="job_id")
 
-    Args:
-        test_user_email: An email address for testing.
-    """
-    client = Client(email=test_user_email)
+            assert response == {"status": "running"}
+            mock_get.assert_called_once_with(
+                f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id"
+            )
 
-    with patch("uncertainty_engine.client.requests.post") as mock_post:
-        mock_response = Mock()
-        mock_response.json.return_value = "job_id"
-        mock_post.return_value = mock_response
+    def test_view_tokens(self, client: Client):
+        """
+        Verify that the view_tokens method pokes the correct endpoint.
 
-        response = client.queue_node(node="node_a", input={"key": "value"})
+        Args:
+            test_user_email: An email address for testing.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get:
+            mock_response = Mock()
+            mock_response.json.return_value = 10
+            mock_get.return_value = mock_response
 
-        assert response == "job_id"
-        mock_post.assert_called_once_with(
-            f"{DEFAULT_DEPLOYMENT}/nodes/queue",
-            json={
-                "email": test_user_email,
-                "node": "node_a",
-                "input": {"key": "value"},
-            },
-        )
+            response = client.view_tokens()
 
-
-# job_status
-
-
-def test_job_status(test_user_email: str):
-    """
-    Verify that the job_status method pokes the correct endpoint with the user defined job_id.
-
-    Args:
-        test_user_email: An email address for testing.
-    """
-    client = Client(email=test_user_email)
-
-    with patch("uncertainty_engine.client.requests.get") as mock_get:
-        mock_response = Mock()
-        mock_response.json.return_value = {"status": "running"}
-        mock_get.return_value = mock_response
-
-        response = client.job_status(job_id="job_id")
-
-        assert response == {"status": "running"}
-        mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id")
-
-
-# view_tokens
-
-
-def test_view_tokens(test_user_email: str):
-    """
-    Verify that the view_tokens method pokes the correct endpoint.
-
-    Args:
-        test_user_email: An email address for testing.
-    """
-    client = Client(email=test_user_email)
-
-    with patch("uncertainty_engine.client.requests.get") as mock_get:
-        mock_response = Mock()
-        mock_response.json.return_value = 10
-        mock_get.return_value = mock_response
-
-        response = client.view_tokens()
-
-        assert response == 10
-        mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/tokens/user/{test_user_email}")
+            assert response == 10
+            mock_get.assert_called_once_with(
+                f"{DEFAULT_DEPLOYMENT}/tokens/user/{client.email}"
+            )

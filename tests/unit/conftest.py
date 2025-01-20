@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture(scope="class")
 def test_user_email():
     """
     An email address for testing.
