@@ -1,6 +1,8 @@
 from typeguard import typechecked
 
 
+# TODO: Enforce that all columns are exclusively floats or ints.
+#  Currently typeguard does not support this.
 @typechecked
 def dict_to_csv_str(data: dict[str, list[float]]) -> str:
     """
