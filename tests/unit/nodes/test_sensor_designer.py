@@ -85,4 +85,25 @@ def test_build_sensor_designer_no_qoi():
     )
 
 
+def test_build_sensor_designer_list_sigma():
+    """
+    Verify result for arbitrary test input with no quantities of interest data.
+    """
 
+    sensor_data = {
+        "sensor_1": [1, 2],
+        "sensor_2": [4, 5],
+    }
+
+    sigma = [0.1, 0.2]
+
+    node = BuildSensorDesigner(sensor_data=sensor_data, sigma=sigma)
+
+    assert node() == (
+        "BuildSensorDesigner",
+        {
+            "sensor_data": "sensor_1,sensor_2\n1,4\n2,5\n",
+            "quantities_of_interest_data": None,
+            "sigma": sigma,
+        },
+    )
