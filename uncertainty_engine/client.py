@@ -16,17 +16,6 @@ class Client:
         response = requests.get(f"{self.deployment}/nodes/list")
         return response.json()
 
-    def run_node(self, node: str, input: dict) -> dict:
-        response = requests.post(
-            f"{self.deployment}/nodes/run",
-            json={
-                "email": self.email,
-                "node": node,
-                "input": input,
-            },
-        )
-        return response.json()
-
     def queue_node(self, node: str, input: dict) -> str:
         response = requests.post(
             f"{self.deployment}/nodes/queue",
