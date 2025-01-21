@@ -21,12 +21,16 @@ class BuildSensorDesigner(Node):
     def __init__(
         self,
         sensor_data: dict[str, list[float]],
-        quantities_of_interest_data: dict[str, list[float]],
+        quantities_of_interest_data: Optional[dict[str, list[float]]] = None,
         sigma: Optional[Union[float, list[float]]] = None,
     ):
         super().__init__(
             node_name="BuildSensorDesigner",
             sensor_data=dict_to_csv_str(sensor_data),
-            quantities_of_interest_data=dict_to_csv_str(quantities_of_interest_data),
+            quantities_of_interest_data=(
+                None
+                if not quantities_of_interest_data
+                else dict_to_csv_str(quantities_of_interest_data)
+            ),
             sigma=sigma,
         )
