@@ -1,7 +1,9 @@
 from unittest.mock import Mock, patch
 
-from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client
+import pytest
 
+from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client
+from uncertainty_engine.nodes.base import Node
 
 # __init__
 
@@ -51,9 +53,10 @@ class TestClientMethods:
             assert response == [{"node_a": "I'm a node."}]
             mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
 
-    def test_queue_node(self, client: Client):
+    def test_queue_node_name_input(self, client: Client):
         """
-        Verify that the queue_node method pokes the correct endpoint with the user defined input.
+        Verify that the queue_node method pokes the correct endpoint with the user
+        defined input when the node is defined by it's name and input.
 
         Args:
             test_user_email: An email address for testing.
@@ -81,7 +84,6 @@ class TestClientMethods:
         Verify that the job_status method pokes the correct endpoint with the user defined job_id.
 
         Args:
-            test_user_email: An email address for testing.
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
@@ -101,7 +103,7 @@ class TestClientMethods:
         Verify that the view_tokens method pokes the correct endpoint.
 
         Args:
-            test_user_email: An email address for testing.
+            client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
             mock_response = Mock()
@@ -114,3 +116,46 @@ class TestClientMethods:
             mock_get.assert_called_once_with(
                 f"{DEFAULT_DEPLOYMENT}/tokens/user/{client.email}"
             )
+
+    def test_queue_node_node_input(self, client: Client):
+        """
+        Verify that the queue_node method pokes the correct endpoint with the user
+        defined input when the node is defined as an object.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.post") as mock_post:
+            mock_response = Mock()
+            mock_response.json.return_value = "job_id"
+            mock_post.return_value = mock_response
+
+            node_name = "node_a"
+            inputs = {"key": "value"}
+            node = Node(node_name, **inputs)
+            response = client.queue_node(node)
+
+            assert response == "job_id"
+            mock_post.assert_called_once_with(
+                f"{DEFAULT_DEPLOYMENT}/nodes/queue",
+                json={
+                    "email": client.email,
+                    "node": "node_a",
+                    "input": {"key": "value"},
+                },
+            )
+
+    def test_queue_node_name_no_input(self, client: Client):
+        """
+        Verify that an error is raised if the user tries to queue a node defined by its name with no inputs.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.post") as mock_post:
+            mock_response = Mock()
+            mock_response.json.return_value = "job_id"
+            mock_post.return_value = mock_response
+
+            with pytest.raises(ValueError):
+                client.queue_node(node="node_a")
