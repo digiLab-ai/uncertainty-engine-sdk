@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
 from typeguard import typechecked
-from workflow_types import TabularData
+from workflow_types import SensorDesigner, TabularData
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import dict_to_csv_str
@@ -36,4 +36,24 @@ class BuildSensorDesigner(Node):
                 ).model_dump()
             ),
             sigma=sigma,
+        )
+
+
+@typechecked
+class SuggestSensorDesign(Node):
+    """
+    Suggest a sensor design using a sensor designer.
+
+    Args:
+        sensor_designer: The sensor designer constructed by the BuildSensorDesigner node.
+        num_sensors: The number of sensors to suggest.
+        num_eval: The number of evaluations to perform.
+    """
+
+    def __init__(self, sensor_designer: dict, num_sensors: int, num_eval: int):
+        super().__init__(
+            node_name="sensor_designer.SuggestSensorDesign",
+            sensor_designer=SensorDesigner(bed=sensor_designer).model_dump(),
+            num_sensors=num_sensors,
+            num_eval=num_eval,
         )

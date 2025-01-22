@@ -1,4 +1,7 @@
-from uncertainty_engine.nodes.sensor_designer import BuildSensorDesigner
+from uncertainty_engine.nodes.sensor_designer import (
+    BuildSensorDesigner,
+    SuggestSensorDesign,
+)
 
 
 def test_build_sensor_designer():
@@ -105,5 +108,30 @@ def test_build_sensor_designer_list_sigma():
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": None,
             "sigma": sigma,
+        },
+    )
+
+
+def test_suggest_sensor_design():
+    """
+    Verify result for arbitrary test input.
+    """
+
+    # Define a mock sensor designer
+    sensor_designer = {"sensor_designer": "I am a sensor designer"}
+
+    num_sensors = 3
+    num_eval = 4
+
+    node = SuggestSensorDesign(
+        sensor_designer=sensor_designer, num_sensors=num_sensors, num_eval=num_eval
+    )
+
+    assert node() == (
+        "sensor_designer.SuggestSensorDesign",
+        {
+            "sensor_designer": {"bed": sensor_designer},
+            "num_sensors": num_sensors,
+            "num_eval": num_eval,
         },
     )
