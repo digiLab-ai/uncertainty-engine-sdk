@@ -1,6 +1,7 @@
 from typing import Optional, Union
 
 from typeguard import typechecked
+from workflow_types import TabularData
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import dict_to_csv_str
@@ -25,12 +26,14 @@ class BuildSensorDesigner(Node):
         sigma: Optional[Union[float, list[float]]] = None,
     ):
         super().__init__(
-            node_name="BuildSensorDesigner",
-            sensor_data=dict_to_csv_str(sensor_data),
+            node_name="sensor_designer.BuildSensorDesigner",
+            sensor_data=TabularData(csv=dict_to_csv_str(sensor_data)).model_dump(),
             quantities_of_interest_data=(
                 None
                 if not quantities_of_interest_data
-                else dict_to_csv_str(quantities_of_interest_data)
+                else TabularData(
+                    csv=dict_to_csv_str(quantities_of_interest_data)
+                ).model_dump()
             ),
             sigma=sigma,
         )
