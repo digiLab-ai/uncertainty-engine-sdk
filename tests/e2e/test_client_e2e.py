@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytest
 
@@ -49,7 +50,15 @@ class TestClientMethods:
             client: A Client instance.
         """
         job_id = TestClientMethods.job_id
-        client.job_status(job_id)
+        response = client.job_status(job_id)
+
+        status = "STARTED"
+        while status == "STARTED":
+            response = client.job_status(job_id)
+            status = response["status"]
+            time.sleep(5)
+
+        assert response["status"] == "SUCCESS"
 
     def test_view_token(self, client: Client):
         """
