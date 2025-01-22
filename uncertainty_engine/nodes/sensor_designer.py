@@ -57,3 +57,21 @@ class SuggestSensorDesign(Node):
             num_sensors=num_sensors,
             num_eval=num_eval,
         )
+
+
+@typechecked
+class ScoreSensorDesign(Node):
+    """
+    Score a given sensor design.
+
+    Args:
+        sensor_designer: The sensor designer constructed by the BuildSensorDesigner node.
+        design: A list of sensors that make up the design.
+    """
+
+    def __init__(self, sensor_designer: dict, design: list):
+        super().__init__(
+            node_name="sensor_designer.SuggestSensorDesign",
+            sensor_designer=SensorDesigner(bed=sensor_designer).model_dump(),
+            design=design,
+        )

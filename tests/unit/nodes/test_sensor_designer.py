@@ -1,5 +1,6 @@
 from uncertainty_engine.nodes.sensor_designer import (
     BuildSensorDesigner,
+    ScoreSensorDesign,
     SuggestSensorDesign,
 )
 
@@ -133,5 +134,26 @@ def test_suggest_sensor_design():
             "sensor_designer": {"bed": sensor_designer},
             "num_sensors": num_sensors,
             "num_eval": num_eval,
+        },
+    )
+
+
+def test_score_sensor_design():
+    """
+    Verify result for arbitrary test input.
+    """
+
+    # Define a mock sensor designer
+    sensor_designer = {"sensor_designer": "I am a sensor designer"}
+
+    design = ["sensor_1", "sensor_2"]
+
+    node = ScoreSensorDesign(sensor_designer=sensor_designer, design=design)
+
+    assert node() == (
+        "sensor_designer.SuggestSensorDesign",
+        {
+            "sensor_designer": {"bed": sensor_designer},
+            "design": design,
         },
     )
