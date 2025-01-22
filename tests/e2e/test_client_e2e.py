@@ -4,6 +4,7 @@ import pytest
 
 from uncertainty_engine.client import Client
 
+
 # NOTE: For these tests to run successfully, the following environment variables must be set:
 # UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
 # UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
@@ -30,12 +31,12 @@ class TestClientMethods:
             client: A Client instance.
         """
         node_name = "demo.Add"
-        input = {
+        inputs = {
             "lhs": 1,
             "rhs": 2,
         }  # Inputs are left hand side and right hand side of equation
 
-        job_id = client.queue_node(node=node_name, input=input)
+        job_id = client.queue_node(node=node_name, input=inputs)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestClientMethods.job_id = job_id
