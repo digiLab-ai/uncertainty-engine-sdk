@@ -53,7 +53,7 @@ class SuggestSensorDesign(Node):
     def __init__(self, sensor_designer: dict, num_sensors: int, num_eval: int):
         super().__init__(
             node_name="sensor_designer.SuggestSensorDesign",
-            sensor_designer=SensorDesigner(bed=sensor_designer).model_dump(),
+            sensor_designer=SensorDesigner(bed=sensor_designer["bed"]).model_dump(),
             num_sensors=num_sensors,
             num_eval=num_eval,
         )
@@ -71,7 +71,7 @@ class ScoreSensorDesign(Node):
 
     def __init__(self, sensor_designer: dict, design: list):
         super().__init__(
-            node_name="sensor_designer.SuggestSensorDesign",
-            sensor_designer=SensorDesigner(bed=sensor_designer).model_dump(),
+            node_name="sensor_designer.ScoreSensorDesign",
+            sensor_designer=SensorDesigner(bed=sensor_designer["bed"]).model_dump(),
             design=design,
         )
