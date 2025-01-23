@@ -29,7 +29,14 @@ def client(test_user_email: str, deployment_url: str):
 
 @pytest.fixture(scope="module")
 def e2e_client():
-    print("Setting e2e client")
+    """
+    A Client instance for end-to-end testing.
+
+    NOTE: For the e2e tests to run successfully, the following environment variables must be set:
+
+        UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
+        UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
+    """
     return Client(
         email=os.environ["UE_USER_EMAIL"], deployment=os.environ["UE_DEPLOYMENT_URL"]
     )
