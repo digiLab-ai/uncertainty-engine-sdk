@@ -1,7 +1,4 @@
-import os
 import time
-
-import pytest
 
 from uncertainty_engine.client import Client
 from uncertainty_engine.nodes.sensor_designer import (
@@ -11,23 +8,15 @@ from uncertainty_engine.nodes.sensor_designer import (
 )
 
 
-# NOTE: For these tests to run successfully, the following environment variables must be set:
-# UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
-# UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
-@pytest.mark.parametrize(
-    "test_user_email, deployment_url",
-    [(os.environ["UE_USER_EMAIL"], os.environ["UE_DEPLOYMENT_URL"])],
-    indirect=True,
-)
 class TestFullSet:
     """
     Verify successful execution of the all the sensor designer nodes.
     """
 
-    def test_queue_build(self, client: Client):
+    def test_queue_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         # Define the required data
         sensor_data = {
@@ -47,22 +36,22 @@ class TestFullSet:
             sigma=sigma,
         )
 
-        job_id = client.queue_node(node)
+        job_id = e2e_client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestFullSet.job_id_build = job_id
 
-    def test_result_build(self, client: Client):
+    def test_result_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         job_id = TestFullSet.job_id_build
-        response = client.job_status(job_id)
+        response = e2e_client.job_status(job_id)
 
         status = "STARTED"
         while status not in ["SUCCESS", "FAILURE"]:
-            response = client.job_status(job_id)
+            response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
@@ -71,32 +60,32 @@ class TestFullSet:
 
         TestFullSet.sensor_designer = response["output"]["sensor_designer"]
 
-    def test_queue_suggest(self, client: Client):
+    def test_queue_suggest(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         sensor_designer = TestFullSet.sensor_designer
         node = SuggestSensorDesign(
             sensor_designer=sensor_designer, num_sensors=1, num_eval=1
         )
 
-        job_id = client.queue_node(node)
+        job_id = e2e_client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestFullSet.job_id_suggest = job_id
 
-    def test_result_suggest(self, client: Client):
+    def test_result_suggest(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         job_id = TestFullSet.job_id_suggest
-        response = client.job_status(job_id)
+        response = e2e_client.job_status(job_id)
 
         status = "STARTED"
         while status not in ["SUCCESS", "FAILURE"]:
-            response = client.job_status(job_id)
+            response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
@@ -105,10 +94,10 @@ class TestFullSet:
 
         TestFullSet.suggested_design = response["output"]["suggested_design"]
 
-    def test_queue_score(self, client: Client):
+    def test_queue_score(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         sensor_designer = TestFullSet.sensor_designer
         suggested_design = TestFullSet.suggested_design
@@ -116,22 +105,22 @@ class TestFullSet:
             sensor_designer=sensor_designer, design=suggested_design
         )
 
-        job_id = client.queue_node(node)
+        job_id = e2e_client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestFullSet.job_id_score = job_id
 
-    def test_result_score(self, client: Client):
+    def test_result_score(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         job_id = TestFullSet.job_id_score
-        response = client.job_status(job_id)
+        response = e2e_client.job_status(job_id)
 
         status = "STARTED"
         while status not in ["SUCCESS", "FAILURE"]:
-            response = client.job_status(job_id)
+            response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
@@ -139,23 +128,15 @@ class TestFullSet:
         assert "output" in response
 
 
-# NOTE: For these tests to run successfully, the following environment variables must be set:
-# UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
-# UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
-@pytest.mark.parametrize(
-    "test_user_email, deployment_url",
-    [(os.environ["UE_USER_EMAIL"], os.environ["UE_DEPLOYMENT_URL"])],
-    indirect=True,
-)
 class TestBuildNoQoI:
     """
     Verify successful execution of the BuildSensorDesigner node when no QoI data is provided.
     """
 
-    def test_queue_build(self, client: Client):
+    def test_queue_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         # Define the required data
         sensor_data = {
@@ -170,22 +151,22 @@ class TestBuildNoQoI:
             sigma=sigma,
         )
 
-        job_id = client.queue_node(node)
+        job_id = e2e_client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestBuildNoQoI.job_id_build = job_id
 
-    def test_result_build(self, client: Client):
+    def test_result_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         job_id = TestBuildNoQoI.job_id_build
-        response = client.job_status(job_id)
+        response = e2e_client.job_status(job_id)
 
         status = "STARTED"
         while status not in ["SUCCESS", "FAILURE"]:
-            response = client.job_status(job_id)
+            response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
@@ -193,23 +174,15 @@ class TestBuildNoQoI:
         assert "output" in response
 
 
-# NOTE: For these tests to run successfully, the following environment variables must be set:
-# UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
-# UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
-@pytest.mark.parametrize(
-    "test_user_email, deployment_url",
-    [(os.environ["UE_USER_EMAIL"], os.environ["UE_DEPLOYMENT_URL"])],
-    indirect=True,
-)
 class TestBuildNoSigma:
     """
     Verify successful execution of the BuildSensorDesigner node when no sigma is provided.
     """
 
-    def test_queue_build(self, client: Client):
+    def test_queue_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         # Define the required data
         sensor_data = {
@@ -227,22 +200,22 @@ class TestBuildNoSigma:
             quantities_of_interest_data=qoi_data,
         )
 
-        job_id = client.queue_node(node)
+        job_id = e2e_client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestBuildNoSigma.job_id_build = job_id
 
-    def test_result_build(self, client: Client):
+    def test_result_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         job_id = TestBuildNoSigma.job_id_build
-        response = client.job_status(job_id)
+        response = e2e_client.job_status(job_id)
 
         status = "STARTED"
         while status not in ["SUCCESS", "FAILURE"]:
-            response = client.job_status(job_id)
+            response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
@@ -250,23 +223,15 @@ class TestBuildNoSigma:
         assert "output" in response
 
 
-# NOTE: For these tests to run successfully, the following environment variables must be set:
-# UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
-# UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
-@pytest.mark.parametrize(
-    "test_user_email, deployment_url",
-    [(os.environ["UE_USER_EMAIL"], os.environ["UE_DEPLOYMENT_URL"])],
-    indirect=True,
-)
 class TestBuildListSigma:
     """
     Verify successful execution of the BuildSensorDesigner node when a list of sigma values is provided.
     """
 
-    def test_queue_build(self, client: Client):
+    def test_queue_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         # Define the required data
         sensor_data = {
@@ -286,22 +251,22 @@ class TestBuildListSigma:
             sigma=sigma,
         )
 
-        job_id = client.queue_node(node)
+        job_id = e2e_client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestBuildListSigma.job_id_build = job_id
 
-    def test_result_build(self, client: Client):
+    def test_result_build(self, e2e_client: Client):
         """
         Args:
-            client: A Client instance.
+            e2e_client: A Client instance.
         """
         job_id = TestBuildListSigma.job_id_build
-        response = client.job_status(job_id)
+        response = e2e_client.job_status(job_id)
 
         status = "STARTED"
         while status not in ["SUCCESS", "FAILURE"]:
-            response = client.job_status(job_id)
+            response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
