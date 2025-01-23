@@ -1,8 +1,25 @@
+import pytest
+
 from uncertainty_engine.nodes.sensor_designer import (
     BuildSensorDesigner,
     ScoreSensorDesign,
     SuggestSensorDesign,
 )
+
+
+@pytest.fixture
+def mock_sensor_designer():
+    """
+    A mock sensor designer object that mimics the structure of a sensor designer object
+    returned by the BuildSensorDesigner node.
+    """
+    sensor_designer = {
+        "bed": {
+            "key": "I am a bed"
+        }  # bed is typed as a dict in workflow_types so we need to match that here
+    }
+
+    return sensor_designer
 
 
 def test_build_sensor_designer():
@@ -113,47 +130,41 @@ def test_build_sensor_designer_list_sigma():
     )
 
 
-def test_suggest_sensor_design():
+def test_suggest_sensor_design(mock_sensor_designer):
     """
     Verify result for arbitrary test input.
     """
-
-    # Define a mock sensor designer
-    sensor_designer = {"sensor_designer": "I am a sensor designer"}
 
     num_sensors = 3
     num_eval = 4
 
     node = SuggestSensorDesign(
-        sensor_designer=sensor_designer, num_sensors=num_sensors, num_eval=num_eval
+        sensor_designer=mock_sensor_designer, num_sensors=num_sensors, num_eval=num_eval
     )
 
     assert node() == (
         "sensor_designer.SuggestSensorDesign",
         {
-            "sensor_designer": {"bed": sensor_designer},
+            "sensor_designer": mock_sensor_designer,
             "num_sensors": num_sensors,
             "num_eval": num_eval,
         },
     )
 
 
-def test_score_sensor_design():
+def test_score_sensor_design(mock_sensor_designer):
     """
     Verify result for arbitrary test input.
     """
 
-    # Define a mock sensor designer
-    sensor_designer = {"sensor_designer": "I am a sensor designer"}
-
     design = ["sensor_1", "sensor_2"]
 
-    node = ScoreSensorDesign(sensor_designer=sensor_designer, design=design)
+    node = ScoreSensorDesign(sensor_designer=mock_sensor_designer, design=design)
 
     assert node() == (
-        "sensor_designer.SuggestSensorDesign",
+        "sensor_designer.ScoreSensorDesign",
         {
-            "sensor_designer": {"bed": sensor_designer},
+            "sensor_designer": mock_sensor_designer,
             "design": design,
         },
     )
