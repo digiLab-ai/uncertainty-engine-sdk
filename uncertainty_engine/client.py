@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import Optional, Union
 
 import requests
 from typeguard import typechecked
+
+from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
 
@@ -29,17 +31,25 @@ class Client:
         response = requests.get(f"{self.deployment}/nodes/list")
         return response.json()
 
-    def queue_node(self, node: str, input: dict) -> str:
+    def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> str:
         """
         Queue a node for execution.
 
         Args:
-            node: The name of the node to execute.
-            input: The input data for the node.
+            node: The name of the node to execute or the node object itself.
+            input: The input data for the node. If the node is defined by its name,
+                this is required. Defaults to ``None``.
 
         Returns:
             The job ID of the queued node.
         """
+        if isinstance(node, Node):
+            node, input = node()
+        elif isinstance(node, str) and input is None:
+            raise ValueError(
+                "Input data/parameters are required when specifying a node by name."
+            )
+
         response = requests.post(
             f"{self.deployment}/nodes/queue",
             json={
