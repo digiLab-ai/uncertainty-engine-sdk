@@ -4,7 +4,11 @@ import time
 import pytest
 
 from uncertainty_engine.client import Client
-from uncertainty_engine.nodes.sensor_designer import BuildSensorDesigner
+from uncertainty_engine.nodes.sensor_designer import (
+    BuildSensorDesigner,
+    ScoreSensorDesign,
+    SuggestSensorDesign,
+)
 
 
 # NOTE: For these tests to run successfully, the following environment variables must be set:
@@ -15,12 +19,12 @@ from uncertainty_engine.nodes.sensor_designer import BuildSensorDesigner
     [(os.environ["UE_USER_EMAIL"], os.environ["UE_DEPLOYMENT_URL"])],
     indirect=True,
 )
-class TestAllParams:
+class TestFullSet:
     """
-    Verify successful execution of the BuildSensorDesigner node with all parameters.
+    Verify successful execution of the all the sensor designer nodes.
     """
 
-    def test_queue_node(self, client: Client):
+    def test_queue_build(self, client: Client):
         """
         Args:
             client: A Client instance.
@@ -46,14 +50,83 @@ class TestAllParams:
         job_id = client.queue_node(node)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
-        TestAllParams.job_id = job_id
+        TestFullSet.job_id_build = job_id
 
-    def test_result(self, client: Client):
+    def test_result_build(self, client: Client):
         """
         Args:
             client: A Client instance.
         """
-        job_id = TestAllParams.job_id
+        job_id = TestFullSet.job_id_build
+        response = client.job_status(job_id)
+
+        status = "STARTED"
+        while status not in ["SUCCESS", "FAILURE"]:
+            response = client.job_status(job_id)
+            status = response["status"]
+            time.sleep(5)
+
+        assert status == "SUCCESS"
+        assert "output" in response
+
+        TestFullSet.sensor_designer = response["output"]["sensor_designer"]
+
+    def test_queue_suggest(self, client: Client):
+        """
+        Args:
+            client: A Client instance.
+        """
+        sensor_designer = TestFullSet.sensor_designer
+        node = SuggestSensorDesign(
+            sensor_designer=sensor_designer, num_sensors=1, num_eval=1
+        )
+
+        job_id = client.queue_node(node)
+
+        # Add the job_id as an attribute of the test class so that it can be used in other tests
+        TestFullSet.job_id_suggest = job_id
+
+    def test_result_suggest(self, client: Client):
+        """
+        Args:
+            client: A Client instance.
+        """
+        job_id = TestFullSet.job_id_suggest
+        response = client.job_status(job_id)
+
+        status = "STARTED"
+        while status not in ["SUCCESS", "FAILURE"]:
+            response = client.job_status(job_id)
+            status = response["status"]
+            time.sleep(5)
+
+        assert status == "SUCCESS"
+        assert "output" in response
+
+        TestFullSet.suggested_design = response["output"]["suggested_design"]
+
+    def test_queue_score(self, client: Client):
+        """
+        Args:
+            client: A Client instance.
+        """
+        sensor_designer = TestFullSet.sensor_designer
+        suggested_design = TestFullSet.suggested_design
+        node = ScoreSensorDesign(
+            sensor_designer=sensor_designer, design=suggested_design
+        )
+
+        job_id = client.queue_node(node)
+
+        # Add the job_id as an attribute of the test class so that it can be used in other tests
+        TestFullSet.job_id_score = job_id
+
+    def test_result_score(self, client: Client):
+        """
+        Args:
+            client: A Client instance.
+        """
+        job_id = TestFullSet.job_id_score
         response = client.job_status(job_id)
 
         status = "STARTED"
