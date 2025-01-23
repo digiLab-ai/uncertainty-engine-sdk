@@ -14,4 +14,4 @@ class Add(Node):
     """
 
     def __init__(self, a: float, b: float):
-        super().__init__(node_name="math.Add", a=a, b=b)
+        super().__init__(node_name="demo.Add", a=a, b=b)
