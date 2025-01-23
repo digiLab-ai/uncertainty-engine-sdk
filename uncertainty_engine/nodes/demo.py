@@ -9,9 +9,9 @@ class Add(Node):
     Add two numbers.
 
     Args:
-        a: The first number.
-        b: The second number.
+        lhs: The left-hand side number.
+        rhs: The right-hand side number.
     """
 
-    def __init__(self, a: float, b: float):
-        super().__init__(node_name="demo.Add", a=a, b=b)
+    def __init__(self, lhs: float, rhs: float):
+        super().__init__(node_name="demo.Add", lhs=lhs, rhs=rhs)
