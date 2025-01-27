@@ -24,9 +24,6 @@ class ValidStatus(Enum):
     def is_terminal(self) -> bool:
         return self in [ValidStatus.SUCCESS, ValidStatus.FAILURE]
 
-    def is_waiting(self) -> bool:
-        return self in [ValidStatus.STARTED, ValidStatus.PENDING]
-
 
 @typechecked
 class Client:
