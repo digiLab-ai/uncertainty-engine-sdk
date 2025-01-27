@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -44,9 +44,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = [{"node_a": "I'm a node."}]
-            mock_get.return_value = mock_response
+            mock_get.return_value.json.return_value = [{"node_a": "I'm a node."}]
 
             response = client.list_nodes()
 
@@ -63,9 +61,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_response = Mock()
-            mock_response.json.return_value = "job_id"
-            mock_post.return_value = mock_response
+            mock_post.return_value.json.return_value = "job_id"
 
             response = client.queue_node(node="node_a", input={"key": "value"})
 
@@ -87,9 +83,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = {"status": "running"}
-            mock_get.return_value = mock_response
+            mock_get.return_value.json.return_value = {"status": "running"}
 
             response = client.job_status(job_id="job_id")
 
@@ -106,9 +100,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = 10
-            mock_get.return_value = mock_response
+            mock_get.return_value.json.return_value = 10
 
             response = client.view_tokens()
 
@@ -126,9 +118,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_response = Mock()
-            mock_response.json.return_value = "job_id"
-            mock_post.return_value = mock_response
+            mock_post.return_value.json.return_value = "job_id"
 
             node_name = "node_a"
             inputs = {"key": "value"}
@@ -153,9 +143,67 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_response = Mock()
-            mock_response.json.return_value = "job_id"
-            mock_post.return_value = mock_response
+            mock_post.return_value.json.return_value = "job_id"
 
             with pytest.raises(ValueError):
                 client.queue_node(node="node_a")
+
+    def test_queue_node_wait(self, client: Client):
+        """
+        Verify that the queue_node method waits for the job to complete if the wait parameter is set to True.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.post") as mock_post, patch(
+            "uncertainty_engine.client.requests.get"
+        ) as mock_get:
+            mock_post.return_value.json.return_value = "job_id"
+            mock_get.return_value.json.return_value = {"status": "SUCCESS"}
+
+            client.queue_node(node="node_a", input={"key": "value"}, wait=True)
+
+            mock_get.assert_called_once_with(
+                f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id"
+            )
+
+    def test_wait_for_job(self, client: Client):
+        """
+        Verify that the _wait_for_job method pokes the correct endpoint and behaves as expected.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get, patch(
+            "uncertainty_engine.client.STATUS_WAIT_TIME",
+            0.1,  # Reduce wait time for testing
+        ):
+            # Use side_effect with a lambda to return different JSON values
+            mock_get.return_value.json.side_effect = [
+                {"status": "PENDING"},
+                {"status": "STARTED"},
+                {"status": "SUCCESS"},
+            ]
+
+            response = client._wait_for_job(job_id="job_id")
+
+            assert response == {"status": "SUCCESS"}
+            assert mock_get.call_count == 3
+
+            # Assert all calls are made to the same endpoint
+            expected_url = f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id"
+            for call in mock_get.call_args_list:
+                assert call.args[0] == expected_url
+
+    def test_wait_for_job_invalid_status(self, client: Client):
+        """
+        Verify that the _wait_for_job raises an error if the status is invalid.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get:
+            mock_get.return_value.json.return_value = {"status": "INVALID"}
+
+            with pytest.raises(ValueError):
+                client._wait_for_job(job_id="job_id")

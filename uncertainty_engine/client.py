@@ -1,3 +1,5 @@
+from enum import Enum
+from time import sleep
 from typing import Optional, Union
 
 import requests
@@ -6,6 +8,21 @@ from typeguard import typechecked
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
+STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
+
+
+class ValidStatus(Enum):
+    """
+    Represents the possible statuses fort a job in the Uncertainty Engine.
+    """
+
+    STARTED = "STARTED"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+    def is_terminal(self) -> bool:
+        return self in [ValidStatus.SUCCESS, ValidStatus.FAILURE]
 
 
 @typechecked
@@ -31,7 +48,9 @@ class Client:
         response = requests.get(f"{self.deployment}/nodes/list")
         return response.json()
 
-    def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> str:
+    def queue_node(
+        self, node: Union[str, Node], input: Optional[dict] = None, wait: bool = False
+    ) -> Union[dict, str]:
         """
         Queue a node for execution.
 
@@ -39,6 +58,7 @@ class Client:
             node: The name of the node to execute or the node object itself.
             input: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
+            wait: Whether to wait for the job to complete. Defaults to ``False``.
 
         Returns:
             The job ID of the queued node.
@@ -58,7 +78,12 @@ class Client:
                 "input": input,
             },
         )
-        return response.json()
+
+        if wait:
+            response = self._wait_for_job(response.json())
+            return response
+        else:
+            return response.json()
 
     def job_status(self, job_id: str) -> dict:
         """
@@ -83,3 +108,22 @@ class Client:
 
         response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
         return response.json()
+
+    def _wait_for_job(self, job_id: str) -> dict:
+        """
+        Wait for a job to complete.
+
+        Args:
+            job_id: The ID of the job to wait for.
+
+        Returns:
+            The completed status of the job.
+        """
+        response = self.job_status(job_id)
+        status = ValidStatus(response["status"])
+        while not status.is_terminal():
+            sleep(STATUS_WAIT_TIME)
+            response = self.job_status(job_id)
+            status = ValidStatus(response["status"])
+
+        return response

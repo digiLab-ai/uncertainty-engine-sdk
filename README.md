@@ -2,7 +2,6 @@
 
 ## Basic usage
  ```python
-import time
 from pprint import pprint
 
 from uncertainty_engine.client import Client
@@ -17,15 +16,8 @@ client = Client(
 # Create a node
 add = Add(lhs=1, rhs=2)
 
-# Queue the node for execution
-job_id = client.queue_node(add)
-
-# Wait for the job to complete
-status = "STARTED"
-while status not in ["SUCCESS", "FAILURE"]:
-    response = client.job_status(job_id)
-    status = response["status"]
-    time.sleep(5)
+# Queue the node for execution and wait for it to run
+response = client.queue_node(add, wait=True)
 
 # Get the result
 result = response["output"]
