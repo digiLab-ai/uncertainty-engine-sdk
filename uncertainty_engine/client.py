@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional, Union
 
 import requests
@@ -6,6 +7,25 @@ from typeguard import typechecked
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
+
+
+class ValidStatus(Enum):
+    """
+    Represents the possible statuses fort a job in the Uncertainty Engine.
+    """
+
+    STARTED = "STARTED"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+    @classmethod
+    def is_terminal(cls, status: str) -> bool:
+        return status in [cls.SUCCESS, cls.FAILURE]
+
+    @classmethod
+    def is_waiting(cls, status: str) -> bool:
+        return status in [cls.STARTED, cls.PENDING]
 
 
 @typechecked
