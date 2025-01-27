@@ -23,6 +23,7 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 flake8 = "^7.1.1"
+black = "^24.10.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
