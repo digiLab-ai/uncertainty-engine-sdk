@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -44,9 +44,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = [{"node_a": "I'm a node."}]
-            mock_get.return_value = mock_response
+            mock_get.return_value.json.return_value = [{"node_a": "I'm a node."}]
 
             response = client.list_nodes()
 
@@ -63,9 +61,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_response = Mock()
-            mock_response.json.return_value = "job_id"
-            mock_post.return_value = mock_response
+            mock_post.return_value.json.return_value = "job_id"
 
             response = client.queue_node(node="node_a", input={"key": "value"})
 
@@ -87,9 +83,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = {"status": "running"}
-            mock_get.return_value = mock_response
+            mock_get.return_value.json.return_value = {"status": "running"}
 
             response = client.job_status(job_id="job_id")
 
@@ -106,9 +100,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = 10
-            mock_get.return_value = mock_response
+            mock_get.return_value.json.return_value = 10
 
             response = client.view_tokens()
 
@@ -126,9 +118,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_response = Mock()
-            mock_response.json.return_value = "job_id"
-            mock_post.return_value = mock_response
+            mock_post.return_value.json.return_value = "job_id"
 
             node_name = "node_a"
             inputs = {"key": "value"}
@@ -153,9 +143,7 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_response = Mock()
-            mock_response.json.return_value = "job_id"
-            mock_post.return_value = mock_response
+            mock_post.return_value.json.return_value = "job_id"
 
             with pytest.raises(ValueError):
                 client.queue_node(node="node_a")
