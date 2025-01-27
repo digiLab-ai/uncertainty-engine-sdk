@@ -148,6 +148,25 @@ class TestClientMethods:
             with pytest.raises(ValueError):
                 client.queue_node(node="node_a")
 
+    def test_queue_node_wait(self, client: Client):
+        """
+        Verify that the queue_node method waits for the job to complete if the wait parameter is set to True.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.post") as mock_post, patch(
+            "uncertainty_engine.client.requests.get"
+        ) as mock_get:
+            mock_post.return_value.json.return_value = "job_id"
+            mock_get.return_value.json.return_value = {"status": "SUCCESS"}
+
+            client.queue_node(node="node_a", input={"key": "value"}, wait=True)
+
+            mock_get.assert_called_once_with(
+                f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id"
+            )
+
     def test_wait_for_job(self, client: Client):
         """
         Verify that the _wait_for_job method pokes the correct endpoint and behaves as expected.
