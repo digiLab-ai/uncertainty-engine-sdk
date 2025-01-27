@@ -1,4 +1,5 @@
 from enum import Enum
+from time import sleep
 from typing import Optional, Union
 
 import requests
@@ -7,6 +8,7 @@ from typeguard import typechecked
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
+STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
 
 class ValidStatus(Enum):
@@ -103,3 +105,23 @@ class Client:
 
         response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
         return response.json()
+
+    def _wait_for_job(self, job_id: str) -> str:
+        """
+        Wait for a job to complete.
+
+        Args:
+            job_id: The ID of the job to wait for.
+
+        Returns:
+            The completed status of the job.
+        """
+        status = self.job_status(job_id)["status"]
+        while not ValidStatus.is_terminal(status):
+            sleep(STATUS_WAIT_TIME)
+            response = self.job_status(job_id)
+            status = status["status"]
+            if status not in ValidStatus:
+                raise ValueError(f"Invalid status: {status}")
+
+        return response
