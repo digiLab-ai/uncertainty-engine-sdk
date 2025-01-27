@@ -147,3 +147,30 @@ class TestClientMethods:
 
             with pytest.raises(ValueError):
                 client.queue_node(node="node_a")
+
+    def test_wait_for_job(self, client: Client):
+        """
+        Verify that the _wait_for_job method pokes the correct endpoint and behaves as expected.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get, patch(
+            "uncertainty_engine.client.STATUS_WAIT_TIME", 0.1  # Reduce wait time for testing
+        ):
+            # Use side_effect with a lambda to return different JSON values
+            mock_get.return_value.json.side_effect = [
+                {"status": "PENDING"},
+                {"status": "STARTED"},
+                {"status": "SUCCESS"},
+            ]
+
+            response = client._wait_for_job(job_id="job_id")
+
+            assert response == {"status": "SUCCESS"}
+            assert mock_get.call_count == 3
+
+            # Assert all calls are made to the same endpoint
+            expected_url = f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id"
+            for call in mock_get.call_args_list:
+                assert call.args[0] == expected_url
