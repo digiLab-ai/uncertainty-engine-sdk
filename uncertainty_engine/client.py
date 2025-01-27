@@ -21,13 +21,11 @@ class ValidStatus(Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
 
-    @classmethod
-    def is_terminal(cls, status: str) -> bool:
-        return status in [cls.SUCCESS, cls.FAILURE]
+    def is_terminal(self) -> bool:
+        return self in [ValidStatus.SUCCESS, ValidStatus.FAILURE]
 
-    @classmethod
-    def is_waiting(cls, status: str) -> bool:
-        return status in [cls.STARTED, cls.PENDING]
+    def is_waiting(self) -> bool:
+        return self in [ValidStatus.STARTED, ValidStatus.PENDING]
 
 
 @typechecked
@@ -106,7 +104,7 @@ class Client:
         response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
         return response.json()
 
-    def _wait_for_job(self, job_id: str) -> str:
+    def _wait_for_job(self, job_id: str) -> dict:
         """
         Wait for a job to complete.
 
@@ -117,12 +115,10 @@ class Client:
             The completed status of the job.
         """
         response = self.job_status(job_id)
-        status = response["status"]
-        while not ValidStatus.is_terminal(status):
+        status = ValidStatus(response["status"])
+        while not status.is_terminal():
             sleep(STATUS_WAIT_TIME)
             response = self.job_status(job_id)
-            status = status["status"]
-            if status not in ValidStatus:
-                raise ValueError(f"Invalid status: {status}")
+            status = ValidStatus(response["status"])
 
         return response
