@@ -156,7 +156,8 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get, patch(
-            "uncertainty_engine.client.STATUS_WAIT_TIME", 0.1  # Reduce wait time for testing
+            "uncertainty_engine.client.STATUS_WAIT_TIME",
+            0.1,  # Reduce wait time for testing
         ):
             # Use side_effect with a lambda to return different JSON values
             mock_get.return_value.json.side_effect = [
@@ -174,3 +175,16 @@ class TestClientMethods:
             expected_url = f"{DEFAULT_DEPLOYMENT}/nodes/status/job_id"
             for call in mock_get.call_args_list:
                 assert call.args[0] == expected_url
+
+    def test_wait_for_job_invalid_status(self, client: Client):
+        """
+        Verify that the _wait_for_job raises an error if the status is invalid.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get:
+            mock_get.return_value.json.return_value = {"status": "INVALID"}
+
+            with pytest.raises(ValueError):
+                client._wait_for_job(job_id="job_id")
