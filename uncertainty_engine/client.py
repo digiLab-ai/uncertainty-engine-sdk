@@ -116,7 +116,8 @@ class Client:
         Returns:
             The completed status of the job.
         """
-        status = self.job_status(job_id)["status"]
+        response = self.job_status(job_id)
+        status = response["status"]
         while not ValidStatus.is_terminal(status):
             sleep(STATUS_WAIT_TIME)
             response = self.job_status(job_id)
