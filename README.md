@@ -16,8 +16,8 @@ client = Client(
 # Create a node
 add = Add(lhs=1, rhs=2)
 
-# Queue the node for execution and wait for it to run
-response = client.queue_node(add, wait=True)
+# Run the node on the server
+response = client.run_node(add)
 
 # Get the result
 result = response["output"]
