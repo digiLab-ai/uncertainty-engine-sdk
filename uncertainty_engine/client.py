@@ -85,6 +85,21 @@ class Client:
         else:
             return response.json()
 
+    def run_node(self, node: Union[str, Node], input: Optional[dict] = None) -> dict:
+        """
+        Run a node synchronously.
+
+        Args:
+            node: The name of the node to execute or the node object itself.
+            input: The input data for the node. If the node is defined by its name,
+                this is required. Defaults to ``None``.
+
+        Returns:
+            The output of the node.
+        """
+        job_id = self.queue_node(node, input)
+        return self.job_status(job_id)
+
     def job_status(self, job_id: str) -> dict:
         """
         Check the status of a job.
