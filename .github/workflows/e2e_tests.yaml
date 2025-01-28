@@ -1,0 +1,44 @@
+name: End-to-end tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+env:
+  UE_USER_EMAIL: ${{ secrets.UE_USER_EMAIL }}
+  UE_DEPLOYMENT_URL: ${{ secrets.UE_DEPLOYMENT_URL }}
+
+jobs:
+  e2e_tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Delete .lock file
+        run: rm -f poetry.lock
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run tests
+        run: sh CI/run_tests_e2e.sh
+
