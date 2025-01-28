@@ -890,5 +890,5 @@ resolved_reference = "c989574d9cac853f9a79501e9ae43fb246669043"
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.10,<=3.12"
-content-hash = "93f25ceaa6ece1f14a2ddd83111318ac884e4c81f01cf5b20f2586fb3e637cd0"
+python-versions = ">=3.10,<3.13"
+content-hash = "df51c46d4d1c94c61786aac10b103e09efb8387a551f1e01d99c625f6b5f885c"
