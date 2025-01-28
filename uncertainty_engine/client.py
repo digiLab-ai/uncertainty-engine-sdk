@@ -91,7 +91,7 @@ class Client:
             The output of the node.
         """
         job_id = self.queue_node(node, input)
-        return self.job_status(job_id)
+        return self._wait_for_job(job_id)
 
     def job_status(self, job_id: str) -> dict:
         """
