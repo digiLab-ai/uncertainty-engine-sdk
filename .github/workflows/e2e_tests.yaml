@@ -37,7 +37,7 @@ jobs:
         run: rm -f poetry.lock
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --with dev
 
       - name: Run tests
         run: sh CI/run_tests_e2e.sh
