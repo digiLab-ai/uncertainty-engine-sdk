@@ -48,9 +48,7 @@ class Client:
         response = requests.get(f"{self.deployment}/nodes/list")
         return response.json()
 
-    def queue_node(
-        self, node: Union[str, Node], input: Optional[dict] = None, wait: bool = False
-    ) -> Union[dict, str]:
+    def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> str:
         """
         Queue a node for execution.
 
@@ -58,7 +56,6 @@ class Client:
             node: The name of the node to execute or the node object itself.
             input: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
-            wait: Whether to wait for the job to complete. Defaults to ``False``.
 
         Returns:
             The job ID of the queued node.
@@ -79,11 +76,22 @@ class Client:
             },
         )
 
-        if wait:
-            response = self._wait_for_job(response.json())
-            return response
-        else:
-            return response.json()
+        return response.json()
+
+    def run_node(self, node: Union[str, Node], input: Optional[dict] = None) -> dict:
+        """
+        Run a node synchronously.
+
+        Args:
+            node: The name of the node to execute or the node object itself.
+            input: The input data for the node. If the node is defined by its name,
+                this is required. Defaults to ``None``.
+
+        Returns:
+            The output of the node.
+        """
+        job_id = self.queue_node(node, input)
+        return self._wait_for_job(job_id)
 
     def job_status(self, job_id: str) -> dict:
         """
