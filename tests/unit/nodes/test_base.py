@@ -1,5 +1,4 @@
 import pytest
-from typeguard import TypeCheckError
 
 from uncertainty_engine.nodes.base import Node
 
@@ -28,5 +27,5 @@ def test_node_name_type():
     """
     Verify error is raised if node name is not a string.
     """
-    with pytest.raises(TypeCheckError):
+    with pytest.raises(TypeError):
         Node(5)

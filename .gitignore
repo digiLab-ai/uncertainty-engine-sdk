@@ -26,6 +26,3 @@ node_modules/
 
 # FastAPI
 openapitools.json
-
-# Poetry
-poetry.lock
