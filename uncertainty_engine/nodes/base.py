@@ -12,7 +12,7 @@ class Node:
     """
 
     def __init__(self, node_name: str, **kwargs):
-        self.name = node_name
+        self.node_name = node_name
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -25,4 +25,4 @@ class Node:
             A tuple containing the name of the node and the input parameters.
         """
         input = {key: getattr(self, key) for key in self.__dict__ if key != "name"}
-        return self.name, input
+        return self.node_name, input
