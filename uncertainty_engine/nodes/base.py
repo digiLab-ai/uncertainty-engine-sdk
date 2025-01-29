@@ -24,5 +24,5 @@ class Node:
         Returns:
             A tuple containing the name of the node and the input parameters.
         """
-        input = {key: getattr(self, key) for key in self.__dict__ if key != "name"}
+        input = {key: getattr(self, key) for key in self.__dict__ if key != "node_name"}
         return self.node_name, input
