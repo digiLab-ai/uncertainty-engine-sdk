@@ -19,6 +19,8 @@ class BuildSensorDesigner(Node):
         sigma: The uncertainty of the sensor data. If a float, the same uncertainty is applied to all sensors.
     """
 
+    node_name: str = "sensor_designer.BuildSensorDesigner"
+
     def __init__(
         self,
         sensor_data: dict[str, list[float]],
@@ -26,7 +28,7 @@ class BuildSensorDesigner(Node):
         sigma: Optional[Union[float, list[float]]] = None,
     ):
         super().__init__(
-            node_name="sensor_designer.BuildSensorDesigner",
+            node_name=self.node_name,
             sensor_data=TabularData(csv=dict_to_csv_str(sensor_data)).model_dump(),
             quantities_of_interest_data=(
                 None
@@ -50,9 +52,11 @@ class SuggestSensorDesign(Node):
         num_eval: The number of evaluations to perform.
     """
 
+    node_name: str = "sensor_designer.SuggestSensorDesign"
+
     def __init__(self, sensor_designer: dict, num_sensors: int, num_eval: int):
         super().__init__(
-            node_name="sensor_designer.SuggestSensorDesign",
+            node_name=self.node_name,
             sensor_designer=SensorDesigner(bed=sensor_designer["bed"]).model_dump(),
             num_sensors=num_sensors,
             num_eval=num_eval,
@@ -69,9 +73,11 @@ class ScoreSensorDesign(Node):
         design: A list of sensors that make up the design.
     """
 
+    node_name: str = "sensor_designer.ScoreSensorDesign"
+
     def __init__(self, sensor_designer: dict, design: list):
         super().__init__(
-            node_name="sensor_designer.ScoreSensorDesign",
+            node_name=self.node_name,
             sensor_designer=SensorDesigner(bed=sensor_designer["bed"]).model_dump(),
             design=design,
         )
