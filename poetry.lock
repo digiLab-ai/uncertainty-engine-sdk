@@ -868,10 +868,10 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "workflow-types"
-version = "0.0.0"
+version = "0.0.1"
 description = "Common type definitions for the Uncertainty Engine"
 optional = false
-python-versions = "^3.9"
+python-versions = "^3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = []
@@ -886,7 +886,7 @@ typeguard = ">=2.13.3,<2.14.0"
 type = "git"
 url = "https://github.com/digiLab-ai/workflow-types.git"
 reference = "main"
-resolved_reference = "c989574d9cac853f9a79501e9ae43fb246669043"
+resolved_reference = "8786ecf61b7a673e58365be422bf3c267ab66ad8"
 
 [metadata]
 lock-version = "2.1"
