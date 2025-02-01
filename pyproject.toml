@@ -2,18 +2,16 @@
 name = "uncertainty_engine"
 version = "0.0.1"
 description = "SDK for the Uncertainty Engine"
-authors = [
-    {name = "digiLab Solutions Ltd.",email = "info@digilab.ai"}
-]
+authors = [{ name = "digiLab Solutions Ltd.", email = "info@digilab.ai" }]
 maintainers = [
-    {name = "Jamie Donald-McCann",email = "jamie.donald-mccann@digilab.ai"}
+    { name = "Jamie Donald-McCann", email = "jamie.donald-mccann@digilab.ai" },
 ]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-# TODO: Update workflow_types once the package is published
-workflow_types = { git = "https://github.com/digiLab-ai/workflow-types.git", branch = "main" }
+# TODO: Update uncertainty_engine_types once the package is published
+uncertainty_engine_types = { git = "https://github.com/digiLab-ai/uncertainty-engine-types.git", branch = "main" }
 typeguard = ">=2.13.3,<2.14.0"
 requests = "^2.32.3"
 
