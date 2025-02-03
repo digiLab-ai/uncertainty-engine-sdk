@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
 from typeguard import typechecked
-from workflow_types import SensorDesigner, TabularData
+from uncertainty_engine_types import SensorDesigner, TabularData
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import dict_to_csv_str
