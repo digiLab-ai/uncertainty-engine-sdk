@@ -848,6 +848,28 @@ files = [
 ]
 
 [[package]]
+name = "uncertainty-engine-types"
+version = "0.0.1"
+description = "Common type definitions for the Uncertainty Engine"
+optional = false
+python-versions = ">=3.10,<4.0"
+groups = ["main"]
+markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+files = []
+develop = false
+
+[package.dependencies]
+pandas = "^2.2.3"
+pydantic = "^2.10.5"
+typeguard = ">=2.13.3,<2.14.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/digiLab-ai/uncertainty-engine-types.git"
+reference = "main"
+resolved_reference = "dfce2f06fe0a8587fe53020b0ba53d9013c9372a"
+
+[[package]]
 name = "urllib3"
 version = "2.3.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -866,29 +888,7 @@ h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
-[[package]]
-name = "workflow-types"
-version = "0.0.1"
-description = "Common type definitions for the Uncertainty Engine"
-optional = false
-python-versions = "^3.10"
-groups = ["main"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
-files = []
-develop = false
-
-[package.dependencies]
-pandas = "^2.2.3"
-pydantic = "^2.10.5"
-typeguard = ">=2.13.3,<2.14.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/digiLab-ai/workflow-types.git"
-reference = "main"
-resolved_reference = "8786ecf61b7a673e58365be422bf3c267ab66ad8"
-
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "df51c46d4d1c94c61786aac10b103e09efb8387a551f1e01d99c625f6b5f885c"
+content-hash = "efcbb934bae11ebef28f0ff7c9ef73ec021df625b73d754dc64ff5e98504b3d4"

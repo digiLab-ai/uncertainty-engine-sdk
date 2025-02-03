@@ -2,7 +2,9 @@
 name = "uncertainty_engine"
 version = "0.0.1"
 description = "SDK for the Uncertainty Engine"
-authors = [{ name = "digiLab Solutions Ltd.", email = "info@digilab.ai" }]
+authors = [
+    { name = "digiLab Solutions Ltd.", email = "info@digilab.ai" },
+]
 maintainers = [
     { name = "Jamie Donald-McCann", email = "jamie.donald-mccann@digilab.ai" },
 ]
