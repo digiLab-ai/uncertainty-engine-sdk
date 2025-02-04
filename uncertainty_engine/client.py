@@ -38,15 +38,24 @@ class Client:
         self.email = email
         self.deployment = deployment
 
-    def list_nodes(self) -> list:
+    def list_nodes(self, category: Optional[str] = None) -> list:
         """
         List all available nodes in the specified deployment.
+
+        Args:
+            category: The category of nodes to list. If not specified, all nodes are listed.
+                Defaults to ``None``.
 
         Returns:
             List of available nodes. Each list item is a dictionary information about the node.
         """
         response = requests.get(f"{self.deployment}/nodes/list")
-        return response.json()
+        node_list = response.json()
+
+        if category is not None:
+            node_list = [node for node in node_list if node["category"] == category]
+
+        return node_list
 
     def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> str:
         """

@@ -40,7 +40,6 @@ class TestClientMethods:
         Verify that the list_nodes method pokes the correct endpoint.
 
         Args:
-            test_user_email: An email address for testing.
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
@@ -51,13 +50,30 @@ class TestClientMethods:
             assert response == [{"node_a": "I'm a node."}]
             mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
 
+    def test_list_nodes_category(self, client: Client):
+        """
+        Verify that the list_nodes method filters nodes by specified category.
+
+        Args:
+            client: A Client instance.
+        """
+        with patch("uncertainty_engine.client.requests.get") as mock_get:
+            mock_get.return_value.json.return_value = [
+                {"node_a": "I'm a node.", "category": "cat_a"},
+                {"node_b": "I'm another node.", "category": "cat_b"},
+            ]
+
+            response = client.list_nodes(category="cat_a")
+
+            assert response == [{"node_a": "I'm a node.", "category": "cat_a"}]
+            mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
+
     def test_queue_node_name_input(self, client: Client):
         """
         Verify that the queue_node method pokes the correct endpoint with the user
         defined input when the node is defined by it's name and input.
 
         Args:
-            test_user_email: An email address for testing.
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
