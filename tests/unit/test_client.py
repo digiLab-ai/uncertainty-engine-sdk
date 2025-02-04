@@ -40,7 +40,6 @@ class TestClientMethods:
         Verify that the list_nodes method pokes the correct endpoint.
 
         Args:
-            test_user_email: An email address for testing.
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
@@ -75,7 +74,6 @@ class TestClientMethods:
         defined input when the node is defined by it's name and input.
 
         Args:
-            test_user_email: An email address for testing.
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.post") as mock_post:
