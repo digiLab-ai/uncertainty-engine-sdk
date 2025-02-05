@@ -17,6 +17,7 @@ except ImportError:
 MINIMUM_NODE_SIZE = 1000
 NODE_SIZE_SCALE = 400
 MINIMUM_CONNECTION_ARC = 0.15
+AXIS_BUFFER = 0.5
 
 
 @typechecked
@@ -72,7 +73,16 @@ def visualize_graph(graph: Graph, filename: Optional[str] = None) -> None:
         connectionstyle=connection_style,
     )
 
-    plt.margins(0.1)
+    # NetworkX isn't brilliant at setting the axis limits, so we'll do it manually
+    plt.xlim(
+        min(arr[0] for arr in pos.values()) - AXIS_BUFFER,
+        max(arr[0] for arr in pos.values()) + AXIS_BUFFER,
+    )
+    plt.ylim(
+        min(arr[1] for arr in pos.values()) - AXIS_BUFFER,
+        max(arr[1] for arr in pos.values()) + AXIS_BUFFER,
+    )
+
     plt.axis("off")
 
     if filename:
@@ -147,11 +157,10 @@ def _get_connection_style(
     # Calculate the maximum number of connections between any two nodes
     max_edge_connectivity = 0
     for s, t in it.combinations(graph, 2):
-        max_edge_connectivity = max(
-            max_edge_connectivity, nx.edge_connectivity(graph, s, t)
-        )
-
-    print(list(it.accumulate([connection_arc] * 0)))
+        if graph.has_edge(s, t):
+            max_edge_connectivity = max(
+                max_edge_connectivity, len(graph.get_edge_data(s, t))
+            )
 
     # Define the connection style for the edges based on the maximum number of connections
     connection_style = ["arc3,rad=0"]
