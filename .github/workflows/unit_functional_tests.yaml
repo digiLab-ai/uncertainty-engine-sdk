@@ -1,4 +1,4 @@
-name: Unit tests
+name: Unit + functional tests
 
 on:
   push:
@@ -31,7 +31,10 @@ jobs:
           cache: "poetry"
 
       - name: Install dependencies
-        run: poetry install --with dev
+        run: poetry install --with dev,vis
 
-      - name: Run tests
+      - name: Run unit tests
         run: sh CI/run_tests_unit.sh
+
+      - name: Run functional tests
+        run: sh CI/run_tests_functional.sh
