@@ -1,3 +1,9 @@
+import pytest
+
+# Skip if the `vis` dependencies are not installed
+pytest.importorskip("matplotlib")
+pytest.importorskip("networkx")
+
 from unittest.mock import patch
 
 from uncertainty_engine.graph import Graph
