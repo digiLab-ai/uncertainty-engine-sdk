@@ -1,3 +1,3 @@
 #!/bin/bash
 
-poetry run black --check --diff --exclude examples/* .
+poetry run black --check --diff --exclude '.*\.ipynb$' .
