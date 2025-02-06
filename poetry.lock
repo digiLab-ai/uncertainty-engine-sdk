@@ -210,10 +210,10 @@ files = [
 name = "contourpy"
 version = "1.3.1"
 description = "Python library for calculating contours of 2D quadrilateral grids"
-optional = false
+optional = true
 python-versions = ">=3.10"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "contourpy-1.3.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a045f341a77b77e1c5de31e74e966537bba9f3c4099b35bf4c2e3939dd54cdab"},
     {file = "contourpy-1.3.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:500360b77259914f7805af7462e41f9cb7ca92ad38e9f94d6c8641b089338124"},
@@ -285,10 +285,10 @@ test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist"
 name = "cycler"
 version = "0.12.1"
 description = "Composable style cycles"
-optional = false
+optional = true
 python-versions = ">=3.8"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30"},
     {file = "cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c"},
@@ -336,10 +336,10 @@ pyflakes = ">=3.2.0,<3.3.0"
 name = "fonttools"
 version = "4.55.8"
 description = "Tools to manipulate font files"
-optional = false
+optional = true
 python-versions = ">=3.8"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "fonttools-4.55.8-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d11600f5343092697d7434f3bf77a393c7ae74be206fe30e577b9a195fd53165"},
     {file = "fonttools-4.55.8-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c96f2506ce1a0beeaa9595f9a8b7446477eb133f40c0e41fc078744c28149f80"},
@@ -440,10 +440,10 @@ files = [
 name = "kiwisolver"
 version = "1.4.8"
 description = "A fast implementation of the Cassowary constraint solver"
-optional = false
+optional = true
 python-versions = ">=3.10"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "kiwisolver-1.4.8-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:88c6f252f6816a73b1f8c904f7bbe02fd67c09a69f7cb8a0eecdbf5ce78e63db"},
     {file = "kiwisolver-1.4.8-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c72941acb7b67138f35b879bbe85be0f6c6a70cab78fe3ef6db9c024d9223e5b"},
@@ -531,10 +531,10 @@ files = [
 name = "matplotlib"
 version = "3.10.0"
 description = "Python plotting package"
-optional = false
+optional = true
 python-versions = ">=3.10"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "matplotlib-3.10.0-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:2c5829a5a1dd5a71f0e31e6e8bb449bc0ee9dbfb05ad28fc0c6b55101b3a4be6"},
     {file = "matplotlib-3.10.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a2a43cbefe22d653ab34bb55d42384ed30f611bcbdea1f8d7f431011a2e1c62e"},
@@ -616,10 +616,10 @@ files = [
 name = "networkx"
 version = "3.4.2"
 description = "Python package for creating and manipulating graphs and networks"
-optional = false
+optional = true
 python-versions = ">=3.10"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "networkx-3.4.2-py3-none-any.whl", hash = "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f"},
     {file = "networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1"},
@@ -639,7 +639,7 @@ version = "2.2.2"
 description = "Fundamental package for array computing in Python"
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "vis"]
+groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
     {file = "numpy-2.2.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7079129b64cb78bdc8d611d1fd7e8002c0a2565da6a47c4df8062349fee90e3e"},
@@ -705,12 +705,12 @@ version = "24.2"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
-groups = ["dev", "vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main", "dev"]
 files = [
     {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
     {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
 ]
+markers = {main = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\"", dev = "python_version <= \"3.11\" or python_version >= \"3.12\""}
 
 [[package]]
 name = "pandas"
@@ -817,10 +817,10 @@ files = [
 name = "pillow"
 version = "11.1.0"
 description = "Python Imaging Library (Fork)"
-optional = false
+optional = true
 python-versions = ">=3.9"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "pillow-11.1.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:e1abe69aca89514737465752b4bcaf8016de61b3be1397a8fc260ba33321b3a8"},
     {file = "pillow-11.1.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c640e5a06869c75994624551f45e5506e4256562ead981cce820d5ab39ae2192"},
@@ -1104,10 +1104,10 @@ files = [
 name = "pyparsing"
 version = "3.2.1"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-optional = false
+optional = true
 python-versions = ">=3.9"
-groups = ["vis"]
-markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
+groups = ["main"]
+markers = "(python_version <= \"3.11\" or python_version >= \"3.12\") and extra == \"vis\""
 files = [
     {file = "pyparsing-3.2.1-py3-none-any.whl", hash = "sha256:506ff4f4386c4cec0590ec19e6302d3aedb992fdc02c761e90416f158dacf8e1"},
     {file = "pyparsing-3.2.1.tar.gz", hash = "sha256:61980854fd66de3a90028d679a954d5f2623e83144b5afe5ee86f43d762e5f0a"},
@@ -1146,7 +1146,7 @@ version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-groups = ["main", "vis"]
+groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
     {file = "python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3"},
@@ -1198,7 +1198,7 @@ version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-groups = ["main", "vis"]
+groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
     {file = "six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"},
@@ -1332,7 +1332,10 @@ h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
+[extras]
+vis = ["matplotlib", "networkx"]
+
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "4ca2dcbfea761404a673a9b07a46e32da2d342a258fe6218fe9f6ef7f588ee8e"
+content-hash = "2826fe67009f5b7d8d5c6bfc27e4d1add3a2a42f95bb96fe409417fc1f8a2510"
