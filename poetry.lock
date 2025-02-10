@@ -2011,7 +2011,7 @@ files = [
 
 [[package]]
 name = "uncertainty-engine-types"
-version = "0.0.1"
+version = "0.0.2"
 description = "Common type definitions for the Uncertainty Engine"
 optional = false
 python-versions = ">=3.10,<4.0"
@@ -2028,8 +2028,8 @@ typeguard = ">=2.13.3,<2.14.0"
 [package.source]
 type = "git"
 url = "https://github.com/digiLab-ai/uncertainty-engine-types.git"
-reference = "main"
-resolved_reference = "dfce2f06fe0a8587fe53020b0ba53d9013c9372a"
+reference = "v0.0.2"
+resolved_reference = "cbb8f5388d580dd7445ff7f77503f8d182911638"
 
 [[package]]
 name = "urllib3"
@@ -2070,4 +2070,4 @@ vis = ["matplotlib", "networkx"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "348b93011d0ac3962de9e84aee9441520e1d0746133779da8738a328d8238647"
+content-hash = "d9401c433a9ad519b589b6114dad0217debb8422edfc8604c5e9928bbf54e38a"
