@@ -1,4 +1,8 @@
-# SDK for the Uncertainty Engine
+<div style="color: black; background-color: #edf497;">
+    <img src="./assets/images/uncertainty-engine-logo.png">
+</div>
+
+# Python SDK for the Uncertainty Engine
 
 ## Basic usage
  ```python
