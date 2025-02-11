@@ -5,7 +5,8 @@
 # Python SDK for the Uncertainty Engine
 
 ## Basic usage
- ```python
+
+```python
 from pprint import pprint
 
 from uncertainty_engine.client import Client
@@ -13,8 +14,8 @@ from uncertainty_engine.nodes.demo import Add
 
 # Set up the client
 client = Client(
-    email="<user-email>",  # Must have tokens!
-    deployment="<uncertainty-engine-api-url>",
+   email="<user-email>",  # Must have tokens!
+   deployment="<uncertainty-engine-api-url>",
 )
 
 # Create a node
@@ -29,4 +30,4 @@ result = response["output"]
 pprint(result)
 ```
 
-For more some more in-depth examples checkout our [example notebooks](https://github.com/digiLab-ai/uncertainty-engine-sdk/tree/PB-56-jamie-sdk-examples/examples).
+For more some more in-depth examples checkout our [example notebooks](https://github.com/digiLab-ai/uncertainty-engine-sdk/tree/dev/examples).
