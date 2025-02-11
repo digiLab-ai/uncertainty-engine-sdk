@@ -1,4 +1,7 @@
+from typing import Union
+
 import pytest
+from typeguard import typechecked
 from uncertainty_engine_types import Handle
 
 from uncertainty_engine import utils as ue_utils
@@ -88,3 +91,29 @@ def test_old_handle():
 
     # Verify that the OldHandle object can be called.
     assert old_handle() == ("a", "b")
+
+
+# HandleUnion
+
+
+@typechecked
+def generic_fn(
+    a: ue_utils.HandleUnion[int],
+    b: ue_utils.HandleUnion[float],
+    c: ue_utils.HandleUnion[Union[float, list[float]]],
+) -> None:
+    pass
+
+
+def test_handle_union():
+    """
+    Test HandleUnion type alias.
+    """
+
+    # Make sure the function can be called with the correct types.
+    generic_fn(1, 1.0, 1.0)
+    generic_fn(ue_utils.Handle("a.b"), 1.0, [1.0])
+    generic_fn(ue_utils.Handle("a.b"), ue_utils.Handle("a.b"), ue_utils.Handle("a.b"))
+
+    with pytest.raises(TypeError):
+        generic_fn(1, 1.0, "a.b")
