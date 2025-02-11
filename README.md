@@ -28,3 +28,5 @@ result = response["output"]
 
 pprint(result)
 ```
+
+For more some more in-depth examples checkout our [example notebooks](https://github.com/digiLab-ai/uncertainty-engine-sdk/tree/PB-56-jamie-sdk-examples/examples).
