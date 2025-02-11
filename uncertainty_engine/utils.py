@@ -1,5 +1,11 @@
+from typing import TypeAlias, TypeVar, Union
+
 from typeguard import typechecked
 from uncertainty_engine_types import Handle
+
+# Define a type alias for a union of a type and a Handle.
+T = TypeVar("T")
+HandleUnion: TypeAlias = Union[T, Handle]
 
 
 # TODO: Enforce that all columns are exclusively floats or ints.
