@@ -59,6 +59,16 @@ class Graph:
 
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
 
+    def add_nodes_from(self, nodes: list[Node]) -> None:
+        """
+        Add multiple nodes to the graph.
+
+        Args:
+            nodes: A list of nodes to add.
+        """
+        for node in nodes:
+            self.add_node(node)
+
     def add_edge(
         self, source: str, source_key: str, target: str, target_key: str
     ) -> None:
