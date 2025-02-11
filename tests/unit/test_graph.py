@@ -116,8 +116,8 @@ def test_graph_w_node_class():
     }
 
     # Add an edge between the inputs and the node
-    graph.add_edge("_", "add1", "add1_lhs", "lhs")
-    graph.add_edge("_", "add1", "add1_rhs", "rhs")
+    graph.add_edge("_", "add1_lhs", "add1", "lhs")
+    graph.add_edge("_", "add1_rhs", "add1", "rhs")
 
     # Verify that the edge was added to the graph
     assert graph.nodes == {
@@ -177,7 +177,7 @@ def test_graph_connect_nodes():
     }
 
     # Add an edge between the two nodes
-    graph.add_edge("add1", "add2", "ans", "lhs")
+    graph.add_edge("add1", "ans", "add2", "lhs")
 
     # Verify that the edge was added to the graph
     assert graph.nodes["nodes"]["add2"]["inputs"]["lhs"] == ("add1", "ans")

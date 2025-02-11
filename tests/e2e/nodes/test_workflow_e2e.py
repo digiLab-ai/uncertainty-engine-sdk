@@ -30,10 +30,10 @@ class TestWorkflow:
 
         # Define one of the inputs to the second addition node
         graph.add_input("add2_rhs", 2)
-        graph.add_edge("_", "add2", "add2_rhs", "rhs")
+        graph.add_edge("_", "add2_rhs", "add2", "rhs")
 
         # Connect the first addition node to the second addition node
-        graph.add_edge("add1", "add2", "ans", "lhs")
+        graph.add_edge("add1", "ans", "add2", "lhs")
 
         # Define the workflow node
         workflow = Workflow(

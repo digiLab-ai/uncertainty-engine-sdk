@@ -60,15 +60,15 @@ class Graph:
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
 
     def add_edge(
-        self, source: str, target: str, source_key: str, target_key: str
+        self, source: str, source_key: str, target: str, target_key: str
     ) -> None:
         """
         Add an edge between two nodes in the graph.
 
         Args:
             source: The source node.
-            target: The target node.
             source_key: The output key of the source node.
+            target: The target node.
             target_key: The input key of the target node.
         """
         self.nodes["nodes"][target]["inputs"][target_key] = (source, source_key)
