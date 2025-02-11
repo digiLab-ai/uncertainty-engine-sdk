@@ -4,7 +4,7 @@ from typeguard import typechecked
 from uncertainty_engine_types import Handle, SensorDesigner, TabularData
 
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import OldHandle, dict_to_csv_str
+from uncertainty_engine.utils import HandleUnion, OldHandle, dict_to_csv_str
 
 ListDict = dict[str, list[float]]
 
@@ -25,9 +25,9 @@ class BuildSensorDesigner(Node):
 
     def __init__(
         self,
-        sensor_data: Union[ListDict, Handle],
-        quantities_of_interest_data: Optional[Union[ListDict, Handle]] = None,
-        sigma: Optional[Union[float, list[float], Handle]] = None,
+        sensor_data: HandleUnion[ListDict],
+        quantities_of_interest_data: Optional[HandleUnion[ListDict]] = None,
+        sigma: Optional[HandleUnion[Union[float, list[float]]]] = None,
         label: Optional[str] = None,
     ):
         # Deal with the sensor data.
@@ -69,9 +69,9 @@ class SuggestSensorDesign(Node):
 
     def __init__(
         self,
-        sensor_designer: Union[dict, Handle],
-        num_sensors: int,
-        num_eval: int,
+        sensor_designer: HandleUnion[dict],
+        num_sensors: HandleUnion[int],
+        num_eval: HandleUnion[int],
         label: Optional[str] = None,
     ):
         # Deal with the sensor designer.
@@ -103,8 +103,8 @@ class ScoreSensorDesign(Node):
 
     def __init__(
         self,
-        sensor_designer: Union[dict, Handle],
-        design: Union[list, Handle],
+        sensor_designer: HandleUnion[dict],
+        design: HandleUnion[list],
         label: Optional[str] = None,
     ):
         # Deal with the sensor designer.

@@ -1,10 +1,10 @@
-from typing import Union, Optional
+from typing import Optional
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle
 
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import OldHandle
+from uncertainty_engine.utils import HandleUnion, OldHandle
 
 
 @typechecked
@@ -22,8 +22,8 @@ class Add(Node):
 
     def __init__(
         self,
-        lhs: Union[float, Handle],
-        rhs: Union[float, Handle],
+        lhs: HandleUnion[float],
+        rhs: HandleUnion[float],
         label: Optional[str] = None,
     ):
         super().__init__(
