@@ -2,6 +2,8 @@ import pytest
 
 from uncertainty_engine.nodes.base import Node
 
+from uncertainty_engine_types import Handle
+
 
 def test_node():
     """
@@ -11,6 +13,7 @@ def test_node():
     assert node.node_name == "test_node"
     assert node.a == 1
     assert node.b == 2
+    assert node.label is None
     assert node() == ("test_node", {"a": 1, "b": 2})
 
 
@@ -29,3 +32,20 @@ def test_node_name_type():
     """
     with pytest.raises(TypeError):
         Node(5)
+
+
+def test_node_make_handle():
+    """
+    Verify result for test node with make_handle method.
+    """
+    node = Node("test_node", label="test_label", a=1, b=2)
+    assert node.make_handle("output") == Handle("test_label.output")
+
+
+def test_node_make_handle_no_label():
+    """
+    Verify error is raised if node has no label.
+    """
+    node = Node("test_node", a=1, b=2)
+    with pytest.raises(ValueError):
+        node.make_handle("output")

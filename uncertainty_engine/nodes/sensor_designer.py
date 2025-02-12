@@ -1,10 +1,12 @@
 from typing import Optional, Union
 
 from typeguard import typechecked
-from uncertainty_engine_types import SensorDesigner, TabularData
+from uncertainty_engine_types import Handle, SensorDesigner, TabularData
 
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import dict_to_csv_str
+from uncertainty_engine.utils import HandleUnion, OldHandle, dict_to_csv_str
+
+ListDict = dict[str, list[float]]
 
 
 @typechecked
@@ -23,21 +25,32 @@ class BuildSensorDesigner(Node):
 
     def __init__(
         self,
-        sensor_data: dict[str, list[float]],
-        quantities_of_interest_data: Optional[dict[str, list[float]]] = None,
-        sigma: Optional[Union[float, list[float]]] = None,
+        sensor_data: HandleUnion[ListDict],
+        quantities_of_interest_data: Optional[HandleUnion[ListDict]] = None,
+        sigma: Optional[HandleUnion[Union[float, list[float]]]] = None,
+        label: Optional[str] = None,
     ):
-        super().__init__(
-            node_name=self.node_name,
-            sensor_data=TabularData(csv=dict_to_csv_str(sensor_data)).model_dump(),
-            quantities_of_interest_data=(
-                None
-                if not quantities_of_interest_data
-                else TabularData(
+        # Deal with the sensor data.
+        if isinstance(sensor_data, Handle):
+            sensor_data = OldHandle(sensor_data)
+        else:
+            sensor_data = TabularData(csv=dict_to_csv_str(sensor_data)).model_dump()
+
+        # Deal with the QOI data.
+        if quantities_of_interest_data is not None:
+            if isinstance(quantities_of_interest_data, Handle):
+                quantities_of_interest_data = OldHandle(quantities_of_interest_data)
+            else:
+                quantities_of_interest_data = TabularData(
                     csv=dict_to_csv_str(quantities_of_interest_data)
                 ).model_dump()
-            ),
-            sigma=sigma,
+
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            sensor_data=sensor_data,
+            quantities_of_interest_data=quantities_of_interest_data,
+            sigma=OldHandle(sigma) if isinstance(sigma, Handle) else sigma,
         )
 
 
@@ -54,10 +67,23 @@ class SuggestSensorDesign(Node):
 
     node_name: str = "sensor_designer.SuggestSensorDesign"
 
-    def __init__(self, sensor_designer: dict, num_sensors: int, num_eval: int):
+    def __init__(
+        self,
+        sensor_designer: HandleUnion[dict],
+        num_sensors: HandleUnion[int],
+        num_eval: HandleUnion[int],
+        label: Optional[str] = None,
+    ):
+        # Deal with the sensor designer.
+        if isinstance(sensor_designer, Handle):
+            sensor_designer = OldHandle(sensor_designer)
+        else:
+            sensor_designer = SensorDesigner(bed=sensor_designer["bed"]).model_dump()
+
         super().__init__(
             node_name=self.node_name,
-            sensor_designer=SensorDesigner(bed=sensor_designer["bed"]).model_dump(),
+            label=label,
+            sensor_designer=sensor_designer,
             num_sensors=num_sensors,
             num_eval=num_eval,
         )
@@ -75,9 +101,21 @@ class ScoreSensorDesign(Node):
 
     node_name: str = "sensor_designer.ScoreSensorDesign"
 
-    def __init__(self, sensor_designer: dict, design: list):
+    def __init__(
+        self,
+        sensor_designer: HandleUnion[dict],
+        design: HandleUnion[list],
+        label: Optional[str] = None,
+    ):
+        # Deal with the sensor designer.
+        if isinstance(sensor_designer, Handle):
+            sensor_designer = OldHandle(sensor_designer)
+        else:
+            sensor_designer = SensorDesigner(bed=sensor_designer["bed"]).model_dump()
+
         super().__init__(
             node_name=self.node_name,
-            sensor_designer=SensorDesigner(bed=sensor_designer["bed"]).model_dump(),
-            design=design,
+            label=label,
+            sensor_designer=sensor_designer,
+            design=OldHandle(design) if isinstance(design, Handle) else design,
         )

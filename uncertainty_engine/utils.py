@@ -1,4 +1,11 @@
+from typing import TypeAlias, TypeVar, Union
+
 from typeguard import typechecked
+from uncertainty_engine_types import Handle
+
+# Define a type alias for a union of a type and a Handle.
+T = TypeVar("T")
+HandleUnion: TypeAlias = Union[T, Handle]
 
 
 # TODO: Enforce that all columns are exclusively floats or ints.
@@ -27,3 +34,14 @@ def dict_to_csv_str(data: dict[str, list[float]]) -> str:
     for row in zip(*data.values()):
         csv_str += ",".join(str(x) for x in row) + "\n"
     return csv_str
+
+
+# TODO: Remove on switch to new backend.
+@typechecked
+class OldHandle:
+    def __init__(self, new_handle: Handle):
+        self.node_name = new_handle.node_name
+        self.node_handle = new_handle.node_handle
+
+    def __call__(self):
+        return (self.node_name, self.node_handle)
