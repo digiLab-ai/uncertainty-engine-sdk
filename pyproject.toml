@@ -1,5 +1,5 @@
 [project]
-name = "uncertainty_engine"
+name = "uncertainty-engine"
 version = "0.0.1"
 description = "SDK for the Uncertainty Engine"
 authors = [
