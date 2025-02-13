@@ -26,3 +26,6 @@ node_modules/
 
 # FastAPI
 openapitools.json
+
+# PyPI distribution folder
+dist/
