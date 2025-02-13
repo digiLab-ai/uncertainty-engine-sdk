@@ -1,6 +1,4 @@
-<div style="color: black; background-color: #edf497;">
-    <img src="./assets/images/uncertainty-engine-logo.png">
-</div>
+![Uncertainty Engine banner](https://github.com/digiLab-ai/uncertainty-engine-types/raw/main/assets/images/uncertainty-engine-logo.png)
 
 # Python SDK for the Uncertainty Engine
 
