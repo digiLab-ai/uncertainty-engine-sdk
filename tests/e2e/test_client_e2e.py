@@ -55,8 +55,8 @@ class TestClientMethods:
         job_id = TestClientMethods.job_id
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
-        while status == "STARTED":
+        status = "PENDING"
+        while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
@@ -90,7 +90,7 @@ def test_failure_bad_client(e2e_client: Client):
     job_id = client.queue_node(node=node_name, input=inputs)
 
     status = "PENDING"
-    while status == "PENDING":
+    while status not in ["SUCCESS", "FAILURE"]:
         response = e2e_client.job_status(job_id)
         status = response["status"]
         time.sleep(5)

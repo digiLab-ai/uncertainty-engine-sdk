@@ -29,8 +29,8 @@ class TestAdd:
         job_id = TestAdd.job_id
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
-        while status == "STARTED":
+        status = "PENDING"
+        while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)

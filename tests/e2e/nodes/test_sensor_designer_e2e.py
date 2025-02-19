@@ -49,7 +49,7 @@ class TestFullSet:
         job_id = TestFullSet.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
+        status = "PENDING"
         while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
@@ -83,7 +83,7 @@ class TestFullSet:
         job_id = TestFullSet.job_id_suggest
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
+        status = "PENDING"
         while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
@@ -118,7 +118,7 @@ class TestFullSet:
         job_id = TestFullSet.job_id_score
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
+        status = "PENDING"
         while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
@@ -164,7 +164,7 @@ class TestBuildNoQoI:
         job_id = TestBuildNoQoI.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
+        status = "PENDING"
         while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
@@ -213,7 +213,7 @@ class TestBuildNoSigma:
         job_id = TestBuildNoSigma.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
+        status = "PENDING"
         while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
@@ -264,7 +264,7 @@ class TestBuildListSigma:
         job_id = TestBuildListSigma.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "STARTED"
+        status = "PENDING"
         while status not in ["SUCCESS", "FAILURE"]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
