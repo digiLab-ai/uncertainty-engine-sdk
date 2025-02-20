@@ -2,7 +2,6 @@ from typing import Union
 
 import pytest
 from typeguard import TypeCheckError, typechecked
-from uncertainty_engine_types import Handle
 
 from uncertainty_engine import utils as ue_utils
 
