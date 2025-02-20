@@ -47,10 +47,11 @@ class Client:
                 Defaults to ``None``.
 
         Returns:
-            List of available nodes. Each list item is a dictionary information about the node.
+            List of available nodes. Each list item is a dictionary of information about the node.
         """
         response = requests.get(f"{self.deployment}/nodes/list")
-        node_list = response.json()
+        nodes = response.json()
+        node_list = [node_info for node_info in nodes.values()]
 
         if category is not None:
             node_list = [node for node in node_list if node["category"] == category]
