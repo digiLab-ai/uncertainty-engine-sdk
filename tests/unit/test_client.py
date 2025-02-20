@@ -43,7 +43,9 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_get.return_value.json.return_value = [{"node_a": "I'm a node."}]
+            mock_get.return_value.json.return_value = {
+                "node_a": {"node_a": "I'm a node."}
+            }
 
             response = client.list_nodes()
 
@@ -58,10 +60,10 @@ class TestClientMethods:
             client: A Client instance.
         """
         with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_get.return_value.json.return_value = [
-                {"node_a": "I'm a node.", "category": "cat_a"},
-                {"node_b": "I'm another node.", "category": "cat_b"},
-            ]
+            mock_get.return_value.json.return_value = {
+                "node_a": {"node_a": "I'm a node.", "category": "cat_a"},
+                "node_b": {"node_b": "I'm another node.", "category": "cat_b"},
+            }
 
             response = client.list_nodes(category="cat_a")
 
