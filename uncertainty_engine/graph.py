@@ -2,9 +2,9 @@ import inspect
 from typing import Optional, Type, Union
 
 from typeguard import typechecked
+from uncertainty_engine_types import Handle
 
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import OldHandle
 
 
 @typechecked
@@ -41,10 +41,13 @@ class Graph:
             node_input_dict = dict()
             for ki, vi in node.__dict__.items():
                 if ki not in ["node_name", "label"]:
-                    if isinstance(vi, OldHandle):
-                        node_input_dict[ki] = vi()
+                    if isinstance(vi, Handle):
+                        node_input_dict[ki] = vi.model_dump()
                     else:
-                        node_input_dict[ki] = (self.external_input_id, f"{label}_{ki}")
+                        node_input_dict[ki] = {
+                            "node_name": self.external_input_id,
+                            "node_handle": f"{label}_{ki}",
+                        }
                         self.external_input[f"{label}_{ki}"] = vi
 
         else:
@@ -81,7 +84,10 @@ class Graph:
             target: The target node.
             target_key: The input key of the target node.
         """
-        self.nodes["nodes"][target]["inputs"][target_key] = (source, source_key)
+        self.nodes["nodes"][target]["inputs"][target_key] = {
+            "node_name": source,
+            "node_handle": source_key,
+        }
 
     def add_input(self, key: str, value) -> None:
         """

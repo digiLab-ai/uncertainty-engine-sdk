@@ -34,14 +34,3 @@ def dict_to_csv_str(data: dict[str, list[float]]) -> str:
     for row in zip(*data.values()):
         csv_str += ",".join(str(x) for x in row) + "\n"
     return csv_str
-
-
-# TODO: Remove on switch to new backend.
-@typechecked
-class OldHandle:
-    def __init__(self, new_handle: Handle):
-        self.node_name = new_handle.node_name
-        self.node_handle = new_handle.node_handle
-
-    def __call__(self):
-        return (self.node_name, self.node_handle)

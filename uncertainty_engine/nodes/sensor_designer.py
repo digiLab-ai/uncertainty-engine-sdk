@@ -4,7 +4,7 @@ from typeguard import typechecked
 from uncertainty_engine_types import Handle, SensorDesigner, TabularData
 
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import HandleUnion, OldHandle, dict_to_csv_str
+from uncertainty_engine.utils import HandleUnion, dict_to_csv_str
 
 ListDict = dict[str, list[Union[float, int]]]
 
@@ -32,7 +32,7 @@ class BuildSensorDesigner(Node):
     ):
         # Deal with the sensor data.
         if isinstance(sensor_data, Handle):
-            sensor_data_processed = OldHandle(sensor_data)
+            sensor_data_processed = sensor_data
         else:
             sensor_data_processed = TabularData(
                 csv=dict_to_csv_str(sensor_data)
@@ -41,9 +41,7 @@ class BuildSensorDesigner(Node):
         # Deal with the QOI data.
         if quantities_of_interest_data is not None:
             if isinstance(quantities_of_interest_data, Handle):
-                quantities_of_interest_data_processed = OldHandle(
-                    quantities_of_interest_data
-                )
+                quantities_of_interest_data_processed = quantities_of_interest_data
             else:
                 quantities_of_interest_data_processed = TabularData(
                     csv=dict_to_csv_str(quantities_of_interest_data)
@@ -56,7 +54,7 @@ class BuildSensorDesigner(Node):
             label=label,
             sensor_data=sensor_data_processed,
             quantities_of_interest_data=quantities_of_interest_data_processed,
-            sigma=OldHandle(sigma) if isinstance(sigma, Handle) else sigma,
+            sigma=sigma,
         )
 
 
@@ -82,7 +80,7 @@ class SuggestSensorDesign(Node):
     ):
         # Deal with the sensor designer.
         if isinstance(sensor_designer, Handle):
-            sensor_designer_processed = OldHandle(sensor_designer)
+            sensor_designer_processed = sensor_designer
         else:
             sensor_designer_processed = SensorDesigner(
                 bed=sensor_designer["bed"]
@@ -117,7 +115,7 @@ class ScoreSensorDesign(Node):
     ):
         # Deal with the sensor designer.
         if isinstance(sensor_designer, Handle):
-            sensor_designer_processed = OldHandle(sensor_designer)
+            sensor_designer_processed = sensor_designer
         else:
             sensor_designer_processed = SensorDesigner(
                 bed=sensor_designer["bed"]
@@ -127,5 +125,5 @@ class ScoreSensorDesign(Node):
             node_name=self.node_name,
             label=label,
             sensor_designer=sensor_designer_processed,
-            design=OldHandle(design) if isinstance(design, Handle) else design,
+            design=design,
         )

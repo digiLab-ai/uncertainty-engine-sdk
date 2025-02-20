@@ -34,8 +34,8 @@ def test_graph_w_node_instance(node_instance, node_label):
             "add1": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             }
         }
@@ -83,8 +83,8 @@ def test_graph_w_node_instance_handle():
             "add1": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("a", "b"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "a", "node_handle": "b"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             }
         }
@@ -118,15 +118,15 @@ def test_graph_w_node_multiple():
             "add1": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             },
             "add2": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add2_lhs"),
-                    "rhs": ("_", "add2_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
                 },
             },
         }
@@ -162,15 +162,15 @@ def test_graph_w_node_multiple_from_list():
             "add1": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             },
             "add2": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add2_lhs"),
-                    "rhs": ("_", "add2_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
                 },
             },
         }
@@ -229,8 +229,8 @@ def test_graph_w_node_class():
             "add1": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             }
         }
@@ -272,8 +272,8 @@ def test_graph_connect_nodes():
             "add1": {
                 "type": "demo.Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             },
             "add2": {
@@ -296,4 +296,7 @@ def test_graph_connect_nodes():
     graph.add_edge("add1", "ans", "add2", "lhs")
 
     # Verify that the edge was added to the graph
-    assert graph.nodes["nodes"]["add2"]["inputs"]["lhs"] == ("add1", "ans")
+    assert graph.nodes["nodes"]["add2"]["inputs"]["lhs"] == {
+        "node_name": "add1",
+        "node_handle": "ans",
+    }
