@@ -4,7 +4,7 @@ import pytest
 
 from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client
 from uncertainty_engine.graph import Graph
-from uncertainty_engine.nodes.demo import Add
+from uncertainty_engine.nodes.basic import Add
 
 
 @pytest.fixture(scope="class")

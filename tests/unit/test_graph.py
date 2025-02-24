@@ -2,7 +2,7 @@ import pytest
 from uncertainty_engine_types import Handle
 
 from uncertainty_engine.graph import Graph
-from uncertainty_engine.nodes.demo import Add
+from uncertainty_engine.nodes.basic import Add
 
 
 @pytest.mark.parametrize(

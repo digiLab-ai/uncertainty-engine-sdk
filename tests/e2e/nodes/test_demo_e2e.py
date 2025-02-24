@@ -1,7 +1,7 @@
 import time
 
 from uncertainty_engine.client import Client
-from uncertainty_engine.nodes.demo import Add
+from uncertainty_engine.nodes.basic import Add
 
 
 class TestAdd:
