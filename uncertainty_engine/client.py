@@ -3,6 +3,7 @@ from time import sleep
 from typing import Optional, Union
 
 import requests
+from pydantic import BaseModel
 from typeguard import typechecked
 
 from uncertainty_engine.nodes.base import Node
@@ -11,18 +12,29 @@ DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
 
+# TDOO: Use the Enum class from the uncertainty_engine_types package.
 class ValidStatus(Enum):
     """
     Represents the possible statuses fort a job in the Uncertainty Engine.
     """
 
-    STARTED = "STARTED"
-    PENDING = "PENDING"
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
+    STARTED = "running"
+    PENDING = "pending"
+    SUCCESS = "completed"
+    FAILURE = "failed"
 
     def is_terminal(self) -> bool:
         return self in [ValidStatus.SUCCESS, ValidStatus.FAILURE]
+
+
+# TODO: Move this to the uncertainty_engine_types package.
+class Job(BaseModel):
+    """
+    Represents a job in the Uncertainty Engine.
+    """
+
+    node_id: str
+    job_id: str
 
 
 @typechecked
@@ -58,7 +70,7 @@ class Client:
 
         return node_list
 
-    def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> str:
+    def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> Job:
         """
         Queue a node for execution.
 
@@ -68,7 +80,7 @@ class Client:
                 this is required. Defaults to ``None``.
 
         Returns:
-            The job ID of the queued node.
+            A Job object representing the queued job.
         """
         if isinstance(node, Node):
             node, input = node()
@@ -81,12 +93,14 @@ class Client:
             f"{self.deployment}/nodes/queue",
             json={
                 "email": self.email,
-                "node": node,
-                "input": input,
+                "node_id": node,
+                "inputs": input,
             },
         )
 
-        return response.json()
+        job_id = response.json()
+
+        return Job(node_id=node, job_id=job_id)
 
     def run_node(self, node: Union[str, Node], input: Optional[dict] = None) -> dict:
         """
@@ -103,17 +117,19 @@ class Client:
         job_id = self.queue_node(node, input)
         return self._wait_for_job(job_id)
 
-    def job_status(self, job_id: str) -> dict:
+    def job_status(self, job: Job) -> dict:
         """
         Check the status of a job.
 
         Args:
-            job_id: The ID of the job to check.
+            job: The job to check.
 
         Returns:
             A dictionary containing the status of the job.
         """
-        response = requests.get(f"{self.deployment}/nodes/status/{job_id}")
+        response = requests.get(
+            f"{self.deployment}/nodes/status/{job.node_id}/{job.job_id}"
+        )
         return response.json()
 
     def view_tokens(self) -> Optional[int]:
@@ -127,21 +143,21 @@ class Client:
         response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
         return response.json()
 
-    def _wait_for_job(self, job_id: str) -> dict:
+    def _wait_for_job(self, job: Job) -> dict:
         """
         Wait for a job to complete.
 
         Args:
-            job_id: The ID of the job to wait for.
+            job: The job to wait for.
 
         Returns:
             The completed status of the job.
         """
-        response = self.job_status(job_id)
+        response = self.job_status(job)
         status = ValidStatus(response["status"])
         while not status.is_terminal():
             sleep(STATUS_WAIT_TIME)
-            response = self.job_status(job_id)
+            response = self.job_status(job)
             status = ValidStatus(response["status"])
 
         return response
