@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client
+from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client, Job
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.basic import Add
 
@@ -61,3 +61,11 @@ def simple_graph(simple_node_label):
     add = Add(lhs=1, rhs=2)
     graph.add_node(add, simple_node_label)
     return graph
+
+
+@pytest.fixture()
+def mock_job():
+    """
+    A mock Job.
+    """
+    return Job(node_id="node_a", job_id="job_a")
