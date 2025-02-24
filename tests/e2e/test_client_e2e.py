@@ -20,12 +20,12 @@ class TestClientMethods:
         Args:
             e2e_client: A Client instance.
         """
-        respone = e2e_client.list_nodes(category="demo")
+        respone = e2e_client.list_nodes(category="Basic")
 
         # There should only be one node in the demo category
         assert len(respone) == 1
-        assert respone[0]["category"] == "demo"
-        assert respone[0]["type"] == "Add"
+        assert respone[0]["category"] == "Basic"
+        assert respone[0]["id"] == "Add"
 
     def test_queue_node(self, e2e_client: Client):
         """
