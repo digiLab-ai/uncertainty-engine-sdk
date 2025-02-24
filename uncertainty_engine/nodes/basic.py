@@ -17,7 +17,7 @@ class Add(Node):
         label: A human-readable label for the node. Defaults to None.
     """
 
-    node_name: str = "demo.Add"
+    node_name: str = "Add"
 
     def __init__(
         self,

@@ -17,7 +17,7 @@ class Workflow(Node):
 
     """
 
-    node_name: str = "core.Workflow"
+    node_name: str = "Workflow"
 
     def __init__(
         self,
