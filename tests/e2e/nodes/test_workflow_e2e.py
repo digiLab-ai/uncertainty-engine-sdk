@@ -1,6 +1,8 @@
 import time
 
-from uncertainty_engine.client import Client
+from uncertainty_engine_types import Handle
+
+from uncertainty_engine.client import Client, ValidStatus
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.basic import Add
 from uncertainty_engine.nodes.workflow import Workflow
@@ -39,7 +41,10 @@ class TestWorkflow:
         workflow = Workflow(
             graph=graph.nodes,
             input=graph.external_input,
-            requested_output={"a": ("_", "add2_rhs"), "b": ("add2", "ans")},
+            requested_output={
+                "a": Handle("_.add2_rhs").model_dump(),
+                "b": Handle("add2.ans").model_dump(),
+            },
         )
 
         # Queue the workflow
@@ -56,13 +61,13 @@ class TestWorkflow:
         job_id = TestWorkflow.job_id
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
-        assert response["output"]["a"] == 2
-        assert response["output"]["b"] == 5
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
+        assert response["outputs"]["a"] == 2
+        assert response["outputs"]["b"] == 5
