@@ -69,5 +69,5 @@ class TestWorkflow:
 
         assert status == ValidStatus.SUCCESS.value
         assert "outputs" in response
-        assert response["outputs"]["a"] == 2
-        assert response["outputs"]["b"] == 5
+        assert response["outputs"]["outputs"]["a"] == 2
+        assert response["outputs"]["outputs"]["b"] == 5
