@@ -1881,14 +1881,14 @@ markers = {dev = "python_version < \"3.11\""}
 
 [[package]]
 name = "uncertainty-engine-types"
-version = "0.0.4"
+version = "0.0.11"
 description = "Common type definitions for the Uncertainty Engine"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "uncertainty_engine_types-0.0.4-py3-none-any.whl", hash = "sha256:7da97fe5de265c6d4f97db7bac6ece792a7ebe3d7e84f95e015bd697e6315491"},
-    {file = "uncertainty_engine_types-0.0.4.tar.gz", hash = "sha256:cdc5d2cd91934097a9b21f4898d65486dc5485c4ebc4242c23dbc176e4899f1e"},
+    {file = "uncertainty_engine_types-0.0.11-py3-none-any.whl", hash = "sha256:64d3649ab019c38c3b3da426bbc6e1ed6b60676963799350e69604aa99e49572"},
+    {file = "uncertainty_engine_types-0.0.11.tar.gz", hash = "sha256:a028ea691e79e8d64c0c0d8fcee347f391c5f52aec9192c0b0404bf18cb36a9c"},
 ]
 
 [package.dependencies]
@@ -1932,4 +1932,4 @@ vis = ["matplotlib", "networkx"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "ec8c8f800e16888fa7d84a6b9b301035b894f25dd0c5ef5440bb55b4da78b80f"
+content-hash = "5b0029604016163b25e5ca7e4715804ec68454f271692411b96940020e10f633"
