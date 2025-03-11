@@ -17,7 +17,7 @@ class Workflow(Node):
 
     """
 
-    node_name: str = "core.Workflow"
+    node_name: str = "Workflow"
 
     def __init__(
         self,
@@ -30,6 +30,6 @@ class Workflow(Node):
             node_name=self.node_name,
             external_input_id=external_input_id,
             graph=graph,
-            input=input,
+            inputs=input,
             requested_output=requested_output,
         )

@@ -44,7 +44,7 @@ def test_build_sensor_designer():
     )
 
     assert node() == (
-        "sensor_designer.BuildSensorDesigner",
+        "BuildSensorDesigner",
         {
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": {"csv": "qoi_1,qoi_2\n7,10\n8,11\n"},
@@ -73,7 +73,7 @@ def test_build_sensor_designer_no_sigma():
     )
 
     assert node() == (
-        "sensor_designer.BuildSensorDesigner",
+        "BuildSensorDesigner",
         {
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": {"csv": "qoi_1,qoi_2\n7,10\n8,11\n"},
@@ -97,7 +97,7 @@ def test_build_sensor_designer_no_qoi():
     node = BuildSensorDesigner(sensor_data=sensor_data, sigma=sigma)
 
     assert node() == (
-        "sensor_designer.BuildSensorDesigner",
+        "BuildSensorDesigner",
         {
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": None,
@@ -121,7 +121,7 @@ def test_build_sensor_designer_list_sigma():
     node = BuildSensorDesigner(sensor_data=sensor_data, sigma=sigma)
 
     assert node() == (
-        "sensor_designer.BuildSensorDesigner",
+        "BuildSensorDesigner",
         {
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": None,
@@ -143,7 +143,7 @@ def test_suggest_sensor_design(mock_sensor_designer):
     )
 
     assert node() == (
-        "sensor_designer.SuggestSensorDesign",
+        "SuggestSensorDesign",
         {
             "sensor_designer": mock_sensor_designer,
             "num_sensors": num_sensors,
@@ -162,7 +162,7 @@ def test_score_sensor_design(mock_sensor_designer):
     node = ScoreSensorDesign(sensor_designer=mock_sensor_designer, design=design)
 
     assert node() == (
-        "sensor_designer.ScoreSensorDesign",
+        "ScoreSensorDesign",
         {
             "sensor_designer": mock_sensor_designer,
             "design": design,

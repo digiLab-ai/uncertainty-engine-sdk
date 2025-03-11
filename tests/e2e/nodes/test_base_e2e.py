@@ -1,6 +1,6 @@
 import time
 
-from uncertainty_engine.client import Client
+from uncertainty_engine.client import Client, ValidStatus
 from uncertainty_engine.nodes.base import Node
 
 
@@ -12,7 +12,7 @@ class TestNodeAdd:
         Args:
             e2e_client: A Client instance.
         """
-        node_name = "demo.Add"
+        node_name = "Add"
         input = {
             "lhs": 1,
             "rhs": 2,
@@ -33,11 +33,11 @@ class TestNodeAdd:
         job_id = TestNodeAdd.job_id
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert response["output"] == {"ans": 3}
+        assert status == ValidStatus.SUCCESS.value
+        assert response["outputs"] == {"ans": 3}

@@ -2,7 +2,7 @@ import pytest
 from uncertainty_engine_types import Handle
 
 from uncertainty_engine.graph import Graph
-from uncertainty_engine.nodes.demo import Add
+from uncertainty_engine.nodes.basic import Add
 
 
 @pytest.mark.parametrize(
@@ -32,10 +32,10 @@ def test_graph_w_node_instance(node_instance, node_label):
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             }
         }
@@ -81,10 +81,10 @@ def test_graph_w_node_instance_handle():
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("a", "b"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "a", "node_handle": "b"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             }
         }
@@ -116,17 +116,17 @@ def test_graph_w_node_multiple():
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             },
             "add2": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add2_lhs"),
-                    "rhs": ("_", "add2_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
                 },
             },
         }
@@ -160,17 +160,17 @@ def test_graph_w_node_multiple_from_list():
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             },
             "add2": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add2_lhs"),
-                    "rhs": ("_", "add2_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
                 },
             },
         }
@@ -200,7 +200,7 @@ def test_graph_w_node_class():
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
                     "lhs": None,
                     "rhs": None,
@@ -227,10 +227,10 @@ def test_graph_w_node_class():
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             }
         }
@@ -270,14 +270,14 @@ def test_graph_connect_nodes():
     assert graph.nodes == {
         "nodes": {
             "add1": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
-                    "lhs": ("_", "add1_lhs"),
-                    "rhs": ("_", "add1_rhs"),
+                    "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
+                    "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
                 },
             },
             "add2": {
-                "type": "demo.Add",
+                "type": "Add",
                 "inputs": {
                     "lhs": None,
                     "rhs": None,
@@ -296,4 +296,7 @@ def test_graph_connect_nodes():
     graph.add_edge("add1", "ans", "add2", "lhs")
 
     # Verify that the edge was added to the graph
-    assert graph.nodes["nodes"]["add2"]["inputs"]["lhs"] == ("add1", "ans")
+    assert graph.nodes["nodes"]["add2"]["inputs"]["lhs"] == {
+        "node_name": "add1",
+        "node_handle": "ans",
+    }

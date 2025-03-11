@@ -116,7 +116,7 @@ def _to_networkx(graph: Graph) -> nx.MultiDiGraph:
 
         # Loop through the inputs to the node and add edges
         for input_key, input_value in graph.nodes["nodes"][node]["inputs"].items():
-            nx_graph.add_edge(input_value[0], node, label=input_key)
+            nx_graph.add_edge(input_value["node_name"], node, label=input_key)
 
     return nx_graph
 

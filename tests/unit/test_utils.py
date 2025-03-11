@@ -2,7 +2,6 @@ from typing import Union
 
 import pytest
 from typeguard import TypeCheckError, typechecked
-from uncertainty_engine_types import Handle
 
 from uncertainty_engine import utils as ue_utils
 
@@ -70,27 +69,6 @@ def test_dict_to_csv_str_mismatched_lengths():
 
 #     with pytest.raises(Exception):
 #         ue_utils.dict_to_csv_str(data)
-
-# OldHandle
-
-
-def test_old_handle():
-    """
-    Verify that OldHandle correctly adapts a Handle object.
-    """
-
-    # Define a Handle object.
-    handle = Handle("a.b")
-
-    # Create an OldHandle object.
-    old_handle = ue_utils.OldHandle(handle)
-
-    # Verify that the OldHandle object has the correct attributes.
-    assert old_handle.node_name == "a"
-    assert old_handle.node_handle == "b"
-
-    # Verify that the OldHandle object can be called.
-    assert old_handle() == ("a", "b")
 
 
 # HandleUnion
