@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
 from typeguard import typechecked
-from uncertainty_engine_types import Handle, SensorDesigner, TabularData
+from uncertainty_engine_types import CSVDataset, Handle, SensorDesigner
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion, dict_to_csv_str
@@ -34,7 +34,7 @@ class BuildSensorDesigner(Node):
         if isinstance(sensor_data, Handle):
             sensor_data_processed = sensor_data
         else:
-            sensor_data_processed = TabularData(
+            sensor_data_processed = CSVDataset(
                 csv=dict_to_csv_str(sensor_data)
             ).model_dump()
 
@@ -43,7 +43,7 @@ class BuildSensorDesigner(Node):
             if isinstance(quantities_of_interest_data, Handle):
                 quantities_of_interest_data_processed = quantities_of_interest_data
             else:
-                quantities_of_interest_data_processed = TabularData(
+                quantities_of_interest_data_processed = CSVDataset(
                     csv=dict_to_csv_str(quantities_of_interest_data)
                 ).model_dump()
         else:
