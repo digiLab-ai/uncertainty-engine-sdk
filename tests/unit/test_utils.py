@@ -70,8 +70,6 @@ def test_dict_to_csv_str_mismatched_lengths():
 #     with pytest.raises(Exception):
 #         ue_utils.dict_to_csv_str(data)
 
-# OldHandle
-
 
 # HandleUnion
 
