@@ -140,8 +140,13 @@ class Client:
             Number of tokens the user currently has available.
         """
 
-        response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
-        return response.json()
+        # The token service for the new backend is not yet implemented.
+        # This is a placeholder for when the service is implemented.
+        # TODO: Make a request to the token service to get the user's token balance once it is implemented.
+        # response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
+        tokens = 100
+
+        return tokens
 
     def _wait_for_job(self, job: Job) -> dict:
         """
