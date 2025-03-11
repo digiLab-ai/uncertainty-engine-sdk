@@ -1,6 +1,6 @@
 import time
 
-from uncertainty_engine.client import Client
+from uncertainty_engine.client import Client, ValidStatus
 from uncertainty_engine.nodes.sensor_designer import (
     BuildSensorDesigner,
     ScoreSensorDesign,
@@ -49,16 +49,16 @@ class TestFullSet:
         job_id = TestFullSet.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
 
-        TestFullSet.sensor_designer = response["output"]["sensor_designer"]
+        TestFullSet.sensor_designer = response["outputs"]["sensor_designer"]
 
     def test_queue_suggest(self, e2e_client: Client):
         """
@@ -83,16 +83,16 @@ class TestFullSet:
         job_id = TestFullSet.job_id_suggest
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
 
-        TestFullSet.suggested_design = response["output"]["suggested_design"]
+        TestFullSet.suggested_design = response["outputs"]["suggested_design"]
 
     def test_queue_score(self, e2e_client: Client):
         """
@@ -118,14 +118,14 @@ class TestFullSet:
         job_id = TestFullSet.job_id_score
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
 
 
 class TestBuildNoQoI:
@@ -164,14 +164,14 @@ class TestBuildNoQoI:
         job_id = TestBuildNoQoI.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
 
 
 class TestBuildNoSigma:
@@ -213,14 +213,14 @@ class TestBuildNoSigma:
         job_id = TestBuildNoSigma.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
 
 
 class TestBuildListSigma:
@@ -264,11 +264,11 @@ class TestBuildListSigma:
         job_id = TestBuildListSigma.job_id_build
         response = e2e_client.job_status(job_id)
 
-        status = "PENDING"
-        while status not in ["SUCCESS", "FAILURE"]:
+        status = ValidStatus.PENDING.value
+        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
             status = response["status"]
             time.sleep(5)
 
-        assert status == "SUCCESS"
-        assert "output" in response
+        assert status == ValidStatus.SUCCESS.value
+        assert "outputs" in response
