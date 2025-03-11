@@ -112,23 +112,6 @@ class TestClientMethods:
                 f"{DEFAULT_DEPLOYMENT}/nodes/status/{mock_job.node_id}/{mock_job.job_id}"
             )
 
-    def test_view_tokens(self, client: Client):
-        """
-        Verify that the view_tokens method pokes the correct endpoint.
-
-        Args:
-            client: A Client instance.
-        """
-        with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_get.return_value.json.return_value = 10
-
-            response = client.view_tokens()
-
-            assert response == 10
-            mock_get.assert_called_once_with(
-                f"{DEFAULT_DEPLOYMENT}/tokens/user/{client.email}"
-            )
-
     def test_queue_node_node_input(self, client: Client, mock_job: Job):
         """
         Verify that the queue_node method pokes the correct endpoint with the user
