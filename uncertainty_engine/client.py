@@ -7,8 +7,10 @@ from pydantic import BaseModel
 from typeguard import typechecked
 
 from uncertainty_engine.nodes.base import Node
+from .resource_provider import ResourceProvider, AuthProvider
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
+DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
 
@@ -39,16 +41,34 @@ class Job(BaseModel):
 
 @typechecked
 class Client:
-    def __init__(self, email: str, deployment: str = DEFAULT_DEPLOYMENT):
+    email: str
+    deployment: str
+    resources: ResourceProvider
+
+    def __init__(
+        self,
+        email: str,
+        deployment: str = DEFAULT_DEPLOYMENT,
+        resource_deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
+    ):
         """
         A client for interacting with the Uncertainty Engine.
 
         Args:
             email: The email address of the user.
             deployment: The URL of the Uncertainty Engine deployment.
+            resource_deployment: The URL of the resource deployment.
         """
         self.email = email
         self.deployment = deployment
+        self.auth_provider = AuthProvider()
+        self.resources = ResourceProvider(
+            deployment=resource_deployment, auth_provider=self.auth_provider
+        )
+
+    def auth(self, account_id: str) -> None:
+        """Authenticate the user with the Uncertainty Engine"""
+        self.auth_provider.authenticate(account_id)
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """
