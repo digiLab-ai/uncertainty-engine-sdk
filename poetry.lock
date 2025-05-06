@@ -1467,21 +1467,6 @@ files = [
 ]
 
 [[package]]
-name = "openapi-generator-cli"
-version = "7.12.0"
-description = "CLI for openapi generator"
-optional = false
-python-versions = "<4,>=3.9"
-groups = ["dev"]
-files = [
-    {file = "openapi_generator_cli-7.12.0-py3-none-any.whl", hash = "sha256:cf97e0e40bacc66ca70963845e52b0c003aaab85da7f1d10cc25abf2f1c8bb6e"},
-    {file = "openapi_generator_cli-7.12.0.tar.gz", hash = "sha256:11dc4fd67fc7d839572ae8e29fb1dee5892195a7ac88b98e41a2cd8105e3250f"},
-]
-
-[package.extras]
-jdk4py = ["jdk4py (>=21.0.4.1,<22) ; python_version >= \"3.10\""]
-
-[[package]]
 name = "packaging"
 version = "24.2"
 description = "Core utilities for Python packages"
@@ -2620,4 +2605,4 @@ vis = ["matplotlib", "networkx"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "3543099f15d45e5d7ff2ffa0ccb96fe6c7353fad9a8bc6822938a6a68a9f08b6"
+content-hash = "47d8d2d0b064605613e760b4c6450208ddd8877617f913920dcff41fb05e9880"
