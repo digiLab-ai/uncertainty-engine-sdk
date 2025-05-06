@@ -33,3 +33,4 @@ dist/
 # Testing
 coverage.xml
 htmlcov/
+.coverage
