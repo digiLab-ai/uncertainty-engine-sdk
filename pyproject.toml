@@ -21,7 +21,6 @@ uncertainty-engine-types = "^0.0.11"
 uncertainty-engine-resource-client = {git = "git@github.com:digiLab-ai/uncertainty-engine-resource-client.git", rev = "main"}
 
 [tool.poetry.group.dev.dependencies]
-openapi-generator-cli = "^7.12.0"
 pytest = "^8.3.4"
 flake8 = "^7.1.1"
 black = "^24.10.0"
