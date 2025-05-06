@@ -1,10 +1,9 @@
 import os
 import pytest
-from unittest.mock import MagicMock, PropertyMock, patch, mock_open
+from unittest.mock import MagicMock, patch, mock_open
 from datetime import datetime
 
 import requests
-from requests import JSONDecodeError
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,

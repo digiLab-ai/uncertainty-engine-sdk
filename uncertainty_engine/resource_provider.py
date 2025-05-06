@@ -3,7 +3,6 @@ from typing import Any, Optional
 from uuid import uuid4
 
 import requests
-from requests import JSONDecodeError
 
 import uncertainty_engine_resource_client as resource_client
 from uncertainty_engine_resource_client.api import (
