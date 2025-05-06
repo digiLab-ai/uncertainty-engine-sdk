@@ -6,8 +6,8 @@ import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
+from uncertainty_engine.resource_provider import ResourceProvider, AuthProvider
 from uncertainty_engine.nodes.base import Node
-from .resource_provider import ResourceProvider, AuthProvider
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
 DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"

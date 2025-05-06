@@ -18,8 +18,8 @@ from uncertainty_engine_resource_client.models import (
     ResourceVersionRecordInput,
 )
 
-from .auth_provider import AuthProvider
-from .utils import format_api_error
+from uncertainty_engine.auth_provider import AuthProvider
+from uncertainty_engine.utils import format_api_error
 
 DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
 DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
