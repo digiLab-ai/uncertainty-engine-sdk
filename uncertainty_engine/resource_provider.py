@@ -3,6 +3,7 @@ from typing import Any, Optional
 from uuid import uuid4
 
 import requests
+from requests import JSONDecodeError
 
 import uncertainty_engine_resource_client as resource_client
 from uncertainty_engine_resource_client.api import (
@@ -230,15 +231,20 @@ class ResourceProvider:
                 with open(file_path, "wb") as file:
                     file.write(response.content)
                 # TODO, better handling of errors
-            except Exception as e:
+            except FileNotFoundError:
+                raise Exception(
+                    "Invalid filepath provided. Please ensure your file exists."
+                )
+            except Exception:
                 raise
         else:
             # Otherwise return the response content
             try:
                 return response.json()
-            except Exception as e:
-                print(e)
+            except JSONDecodeError:
                 return response.text
+            except Exception as e:
+                raise Exception(f"Error returning resource content: {str(e)}")
 
     def update(
         self,
