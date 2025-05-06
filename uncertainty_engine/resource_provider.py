@@ -1,23 +1,20 @@
-from typing import Optional, Any
 import os
-import requests
+from typing import Any, Optional
 from uuid import uuid4
 
+import requests
+
 import uncertainty_engine_resource_client as resource_client
+from uncertainty_engine_resource_client.api import (
+    ProjectRecordsApi,
+    ResourcesApi,
+)
 from uncertainty_engine_resource_client.exceptions import ApiException
-from uncertainty_engine_resource_client.api.project_records_api import ProjectRecordsApi
-from uncertainty_engine_resource_client.api.resources_api import ResourcesApi
-from uncertainty_engine_resource_client.models.post_resource_record_request import (
+from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
-)
-from uncertainty_engine_resource_client.models.post_resource_version_request import (
     PostResourceVersionRequest,
-)
-from uncertainty_engine_resource_client.models.resource_version_record_input import (
-    ResourceVersionRecordInput,
-)
-from uncertainty_engine_resource_client.models.resource_record_input import (
     ResourceRecordInput,
+    ResourceVersionRecordInput,
 )
 
 from .auth_provider import AuthProvider
