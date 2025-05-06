@@ -238,12 +238,7 @@ class ResourceProvider:
                 raise
         else:
             # Otherwise return the response content
-            try:
-                return response.json()
-            except JSONDecodeError:
-                return response.text
-            except Exception as e:
-                raise Exception(f"Error returning resource content: {str(e)}")
+            return response.content
 
     def update(
         self,
