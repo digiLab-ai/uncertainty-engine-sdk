@@ -230,7 +230,6 @@ class ResourceProvider:
             try:
                 with open(file_path, "wb") as file:
                     file.write(response.content)
-                # TODO, better handling of errors
             except FileNotFoundError:
                 raise Exception(
                     "Invalid filepath provided. Please ensure your file exists."

@@ -1,9 +1,10 @@
 import os
 import pytest
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, PropertyMock, patch, mock_open
 from datetime import datetime
 
 import requests
+from requests import JSONDecodeError
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
@@ -296,11 +297,14 @@ def test_upload_failed_completion(resource_provider, mock_resources_client):
                 )
 
 
-def test_download_success_with_filepath(resource_provider, mock_resources_client):
+def test_download_success_with_filepath(resource_provider):
     """Test downloading a resource with a specified filepath."""
     # Setup mocks
-    version_response = MagicMock(url="https://download-url.com")
-    mock_resources_client.get_latest_resource_version.return_value = version_response
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
 
     # Setup requests mock
     mock_get_response = MagicMock()
@@ -321,7 +325,7 @@ def test_download_success_with_filepath(resource_provider, mock_resources_client
                 )
 
                 # Verify method calls
-                mock_resources_client.get_latest_resource_version.assert_called_once_with(
+                resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
                     "test-project", "dataset", "test-resource-id"
                 )
 
@@ -330,15 +334,19 @@ def test_download_success_with_filepath(resource_provider, mock_resources_client
                     exist_ok=True,
                 )
                 requests.get.assert_called_once_with("https://download-url.com")
+                mock_get_response.raise_for_status.assert_called_once()
                 mock_file.assert_called_once_with("path/to/download/file.csv", "wb")
                 mock_file().write.assert_called_once_with(b"test file content")
 
 
-def test_download_success_without_filepath(resource_provider, mock_resources_client):
+def test_download_success_without_filepath(resource_provider):
     """Test downloading a resource without a specified filepath (return content)."""
     # Setup mocks
-    version_response = MagicMock(url="https://download-url.com")
-    mock_resources_client.get_latest_resource_version.return_value = version_response
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
 
     # Setup requests mock
     mock_get_response = MagicMock()
@@ -355,10 +363,11 @@ def test_download_success_without_filepath(resource_provider, mock_resources_cli
 
         # Verify result and method calls
         assert result == expected_json
-        mock_resources_client.get_latest_resource_version.assert_called_once_with(
+        resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
             "test-project", "dataset", "test-resource-id"
         )
         requests.get.assert_called_once_with("https://download-url.com")
+        mock_get_response.raise_for_status.assert_called_once()
         mock_get_response.json.assert_called_once()
 
 
@@ -366,7 +375,6 @@ def test_download_no_auth(resource_provider):
     """Test download fails when not authenticated."""
     # Set auth provider to None
     with patch.object(resource_provider, "auth_provider", None):
-        resource_provider.auth_provider = None
 
         # Call and verify exception
         with pytest.raises(
@@ -375,11 +383,13 @@ def test_download_no_auth(resource_provider):
             resource_provider.download("project-id", "type", "resource-id")
 
 
-def test_download_api_exception(resource_provider, mock_resources_client):
+def test_download_api_exception(resource_provider):
     """Test handling of ApiException during resource version retrieval."""
     # Setup exception
     api_exception = ApiException(status=404, reason="Not Found")
-    mock_resources_client.get_latest_resource_version.side_effect = api_exception
+    resource_provider.resources_client.get_latest_resource_version.side_effect = (
+        api_exception
+    )
 
     # Call and verify exception
     with pytest.raises(Exception, match="Error retrieving resource:"):
@@ -388,16 +398,36 @@ def test_download_api_exception(resource_provider, mock_resources_client):
         )
 
 
-def test_download_http_error(resource_provider, mock_resources_client):
+def test_download_generic_exception_on_retrieval(resource_provider):
+    """Test handling of generic Exception during resource retrieval."""
+    # Setup exception
+    generic_exception = Exception("Random error")
+    resource_provider.resources_client.get_latest_resource_version.side_effect = (
+        generic_exception
+    )
+
+    # Call and verify exception
+    with pytest.raises(Exception, match="Error retrieving resource: Random error"):
+        resource_provider.download(
+            "project-id", "type", "resource-id", "path/to/file.txt"
+        )
+
+
+def test_download_http_error(resource_provider):
     """Test handling of HTTP error during download."""
     # Setup mocks
-    version_response = MagicMock(url="https://download-url.com")
-    mock_resources_client.get_latest_resource_version.return_value = version_response
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
 
     # Setup requests mock with error
-    with patch("requests.get") as mock_get:
-        mock_get.side_effect = requests.exceptions.HTTPError("404 Client Error")
+    mock_get_response = MagicMock()
+    http_error = requests.exceptions.HTTPError("404 Client Error")
+    mock_get_response.raise_for_status.side_effect = http_error
 
+    with patch("requests.get", return_value=mock_get_response):
         # Call and verify exception
         with pytest.raises(Exception, match="Error saving downloaded file:"):
             resource_provider.download(
@@ -405,16 +435,21 @@ def test_download_http_error(resource_provider, mock_resources_client):
             )
 
 
-def test_download_json_error(resource_provider, mock_resources_client):
+def test_download_json_error(resource_provider):
     """Test handling of JSON parsing error when no filepath is provided."""
     # Setup mocks
-    version_response = MagicMock(url="https://download-url.com")
-    mock_resources_client.get_latest_resource_version.return_value = version_response
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
 
     # Setup requests mock
     mock_get_response = MagicMock()
-    mock_get_response.json.side_effect = ValueError("Invalid JSON")
-    mock_get_response.text = "raw text content"
+    raw_text = "raw text content"
+    mock_get_response.text = raw_text
+    # Simulate a JSONDecodeError when json() is called
+    mock_get_response.json.side_effect = JSONDecodeError("Invalid JSON", "", 0)
 
     with patch("requests.get", return_value=mock_get_response):
         # Call the method
@@ -425,7 +460,102 @@ def test_download_json_error(resource_provider, mock_resources_client):
         )
 
         # Verify result is text content
-        assert result == "raw text content"
+        assert result == raw_text
+        mock_get_response.raise_for_status.assert_called_once()
+
+
+def test_download_file_not_found_error(resource_provider):
+    """Test handling of FileNotFoundError when writing to a file."""
+    # Setup mocks
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
+
+    # Setup requests mock
+    mock_get_response = MagicMock()
+    mock_get_response.content = b"test file content"
+
+    # Setup file mock to raise FileNotFoundError
+    mock_file = mock_open()
+    mock_file.side_effect = FileNotFoundError("No such file or directory")
+
+    with patch("os.makedirs"):
+        with patch("builtins.open", mock_file):
+            with patch("requests.get", return_value=mock_get_response):
+                # Call and verify exception
+                with pytest.raises(Exception, match="Invalid filepath provided"):
+                    resource_provider.download(
+                        project_id="test-project",
+                        resource_type="dataset",
+                        resource_id="test-resource-id",
+                        file_path="path/to/download/file.csv",
+                    )
+
+                mock_get_response.raise_for_status.assert_called_once()
+
+
+def test_download_other_file_exception(resource_provider):
+    """Test handling of generic exceptions when writing to a file."""
+    # Setup mocks
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
+
+    # Setup requests mock
+    mock_get_response = MagicMock()
+    mock_get_response.content = b"test file content"
+
+    # Setup file mock to raise a permission error - this is more specific and appropriate
+    mock_file = mock_open()
+    # Configure the write method to raise the exception
+    mock_file.return_value.write.side_effect = PermissionError("Permission denied")
+
+    with patch("os.makedirs"):
+        with patch("builtins.open", mock_file):
+            with patch("requests.get", return_value=mock_get_response):
+                # Call and verify exception
+                with pytest.raises(PermissionError, match="Permission denied"):
+                    resource_provider.download(
+                        project_id="test-project",
+                        resource_type="dataset",
+                        resource_id="test-resource-id",
+                        file_path="path/to/download/file.csv",
+                    )
+
+
+def test_download_content_processing_error(resource_provider):
+    """Test handling of errors when processing content without a filepath."""
+    # Setup mocks
+    version_response = MagicMock()
+    version_response.url = "https://download-url.com"
+    resource_provider.resources_client.get_latest_resource_version.return_value = (
+        version_response
+    )
+
+    # Setup requests mock with an error in both json() and text
+    mock_get_response = MagicMock()
+    mock_get_response.json.side_effect = JSONDecodeError("Invalid JSON", "", 0)
+
+    # Replace the text attribute with a PropertyMock that raises an exception
+    text_property = PropertyMock(
+        side_effect=Exception("Error returning resource content")
+    )
+    type(mock_get_response).text = text_property
+
+    with patch("requests.get", return_value=mock_get_response):
+        # Call and verify exception
+        with pytest.raises(Exception, match="Error returning resource content"):
+            resource_provider.download(
+                project_id="test-project",
+                resource_type="dataset",
+                resource_id="test-resource-id",
+            )
+
+        mock_get_response.raise_for_status.assert_called_once()
 
 
 def test_update_success(resource_provider, mock_resources_client):
