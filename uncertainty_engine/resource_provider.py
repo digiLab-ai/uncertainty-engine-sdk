@@ -271,7 +271,7 @@ class ResourceProvider:
 
         # Ensure the user has called .auth and the account id is set
         if not self.account_id:
-            raise ValueError("Authentication required before uploading resources")
+            raise ValueError("Authentication required before updating resources")
 
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
