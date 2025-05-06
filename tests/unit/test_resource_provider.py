@@ -350,8 +350,8 @@ def test_download_success_without_filepath(resource_provider):
 
     # Setup requests mock
     mock_get_response = MagicMock()
-    expected_json = {"data": "test content"}
-    mock_get_response.json.return_value = expected_json
+    expected_content = b'{"data": "test content"}'
+    mock_get_response.content = expected_content
 
     with patch("requests.get", return_value=mock_get_response):
         # Call the method
@@ -362,13 +362,12 @@ def test_download_success_without_filepath(resource_provider):
         )
 
         # Verify result and method calls
-        assert result == expected_json
+        assert result == expected_content
         resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
             "test-project", "dataset", "test-resource-id"
         )
         requests.get.assert_called_once_with("https://download-url.com")
         mock_get_response.raise_for_status.assert_called_once()
-        mock_get_response.json.assert_called_once()
 
 
 def test_download_no_auth(resource_provider):
@@ -435,35 +434,6 @@ def test_download_http_error(resource_provider):
             )
 
 
-def test_download_json_error(resource_provider):
-    """Test handling of JSON parsing error when no filepath is provided."""
-    # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
-    resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
-    )
-
-    # Setup requests mock
-    mock_get_response = MagicMock()
-    raw_text = "raw text content"
-    mock_get_response.text = raw_text
-    # Simulate a JSONDecodeError when json() is called
-    mock_get_response.json.side_effect = JSONDecodeError("Invalid JSON", "", 0)
-
-    with patch("requests.get", return_value=mock_get_response):
-        # Call the method
-        result = resource_provider.download(
-            project_id="test-project",
-            resource_type="dataset",
-            resource_id="test-resource-id",
-        )
-
-        # Verify result is text content
-        assert result == raw_text
-        mock_get_response.raise_for_status.assert_called_once()
-
-
 def test_download_file_not_found_error(resource_provider):
     """Test handling of FileNotFoundError when writing to a file."""
     # Setup mocks
@@ -527,35 +497,35 @@ def test_download_other_file_exception(resource_provider):
                     )
 
 
-def test_download_content_processing_error(resource_provider):
-    """Test handling of errors when processing content without a filepath."""
-    # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
-    resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
-    )
+# def test_download_content_processing_error(resource_provider):
+#     """Test handling of errors when processing content without a filepath."""
+#     # Setup mocks
+#     version_response = MagicMock()
+#     version_response.url = "https://download-url.com"
+#     resource_provider.resources_client.get_latest_resource_version.return_value = (
+#         version_response
+#     )
 
-    # Setup requests mock with an error in both json() and text
-    mock_get_response = MagicMock()
-    mock_get_response.json.side_effect = JSONDecodeError("Invalid JSON", "", 0)
+#     # Setup requests mock with an error in both json() and text
+#     mock_get_response = MagicMock()
+#     mock_get_response.json.side_effect = JSONDecodeError("Invalid JSON", "", 0)
 
-    # Replace the text attribute with a PropertyMock that raises an exception
-    text_property = PropertyMock(
-        side_effect=Exception("Error returning resource content")
-    )
-    type(mock_get_response).text = text_property
+#     # Replace the text attribute with a PropertyMock that raises an exception
+#     text_property = PropertyMock(
+#         side_effect=Exception("Error returning resource content")
+#     )
+#     type(mock_get_response).text = text_property
 
-    with patch("requests.get", return_value=mock_get_response):
-        # Call and verify exception
-        with pytest.raises(Exception, match="Error returning resource content"):
-            resource_provider.download(
-                project_id="test-project",
-                resource_type="dataset",
-                resource_id="test-resource-id",
-            )
+#     with patch("requests.get", return_value=mock_get_response):
+#         # Call and verify exception
+#         with pytest.raises(Exception, match="Error returning resource content"):
+#             resource_provider.download(
+#                 project_id="test-project",
+#                 resource_type="dataset",
+#                 resource_id="test-resource-id",
+#             )
 
-        mock_get_response.raise_for_status.assert_called_once()
+#         mock_get_response.raise_for_status.assert_called_once()
 
 
 def test_update_success(resource_provider, mock_resources_client):
