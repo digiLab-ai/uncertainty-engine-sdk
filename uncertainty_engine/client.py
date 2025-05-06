@@ -44,6 +44,7 @@ class Client:
     email: str
     deployment: str
     resources: ResourceProvider
+    auth_provider: AuthProvider
 
     def __init__(
         self,
