@@ -15,5 +15,10 @@ class AuthProvider:
 
     @property
     def is_authenticated(self) -> bool:
-        """Check if authentication has been performed"""
+        """
+        Check if authentication has been performed
+
+        Returns:
+            ``True`` if authenticated, ``False`` otherwise.
+        """
         return self.account_id is not None
