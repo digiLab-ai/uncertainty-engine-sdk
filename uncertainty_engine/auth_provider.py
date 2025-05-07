@@ -5,7 +5,12 @@ class AuthProvider:
         self.account_id = None
 
     def authenticate(self, account_id: str) -> None:
-        """Set authentication credentials"""
+        """
+        Set authentication credentials
+
+        Args:
+            account_id : The account ID to authenticate with.
+        """
         self.account_id = account_id
 
     @property
