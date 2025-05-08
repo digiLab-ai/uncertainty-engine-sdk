@@ -69,7 +69,12 @@ class Client:
         )
 
     def auth(self, account_id: str) -> None:
-        """Authenticate the user with the Uncertainty Engine"""
+        """
+        Authenticate the user with the Uncertainty Engine"
+
+        Args:
+            account_id : The account ID to authenticate with.
+        """
         self.auth_provider.authenticate(account_id)
 
     def list_nodes(self, category: Optional[str] = None) -> list:
