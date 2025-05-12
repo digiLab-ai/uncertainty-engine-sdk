@@ -328,7 +328,7 @@ class ResourceProvider:
         except Exception as e:
             raise Exception(f"Error finalizing upload: {str(e)}")
 
-    def list(self, project_id, resource_type: str) -> list:
+    def list_resources(self, project_id, resource_type: str) -> list:
         """
         Get a list of all resources of a specific type in your project.
 

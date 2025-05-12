@@ -743,7 +743,7 @@ def test_update_finalize_error(resource_provider, mock_resources_client):
                     )
 
 
-def test_list_success(resource_provider, mock_resources_client):
+def test_list_resources_success(resource_provider, mock_resources_client):
     """Test listing resources successfully."""
     # Setup mock response
     created_time = datetime.now()
@@ -764,7 +764,7 @@ def test_list_success(resource_provider, mock_resources_client):
     mock_resources_client.get_project_resource_records.return_value = response
 
     # Call the method
-    result = resource_provider.list("test-project", "dataset")
+    result = resource_provider.list_resources("test-project", "dataset")
 
     # Verify result
     expected_result = [
@@ -787,7 +787,7 @@ def test_list_success(resource_provider, mock_resources_client):
     )
 
 
-def test_list_empty(resource_provider, mock_resources_client):
+def test_list_resources_empty(resource_provider, mock_resources_client):
     """Test listing resources when none exist."""
     # Setup mock response with empty list
     response = MagicMock()
@@ -795,7 +795,7 @@ def test_list_empty(resource_provider, mock_resources_client):
     mock_resources_client.get_project_resource_records.return_value = response
 
     # Call the method
-    result = resource_provider.list("test-project", "dataset")
+    result = resource_provider.list_resources("test-project", "dataset")
 
     # Verify result is empty list
     assert result == []
