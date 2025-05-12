@@ -52,6 +52,14 @@ class Client:
         deployment: str = DEFAULT_DEPLOYMENT,
         resource_deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
     ):
+        """
+        A client for interacting with the Uncertainty Engine.
+
+        Args:
+            email: The email address of the user.
+            deployment: The URL of the Uncertainty Engine deployment.
+            resource_deployment: The URL of the resource deployment.
+        """
         self.email = email
         self.deployment = deployment
         self.auth_service = AuthService()
