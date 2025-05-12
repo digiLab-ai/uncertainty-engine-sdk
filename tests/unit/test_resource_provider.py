@@ -21,11 +21,11 @@ from uncertainty_engine.api_providers.resource_provider import (
 
 
 @pytest.fixture
-def mock_auth_provider():
+def mock_auth_service():
     """Fixture for a mock authentication provider."""
-    auth_provider = MagicMock()
-    auth_provider.account_id = "test-account-id"
-    return auth_provider
+    auth_service = MagicMock()
+    auth_service.account_id = "test-account-id"
+    return auth_service
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ def mock_resources_client():
 
 @pytest.fixture
 def resource_provider(
-    mock_auth_provider, mock_api_client, mock_projects_client, mock_resources_client
+    mock_auth_service, mock_api_client, mock_projects_client, mock_resources_client
 ):
     """Fixture for a ResourceProvider with mocked dependencies."""
     with patch(
@@ -56,19 +56,19 @@ def resource_provider(
     ):
         with patch.object(ProjectRecordsApi, "__init__", return_value=None):
             with patch.object(ResourcesApi, "__init__", return_value=None):
-                provider = ResourceProvider(auth_provider=mock_auth_provider)
+                provider = ResourceProvider(auth_service=mock_auth_service)
                 provider.projects_client = mock_projects_client
                 provider.resources_client = mock_resources_client
                 return provider
 
 
-def test_init_default():
+def test_init_default(mock_auth_service):
     """Test initializing with default parameters."""
     with patch("uncertainty_engine_resource_client.ApiClient") as mock_client:
         with patch("uncertainty_engine_resource_client.Configuration") as mock_config:
             with patch.object(ProjectRecordsApi, "__init__", return_value=None):
                 with patch.object(ResourcesApi, "__init__", return_value=None):
-                    provider = ResourceProvider()
+                    provider = ResourceProvider(mock_auth_service)
 
                     # Verify configuration is created with default URL
                     mock_config.assert_called_once_with(
@@ -77,13 +77,13 @@ def test_init_default():
 
                     # Verify clients are created
                     mock_client.assert_called_once()
-                    assert provider.auth_provider is None
+                    assert provider.auth_service == mock_auth_service
                     assert provider.client is not None
                     assert provider.projects_client is not None
                     assert provider.resources_client is not None
 
 
-def test_init_custom(mock_auth_provider):
+def test_init_custom(mock_auth_service):
     """Test initializing with custom parameters."""
     custom_url = "http://custom-url.com"
 
@@ -92,7 +92,7 @@ def test_init_custom(mock_auth_provider):
             with patch.object(ProjectRecordsApi, "__init__", return_value=None):
                 with patch.object(ResourcesApi, "__init__", return_value=None):
                     provider = ResourceProvider(
-                        deployment=custom_url, auth_provider=mock_auth_provider
+                        deployment=custom_url, auth_service=mock_auth_service
                     )
 
                     # Verify configuration is created with custom URL
@@ -100,21 +100,21 @@ def test_init_custom(mock_auth_provider):
 
                     # Verify clients are created
                     mock_client.assert_called_once()
-                    assert provider.auth_provider is mock_auth_provider
+                    assert provider.auth_service is mock_auth_service
                     assert provider.client is not None
 
 
-def test_account_id_with_auth_provider(resource_provider, mock_auth_provider):
-    """Test the account_id property when auth_provider is available."""
-    assert resource_provider.account_id == mock_auth_provider.account_id
+def test_account_id_with_auth_service(resource_provider, mock_auth_service):
+    """Test the account_id property when auth_service is available."""
+    assert resource_provider.account_id == mock_auth_service.account_id
 
 
-def test_account_id_without_auth_provider():
-    """Test the account_id property when auth_provider is not available."""
+def test_account_id_without_auth_service():
+    """Test the account_id property when auth_service is not available."""
     with patch("uncertainty_engine_resource_client.ApiClient"):
         with patch.object(ProjectRecordsApi, "__init__", return_value=None):
             with patch.object(ResourcesApi, "__init__", return_value=None):
-                provider = ResourceProvider(auth_provider=None)
+                provider = ResourceProvider(auth_service=None)
                 assert provider.account_id is None
 
 
@@ -193,7 +193,7 @@ def test_upload_no_auth(resource_provider):
     """Test upload fails when not authenticated."""
 
     # Set auth provider to None
-    with patch.object(resource_provider, "auth_provider", None):
+    with patch.object(resource_provider, "auth_service", None):
 
         # Call and verify exception
         with pytest.raises(
@@ -372,7 +372,7 @@ def test_download_success_without_filepath(resource_provider):
 def test_download_no_auth(resource_provider):
     """Test download fails when not authenticated."""
     # Set auth provider to None
-    with patch.object(resource_provider, "auth_provider", None):
+    with patch.object(resource_provider, "auth_service", None):
 
         # Call and verify exception
         with pytest.raises(
@@ -614,7 +614,7 @@ def test_update_resource_not_found(resource_provider, mock_resources_client):
         with patch("builtins.open", mock_file):
             with patch("requests.put", return_value=mock_put_response):
                 with patch(
-                    "uncertainty_engine.resource_provider.uuid4",
+                    "uncertainty_engine.api_providers.resource_provider.uuid4",
                     return_value="test-uuid",
                 ):
                     # Call the method
@@ -643,8 +643,8 @@ def test_update_resource_not_found(resource_provider, mock_resources_client):
 def test_update_no_auth(resource_provider):
     """Test update fails when not authenticated."""
     # Set auth provider to None
-    with patch.object(resource_provider, "auth_provider", None):
-        resource_provider.auth_provider = None
+    with patch.object(resource_provider, "auth_service", None):
+        resource_provider.auth_service = None
 
         # Call and verify exception
         with pytest.raises(
