@@ -9,7 +9,10 @@ from uncertainty_engine_resource_client.api import (
     ProjectRecordsApi,
     ResourcesApi,
 )
-from uncertainty_engine_resource_client.exceptions import ApiException
+from uncertainty_engine_resource_client.exceptions import (
+    ApiException,
+    UnauthorizedException,
+)
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
     PostResourceVersionRequest,
@@ -17,7 +20,7 @@ from uncertainty_engine_resource_client.models import (
     ResourceVersionRecordInput,
 )
 
-from uncertainty_engine.auth_provider import AuthProvider
+from uncertainty_engine.auth_provider import AuthDetails
 from uncertainty_engine.utils import format_api_error
 
 DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
@@ -42,7 +45,6 @@ class ResourceProvider:
     def __init__(
         self,
         deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
-        auth_provider: AuthProvider = None,
     ):
         """
         Create an instance of a ResourceProvider
@@ -53,17 +55,25 @@ class ResourceProvider:
             auth_provider: Handles your authentication. This is usually provided
                            by the parent application.
         """
-        self.auth_provider = auth_provider
+
         self.client = resource_client.ApiClient(
-            configuration=resource_client.Configuration(host=deployment)
+            configuration=resource_client.Configuration(
+                host=deployment,
+            )
         )
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
+        self.account_id = None
 
-    @property
-    def account_id(self) -> Optional[str]:
-        """Get the current account ID from the auth provider"""
-        return None if self.auth_provider is None else self.auth_provider.account_id
+    def authenticate(self, auth_details: AuthDetails):
+        self.account_id = auth_details.account_id
+        self.client.default_headers["Authorization"] = (
+            "Bearer " + auth_details.access_token
+        )
+
+        # Refresh API instances with new config
+        self.projects_client = ProjectRecordsApi(self.client)
+        self.resources_client = ResourcesApi(self.client)
 
     def upload(
         self,
@@ -115,6 +125,10 @@ class ResourceProvider:
                 project_id, resource_type, request_body
             )
             resource_id = resource_response.resource_record.id
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
+            )
         except ApiException as e:
             raise Exception(f"Error creating resource record: {format_api_error(e)}")
         except Exception as e:
@@ -136,6 +150,10 @@ class ResourceProvider:
             )
             upload_url = version_response.url
             pending_id = version_response.pending_record_id
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
+            )
         except ApiException as e:
             raise Exception(f"Error creating version record: {format_api_error(e)}")
         except Exception as e:
@@ -158,6 +176,10 @@ class ResourceProvider:
         try:
             self.resources_client.put_upload_resource_version(
                 project_id, resource_type, resource_id, pending_id
+            )
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
             )
         except ApiException as e:
             raise Exception(f"Error completing upload: {format_api_error(e)}")
@@ -213,6 +235,10 @@ class ResourceProvider:
                 project_id, resource_type, resource_id
             )
             download_url = resource_response.url
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
+            )
         except ApiException as e:
             raise Exception(f"Error retrieving resource: {format_api_error(e)}")
         except Exception as e:
@@ -303,6 +329,10 @@ class ResourceProvider:
             )
             upload_url = version_response.url
             pending_id = version_response.pending_record_id
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
+            )
         except ApiException as e:
             raise Exception(f"Error creating version record: {format_api_error(e)}")
         except Exception as e:
@@ -325,6 +355,10 @@ class ResourceProvider:
         try:
             self.resources_client.put_upload_resource_version(
                 project_id, resource_type, resource_id, pending_id
+            )
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
             )
         except ApiException as e:
             raise Exception(f"Error finalizing upload: {format_api_error(e)}")
@@ -353,9 +387,19 @@ class ResourceProvider:
             >>> print(f"Found {len(models)} models")
             >>> print(models)
         """
-        resource_records = self.resources_client.get_project_resource_records(
-            project_id, resource_type
-        ).resource_records
+
+        try:
+            resource_records = self.resources_client.get_project_resource_records(
+                project_id, resource_type
+            ).resource_records
+        except UnauthorizedException:
+            raise Exception(
+                "Authentication failed - access token has expired. Please refresh your tokens by running `Client.authenticate`"
+            )
+        except ApiException as e:
+            raise Exception(f"Error fetching resources: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error fetching resources: {str(e)}")
 
         return [
             {
