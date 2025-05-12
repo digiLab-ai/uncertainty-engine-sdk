@@ -17,14 +17,17 @@ from uncertainty_engine_resource_client.models import (
     ResourceVersionRecordInput,
 )
 
-from uncertainty_engine.auth_provider import AuthProvider
+from uncertainty_engine.api_providers import ApiProviderBase
+from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
 
 DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
 DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
-class ResourceProvider:
+class ResourceProvider(ApiProviderBase):
+    base_url: str
+    auth_service: AuthService
     """
     Client for managing resources in the Uncertainty Engine platform.
 
@@ -39,31 +42,24 @@ class ResourceProvider:
     Before using this client, you'll need a project ID and appropriate access rights.
     """
 
-    def __init__(
-        self,
-        deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
-        auth_provider: AuthProvider = None,
-    ):
-        """
-        Create an instance of a ResourceProvider
+    def __init__(self, base_url: str, auth_service: AuthService):
+        super().__init__(base_url, auth_service)
 
-        Args:
-            deployment: The URL of the resource service. You typically won't need
-                        to change this unless instructed by support.
-            auth_provider: Handles your authentication. This is usually provided
-                           by the parent application.
-        """
-        self.auth_provider = auth_provider
+        # Initialize the generated API client
         self.client = resource_client.ApiClient(
-            configuration=resource_client.Configuration(host=deployment)
+            configuration=resource_client.Configuration(host=base_url)
         )
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
+    def authenticate(self, account_id: str) -> None:
+        """Set the account ID"""
+        self.auth_service.authenticate(account_id)
+
     @property
     def account_id(self) -> Optional[str]:
         """Get the current account ID from the auth provider"""
-        return None if self.auth_provider is None else self.auth_provider.account_id
+        return None if self.auth_service is None else self.auth_service.account_id
 
     def upload(
         self,

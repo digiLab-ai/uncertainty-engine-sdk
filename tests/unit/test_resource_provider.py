@@ -13,8 +13,8 @@ from uncertainty_engine_resource_client.models import (
 )
 from uncertainty_engine_resource_client.exceptions import ApiException
 
-from uncertainty_engine.resource_provider import (
-    ResourceProvider,
+from uncertainty_engine.api_providers import ResourceProvider
+from uncertainty_engine.api_providers.resource_provider import (
     DEFAULT_RESOURCE_DEPLOYMENT,
     DATETIME_STRING_FORMAT,
 )

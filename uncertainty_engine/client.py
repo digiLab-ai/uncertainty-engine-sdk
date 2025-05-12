@@ -6,8 +6,8 @@ import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
-from uncertainty_engine.auth_provider import AuthProvider
-from uncertainty_engine.resource_provider import ResourceProvider
+from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
@@ -45,7 +45,6 @@ class Client:
     email: str
     deployment: str
     resources: ResourceProvider
-    auth_provider: AuthProvider
 
     def __init__(
         self,
@@ -53,24 +52,14 @@ class Client:
         deployment: str = DEFAULT_DEPLOYMENT,
         resource_deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
     ):
-        """
-        A client for interacting with the Uncertainty Engine.
-
-        Args:
-            email: The email address of the user.
-            deployment: The URL of the Uncertainty Engine deployment.
-            resource_deployment: The URL of the resource deployment.
-        """
         self.email = email
         self.deployment = deployment
-        self.auth_provider = AuthProvider()
-        self.resources = ResourceProvider(
-            deployment=resource_deployment, auth_provider=self.auth_provider
-        )
+        self.auth_service = AuthService()
+        self.resources = ResourceProvider(resource_deployment, self.auth_service)
 
-    def auth(self, account_id: str) -> None:
+    def authenticate(self, account_id: str) -> None:
         """Authenticate the user with the Uncertainty Engine"""
-        self.auth_provider.authenticate(account_id)
+        self.resources.authenticate(account_id)
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """
