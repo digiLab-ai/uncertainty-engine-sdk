@@ -50,6 +50,6 @@ def format_api_error(e: ApiException) -> str:
         A string containing the error message.
     """
     try:
-        return json.loads(e.body).get("detail", "Unknown error")
+        return json.loads(e.body).get("reason", "Unknown error")
     except Exception:
         return str(e)
