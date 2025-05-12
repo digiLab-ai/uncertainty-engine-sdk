@@ -32,7 +32,7 @@ class ResourceProvider:
     stored in your Uncertainty Engine projects. Use this client when you need to:
 
     - Upload resources to your projects for later use
-    - Download resources that you or others have previously uploadd
+    - Download resources that you or others have previously upload
     - Update existing resources
     - Get a list of available resources in a project
 
