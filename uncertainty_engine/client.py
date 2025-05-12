@@ -63,7 +63,7 @@ class Client:
         self.email = email
         self.deployment = deployment
         self.auth_service = AuthService()
-        self.resources = ResourceProvider(resource_deployment, self.auth_service)
+        self.resources = ResourceProvider(self.auth_service, resource_deployment)
 
     def authenticate(self, account_id: str) -> None:
         """
