@@ -3,12 +3,9 @@ from typing import Any, Optional
 from uuid import uuid4
 
 import requests
-
-import uncertainty_engine_resource_client as resource_client
-from uncertainty_engine_resource_client.api import (
-    ProjectRecordsApi,
-    ResourcesApi,
-)
+from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
+from uncertainty_engine_resource_client.api_client import ApiClient
+from uncertainty_engine_resource_client.configuration import Configuration
 from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
@@ -42,7 +39,7 @@ class ResourceProvider:
     def __init__(
         self,
         deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
-        auth_provider: AuthProvider = None,
+        auth_provider: Optional[AuthProvider] = None,
     ):
         """
         Create an instance of a ResourceProvider
@@ -54,9 +51,8 @@ class ResourceProvider:
                            by the parent application.
         """
         self.auth_provider = auth_provider
-        self.client = resource_client.ApiClient(
-            configuration=resource_client.Configuration(host=deployment)
-        )
+        config = Configuration(host=deployment)
+        self.client = ApiClient(configuration=config)
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
@@ -70,7 +66,7 @@ class ResourceProvider:
         project_id: str,
         name: str,
         resource_type: str,
-        file_path: Optional[str] = None,
+        file_path: str,
     ) -> str:
         """
         Upload a file to your project.
@@ -122,11 +118,12 @@ class ResourceProvider:
 
         # Create version record and get upload URL
         version_name = f"{name}-v1"
+        resource_version_record = ResourceVersionRecordInput(
+            name=version_name,
+            owner_id=self.account_id,
+        )
         resource_version_record = PostResourceVersionRequest(
-            resource_version_record=ResourceVersionRecordInput(
-                name=version_name,
-                owner_id=self.account_id,
-            ),
+            resource_version_record=resource_version_record,
             resource_file_extension=file_extension,
         )
 
@@ -146,7 +143,7 @@ class ResourceProvider:
             with open(file_path, "rb") as file:
                 response = requests.put(upload_url, data=file)
 
-                if response.status_code >= 300:
+                if response.status_code != 200:
                     raise Exception(
                         f"Upload failed with status {response.status_code}: {response.text}"
                     )

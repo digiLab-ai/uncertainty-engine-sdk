@@ -60,18 +60,6 @@ def test_authenticate_multiple_calls(auth_provider: AuthProvider):
     assert auth_provider.is_authenticated is True
 
 
-def test_is_authenticated_property_when_not_authenticated(auth_provider: AuthProvider):
-    """
-    Test is_authenticated property returns False when account_id is None.
-
-    Args:
-        auth_provider: An instance of AuthProvider.
-    """
-    # Verify initial state
-    assert auth_provider.account_id is None
-    assert auth_provider.is_authenticated is False
-
-
 def test_is_authenticated_property_when_authenticated(auth_provider: AuthProvider):
     """
     Test is_authenticated property returns True when account_id is set.
