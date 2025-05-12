@@ -45,6 +45,14 @@ class ResourceProvider(ApiProviderBase):
     def __init__(
         self, auth_service: AuthService, deployment: str = DEFAULT_RESOURCE_DEPLOYMENT
     ):
+        """
+        Create an instance of a ResourceProvider
+
+        Args:
+            deployment: The URL of the resource service. You typically won't need
+                        to change this unless instructed by support.
+            auth_service: Handles your authentication.
+        """
         super().__init__(deployment, auth_service)
 
         # Initialize the generated API client
