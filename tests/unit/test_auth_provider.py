@@ -4,19 +4,29 @@ from uncertainty_engine.auth_provider import AuthProvider
 
 
 @pytest.fixture
-def auth_provider():
+def auth_provider() -> AuthProvider:
     """Fixture for an AuthProvider instance."""
     return AuthProvider()
 
 
-def test_init(auth_provider):
-    """Test that a new AuthProvider has no account_id set."""
+def test_init(auth_provider: AuthProvider):
+    """
+    Test that a new AuthProvider has no account_id set.
+
+    Args:
+        auth_provider: An instance of AuthProvider.
+    """
     assert auth_provider.account_id is None
     assert auth_provider.is_authenticated is False
 
 
-def test_authenticate(auth_provider):
-    """Test that calling authenticate sets the account_id."""
+def test_authenticate(auth_provider: AuthProvider):
+    """
+    Test that calling authenticate sets the account_id.
+
+    Args:
+        auth_provider: An instance of AuthProvider.
+    """
     # Setup
     test_account_id = "test-account-123"
 
@@ -28,8 +38,13 @@ def test_authenticate(auth_provider):
     assert auth_provider.is_authenticated is True
 
 
-def test_authenticate_multiple_calls(auth_provider):
-    """Test that authenticate can be called multiple times, updating the account_id."""
+def test_authenticate_multiple_calls(auth_provider: AuthProvider):
+    """
+    Test that authenticate can be called multiple times, updating the account_id.
+
+    Args:
+        auth_provider: An instance of AuthProvider.
+    """
     # Setup
     first_account_id = "first-account"
     second_account_id = "second-account"
@@ -45,15 +60,25 @@ def test_authenticate_multiple_calls(auth_provider):
     assert auth_provider.is_authenticated is True
 
 
-def test_is_authenticated_property_when_not_authenticated(auth_provider):
-    """Test is_authenticated property returns False when account_id is None."""
+def test_is_authenticated_property_when_not_authenticated(auth_provider: AuthProvider):
+    """
+    Test is_authenticated property returns False when account_id is None.
+
+    Args:
+        auth_provider: An instance of AuthProvider.
+    """
     # Verify initial state
     assert auth_provider.account_id is None
     assert auth_provider.is_authenticated is False
 
 
-def test_is_authenticated_property_when_authenticated(auth_provider):
-    """Test is_authenticated property returns True when account_id is set."""
+def test_is_authenticated_property_when_authenticated(auth_provider: AuthProvider):
+    """
+    Test is_authenticated property returns True when account_id is set.
+
+    Args:
+        auth_provider: An instance of AuthProvider.
+    """
     # Setup
     auth_provider.account_id = "test-account"
 
