@@ -64,13 +64,12 @@ class Client:
         self.email = email
         self.deployment = deployment
         self.auth_provider = AuthProvider()
-        self.resources = ResourceProvider(
-            deployment=resource_deployment, auth_provider=self.auth_provider
-        )
+        self.resources = ResourceProvider(deployment=resource_deployment)
 
-    def auth(self, account_id: str) -> None:
+    def authenticate(self, account_id: str) -> None:
         """Authenticate the user with the Uncertainty Engine"""
-        self.auth_provider.authenticate(account_id)
+        auth_details = self.auth_provider.authenticate(account_id)
+        self.resources.authenticate(auth_details)
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """
