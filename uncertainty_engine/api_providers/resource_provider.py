@@ -26,7 +26,7 @@ DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
 class ResourceProvider(ApiProviderBase):
-    base_url: str
+    deployment: str
     auth_service: AuthService
     """
     Client for managing resources in the Uncertainty Engine platform.
@@ -42,12 +42,14 @@ class ResourceProvider(ApiProviderBase):
     Before using this client, you'll need a project ID and appropriate access rights.
     """
 
-    def __init__(self, base_url: str, auth_service: AuthService):
-        super().__init__(base_url, auth_service)
+    def __init__(
+        self, auth_service: AuthService, deployment: str = DEFAULT_RESOURCE_DEPLOYMENT
+    ):
+        super().__init__(deployment, auth_service)
 
         # Initialize the generated API client
         self.client = resource_client.ApiClient(
-            configuration=resource_client.Configuration(host=base_url)
+            configuration=resource_client.Configuration(host=deployment)
         )
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
