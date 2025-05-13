@@ -8,6 +8,7 @@ from typeguard import typechecked
 
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
@@ -58,6 +59,7 @@ class Client:
         """
         self.email = email
         self.deployment = deployment
+        authenticator = CognitoAuthenticator()
         self.auth_service = AuthService()
         self.resources = ResourceProvider(self.auth_service, resource_deployment)
 
