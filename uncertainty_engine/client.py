@@ -6,8 +6,8 @@ import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
-from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.api_providers import ResourceProvider
+from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
@@ -42,10 +42,6 @@ class Job(BaseModel):
 
 @typechecked
 class Client:
-    email: str
-    deployment: str
-    resources: ResourceProvider
-
     def __init__(
         self,
         email: str,

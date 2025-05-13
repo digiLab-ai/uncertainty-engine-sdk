@@ -3,12 +3,9 @@ from typing import Any, Optional
 from uuid import uuid4
 
 import requests
-
-import uncertainty_engine_resource_client as resource_client
-from uncertainty_engine_resource_client.api import (
-    ProjectRecordsApi,
-    ResourcesApi,
-)
+from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
+from uncertainty_engine_resource_client.api_client import ApiClient
+from uncertainty_engine_resource_client.configuration import Configuration
 from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
@@ -56,9 +53,7 @@ class ResourceProvider(ApiProviderBase):
         super().__init__(deployment, auth_service)
 
         # Initialize the generated API client
-        self.client = resource_client.ApiClient(
-            configuration=resource_client.Configuration(host=deployment)
-        )
+        self.client = ApiClient(configuration=Configuration(host=deployment))
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
@@ -76,7 +71,7 @@ class ResourceProvider(ApiProviderBase):
         project_id: str,
         name: str,
         resource_type: str,
-        file_path: Optional[str] = None,
+        file_path: str,
     ) -> str:
         """
         Upload a file to your project.
@@ -128,11 +123,12 @@ class ResourceProvider(ApiProviderBase):
 
         # Create version record and get upload URL
         version_name = f"{name}-v1"
+        resource_version_record = ResourceVersionRecordInput(
+            name=version_name,
+            owner_id=self.account_id,
+        )
         resource_version_record = PostResourceVersionRequest(
-            resource_version_record=ResourceVersionRecordInput(
-                name=version_name,
-                owner_id=self.account_id,
-            ),
+            resource_version_record=resource_version_record,
             resource_file_extension=file_extension,
         )
 
@@ -152,7 +148,7 @@ class ResourceProvider(ApiProviderBase):
             with open(file_path, "rb") as file:
                 response = requests.put(upload_url, data=file)
 
-                if response.status_code >= 300:
+                if response.status_code != 200:
                     raise Exception(
                         f"Upload failed with status {response.status_code}: {response.text}"
                     )
@@ -337,7 +333,7 @@ class ResourceProvider(ApiProviderBase):
         except Exception as e:
             raise Exception(f"Error finalizing upload: {str(e)}")
 
-    def list(self, project_id, resource_type: str) -> list:
+    def list_resources(self, project_id, resource_type: str) -> list:
         """
         Get a list of all resources of a specific type in your project.
 

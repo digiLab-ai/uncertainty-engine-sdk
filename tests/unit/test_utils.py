@@ -3,9 +3,9 @@ from typing import Union
 
 import pytest
 from typeguard import TypeCheckError, typechecked
+from uncertainty_engine_resource_client.exceptions import ApiException
 
 from uncertainty_engine import utils as ue_utils
-from uncertainty_engine_resource_client.exceptions import ApiException
 
 # dict_to_csv_str
 
@@ -104,14 +104,15 @@ def test_format_api_error_with_detail():
     Test format_api_error with an ApiException that has a body with a 'detail' field.
     """
     # Create a mock ApiException with a body containing a detail field
-    error_body = json.dumps({"detail": "Resource not found"})
+    detail = "Resource not found"
+    error_body = json.dumps({"detail": detail})
     mock_exception = ApiException(status=404, reason="Not Found", body=error_body)
 
     # Call the function
     result = ue_utils.format_api_error(mock_exception)
 
     # Verify the result
-    assert result == "Resource not found"
+    assert result == f"API Error: {mock_exception.reason}\nDetails: {detail}"
 
 
 def test_format_api_error_without_detail():
@@ -128,7 +129,22 @@ def test_format_api_error_without_detail():
     result = ue_utils.format_api_error(mock_exception)
 
     # Verify the result - should return "Unknown error" as fallback
-    assert result == "Unknown error"
+    assert result == f"API Error: {mock_exception.reason}\nDetails: No error message"
+
+
+def test_format_api_error_no_reason():
+    """
+    Test format_api_error with an ApiException that has no reason.
+    """
+    # Create a mock ApiException with no reason
+    error_body = json.dumps({"detail": "Resource not found"})
+    mock_exception = ApiException(status=404, body=error_body)
+
+    # Call the function
+    result = ue_utils.format_api_error(mock_exception)
+
+    # Verify the result - should return "Unknown error" as fallback
+    assert result == "API Error: No error reason\nDetails: Resource not found"
 
 
 def test_format_api_error_invalid_json():
@@ -136,11 +152,11 @@ def test_format_api_error_invalid_json():
     Test format_api_error with an ApiException that has a body which is not valid JSON.
     """
     # Create a mock ApiException with an invalid JSON body
-    error_body = "This is not JSON"
+    error_body = '{"detail": "This is not JSON'
     mock_exception = ApiException(status=400, reason="Bad Request", body=error_body)
 
     # Call the function
     result = ue_utils.format_api_error(mock_exception)
 
     # Verify the result - should fall back to str(e)
-    assert result == str(mock_exception)
+    assert result == f"API Error: {mock_exception.reason}\nDetails: No error message"

@@ -1,22 +1,23 @@
 import os
-import pytest
-from unittest.mock import MagicMock, patch, mock_open
 from datetime import datetime
+from unittest.mock import MagicMock, mock_open, patch
 
+import pytest
 import requests
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
+from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
     PostResourceVersionRequest,
     ResourceRecordInput,
     ResourceVersionRecordInput,
 )
-from uncertainty_engine_resource_client.exceptions import ApiException
 
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.api_providers.resource_provider import (
-    DEFAULT_RESOURCE_DEPLOYMENT,
     DATETIME_STRING_FORMAT,
+    DEFAULT_RESOURCE_DEPLOYMENT,
+    ResourceProvider,
 )
 
 
@@ -52,7 +53,8 @@ def resource_provider(
 ):
     """Fixture for a ResourceProvider with mocked dependencies."""
     with patch(
-        "uncertainty_engine_resource_client.ApiClient", return_value=mock_api_client
+        "uncertainty_engine_resource_client.api_client.ApiClient",
+        return_value=mock_api_client,
     ):
         with patch.object(ProjectRecordsApi, "__init__", return_value=None):
             with patch.object(ResourcesApi, "__init__", return_value=None):
@@ -64,20 +66,29 @@ def resource_provider(
 
 def test_init_default(mock_auth_service):
     """Test initializing with default parameters."""
-    with patch("uncertainty_engine_resource_client.ApiClient") as mock_client:
-        with patch("uncertainty_engine_resource_client.Configuration") as mock_config:
+    with patch(
+        "uncertainty_engine.api_providers.resource_provider.Configuration"
+    ) as mock_config_class:
+        mock_config_instance = MagicMock()
+        mock_config_class.return_value = mock_config_instance
+
+        with patch(
+            "uncertainty_engine.api_providers.resource_provider.ApiClient"
+        ) as mock_client:
             with patch.object(ProjectRecordsApi, "__init__", return_value=None):
                 with patch.object(ResourcesApi, "__init__", return_value=None):
                     provider = ResourceProvider(mock_auth_service)
 
                     # Verify configuration is created with default URL
-                    mock_config.assert_called_once_with(
+                    mock_config_class.assert_called_once_with(
                         host=DEFAULT_RESOURCE_DEPLOYMENT
                     )
 
                     # Verify clients are created
-                    mock_client.assert_called_once()
-                    assert provider.auth_service == mock_auth_service
+                    mock_client.assert_called_once_with(
+                        configuration=mock_config_instance
+                    )
+                    assert provider.auth_service is mock_auth_service
                     assert provider.client is not None
                     assert provider.projects_client is not None
                     assert provider.resources_client is not None
@@ -87,8 +98,15 @@ def test_init_custom(mock_auth_service):
     """Test initializing with custom parameters."""
     custom_url = "http://custom-url.com"
 
-    with patch("uncertainty_engine_resource_client.ApiClient") as mock_client:
-        with patch("uncertainty_engine_resource_client.Configuration") as mock_config:
+    with patch(
+        "uncertainty_engine.api_providers.resource_provider.Configuration"
+    ) as mock_config_class:
+        mock_config_instance = MagicMock()
+        mock_config_class.return_value = mock_config_instance
+
+        with patch(
+            "uncertainty_engine.api_providers.resource_provider.ApiClient"
+        ) as mock_client:
             with patch.object(ProjectRecordsApi, "__init__", return_value=None):
                 with patch.object(ResourcesApi, "__init__", return_value=None):
                     provider = ResourceProvider(
@@ -96,10 +114,12 @@ def test_init_custom(mock_auth_service):
                     )
 
                     # Verify configuration is created with custom URL
-                    mock_config.assert_called_once_with(host=custom_url)
+                    mock_config_class.assert_called_once_with(host=custom_url)
 
                     # Verify clients are created
-                    mock_client.assert_called_once()
+                    mock_client.assert_called_once_with(
+                        configuration=mock_config_instance
+                    )
                     assert provider.auth_service is mock_auth_service
                     assert provider.client is not None
 
@@ -111,7 +131,7 @@ def test_account_id_with_auth_service(resource_provider, mock_auth_service):
 
 def test_account_id_without_auth_service():
     """Test the account_id property when auth_service is not available."""
-    with patch("uncertainty_engine_resource_client.ApiClient"):
+    with patch("uncertainty_engine_resource_client.api_client.ApiClient"):
         with patch.object(ProjectRecordsApi, "__init__", return_value=None):
             with patch.object(ResourcesApi, "__init__", return_value=None):
                 provider = ResourceProvider(auth_service=None)
@@ -496,37 +516,6 @@ def test_download_other_file_exception(resource_provider):
                     )
 
 
-# def test_download_content_processing_error(resource_provider):
-#     """Test handling of errors when processing content without a filepath."""
-#     # Setup mocks
-#     version_response = MagicMock()
-#     version_response.url = "https://download-url.com"
-#     resource_provider.resources_client.get_latest_resource_version.return_value = (
-#         version_response
-#     )
-
-#     # Setup requests mock with an error in both json() and text
-#     mock_get_response = MagicMock()
-#     mock_get_response.json.side_effect = JSONDecodeError("Invalid JSON", "", 0)
-
-#     # Replace the text attribute with a PropertyMock that raises an exception
-#     text_property = PropertyMock(
-#         side_effect=Exception("Error returning resource content")
-#     )
-#     type(mock_get_response).text = text_property
-
-#     with patch("requests.get", return_value=mock_get_response):
-#         # Call and verify exception
-#         with pytest.raises(Exception, match="Error returning resource content"):
-#             resource_provider.download(
-#                 project_id="test-project",
-#                 resource_type="dataset",
-#                 resource_id="test-resource-id",
-#             )
-
-#         mock_get_response.raise_for_status.assert_called_once()
-
-
 def test_update_success(resource_provider, mock_resources_client):
     """Test updating a resource successfully."""
     # Setup mocks for resource info with direct attribute assignment
@@ -759,7 +748,7 @@ def test_update_finalize_error(resource_provider, mock_resources_client):
                     )
 
 
-def test_list_success(resource_provider, mock_resources_client):
+def test_list_resources_success(resource_provider, mock_resources_client):
     """Test listing resources successfully."""
     # Setup mock response
     created_time = datetime.now()
@@ -780,7 +769,7 @@ def test_list_success(resource_provider, mock_resources_client):
     mock_resources_client.get_project_resource_records.return_value = response
 
     # Call the method
-    result = resource_provider.list("test-project", "dataset")
+    result = resource_provider.list_resources("test-project", "dataset")
 
     # Verify result
     expected_result = [
@@ -803,7 +792,7 @@ def test_list_success(resource_provider, mock_resources_client):
     )
 
 
-def test_list_empty(resource_provider, mock_resources_client):
+def test_list_resources_empty(resource_provider, mock_resources_client):
     """Test listing resources when none exist."""
     # Setup mock response with empty list
     response = MagicMock()
@@ -811,7 +800,7 @@ def test_list_empty(resource_provider, mock_resources_client):
     mock_resources_client.get_project_resource_records.return_value = response
 
     # Call the method
-    result = resource_provider.list("test-project", "dataset")
+    result = resource_provider.list_resources("test-project", "dataset")
 
     # Verify result is empty list
     assert result == []
