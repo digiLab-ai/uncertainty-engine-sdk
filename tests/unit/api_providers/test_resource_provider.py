@@ -33,7 +33,6 @@ def test_init_default(mock_auth_service):
 
 def test_init_custom(mock_auth_service, patched_api_classes):
     """Test initializing with custom parameters."""
-    from uncertainty_engine.api_providers.resource_provider import ResourceProvider
 
     custom_url = "http://custom-url.com"
 
@@ -53,7 +52,6 @@ def test_account_id_with_auth_service(resource_provider, mock_auth_service):
 
 def test_account_id_without_auth_service(patched_api_classes):
     """Test the account_id property when auth_service is not available."""
-    from uncertainty_engine.api_providers.resource_provider import ResourceProvider
 
     provider = ResourceProvider(auth_service=None)
     assert provider.account_id is None
