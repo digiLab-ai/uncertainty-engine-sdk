@@ -144,7 +144,7 @@ def test_format_api_error_no_reason():
     result = ue_utils.format_api_error(mock_exception)
 
     # Verify the result - should return "Unknown error" as fallback
-    assert result == f"API Error: No error reason\nDetails: Resource not found"
+    assert result == "API Error: No error reason\nDetails: Resource not found"
 
 
 def test_format_api_error_invalid_json():
