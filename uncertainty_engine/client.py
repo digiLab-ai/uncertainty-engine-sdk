@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from time import sleep
 from typing import Optional, Union
@@ -57,10 +58,16 @@ class Client:
             deployment: The URL of the Uncertainty Engine deployment.
             resource_deployment: The URL of the resource deployment.
         """
+
+        # Use environment variables
+        region = os.getenv("COGNITO_REGION")
+        user_pool_id = os.getenv("COGNITO_USER_POOL_ID")
+        client_id = os.getenv("COGNITO_CLIENT_ID")
+
         self.email = email
         self.deployment = deployment
-        authenticator = CognitoAuthenticator()
-        self.auth_service = AuthService()
+        authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
+        self.auth_service = AuthService(authenticator)
         self.resources = ResourceProvider(self.auth_service, resource_deployment)
 
     def authenticate(self, account_id: str) -> None:

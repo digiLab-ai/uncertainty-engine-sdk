@@ -1,11 +1,9 @@
-import os
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict
 
 import boto3
 import jwt
 from botocore.exceptions import ClientError
-from dotenv import load_dotenv
 
 
 class CognitoToken:
@@ -28,20 +26,12 @@ class CognitoToken:
         return self._decoded_payload
 
     @property
-    def user_id(self) -> str:
+    def user_sub_id(self) -> str:
         """Get user ID from token"""
         try:
             return self.decoded_payload.get("sub")
         except KeyError:
             raise ValueError("Invalid token: 'sub' key not found in payload")
-
-    @property
-    def user_email(self) -> str:
-        """Get user email from token"""
-        try:
-            return self.decoded_payload.get("email")
-        except KeyError:
-            raise ValueError("Invalid token: 'email' key not found in payload")
 
     @property
     def username(self) -> str:
@@ -55,15 +45,16 @@ class CognitoToken:
     def is_expired(self) -> bool:
         """Check if token is expired"""
         exp = self.decoded_payload.get("exp", 0)
-        return datetime.now() > (exp)
+        exp_datetime = datetime.fromtimestamp(exp)
+        print(f"Token expiration time: {exp_datetime}")
+        return datetime.now() > exp_datetime
 
 
 class CognitoAuthenticator:
     """A class to authenticate users with Amazon Cognito and retrieve access tokens.
 
     This class handles the authentication of users with Amazon Cognito, allowing them
-    to retrieve access tokens by providing their username and password. It supports
-    loading credentials from environment variables or a .env file.
+    to retrieve access tokens by providing their username and password.
 
     The authentication process includes:
     1. Initializing a connection to the Cognito Identity Provider
@@ -74,8 +65,6 @@ class CognitoAuthenticator:
         region (str): AWS region where the Cognito user pool is located
         user_pool_id (str): ID of the Cognito user pool
         client_id (str): ID of the client application
-        username (str, optional): Username for authentication
-        password (str, optional): Password for authentication
         client (boto3.client): Boto3 client for Cognito Identity Provider
     """
 
@@ -84,9 +73,6 @@ class CognitoAuthenticator:
         region: str,
         user_pool_id: str,
         client_id: str,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        env_file: Optional[str] = None,
     ):
         """Initialize the CognitoAuthenticator with AWS Cognito configuration.
 
@@ -94,30 +80,21 @@ class CognitoAuthenticator:
             region (str): AWS region where the Cognito user pool is located (e.g., 'us-east-1')
             user_pool_id (str): The unique identifier of your Cognito user pool
             client_id (str): The client ID (app client ID) from your Cognito user pool
-            username (str, optional): Username for authentication. Defaults to None.
-            password (str, optional): Password for authentication. Defaults to None.
-            env_file (str, optional): Path to .env file to load credentials from. Defaults to None.
 
-        If username and password are not provided, they will be loaded from environment variables
-        or the specified .env file.
         """
         self.region = region
         self.user_pool_id = user_pool_id
         self.client_id = client_id
 
-        # Load credentials from .env file if specified
-        if env_file:
-            load_dotenv(env_file)
-
-        # Use provided credentials or load from environment
-        self.username = username or os.getenv("COGNITO_USERNAME")
-        self.password = password or os.getenv("COGNITO_PASSWORD")
-
         # Initialize Cognito client
         self.client = boto3.client("cognito-idp", region_name=self.region)
 
-    def authenticate(self) -> dict[str, str]:
+    def authenticate(self, username: str, password: str) -> dict[str, str]:
         """Authenticate with Cognito and retrieve tokens.
+
+        Args:
+            username: str: The username of the user. This can be an email or Cognito username.
+            password: str: The password of the user
 
         Returns:
             Dict: A dictionary containing the access token, refresh token, and ID token
@@ -125,17 +102,13 @@ class CognitoAuthenticator:
         Raises:
             Exception: If authentication fails due to invalid credentials or other errors
         """
-        if not self.username or not self.password:
-            raise Exception(
-                "Username and password are required for authentication",
-            )
 
         try:
             # Initiate authentication with Cognito
             response = self.client.initiate_auth(
                 ClientId=self.client_id,
                 AuthFlow="USER_PASSWORD_AUTH",
-                AuthParameters={"USERNAME": self.username, "PASSWORD": self.password},
+                AuthParameters={"USERNAME": username, "PASSWORD": password},
             )
 
             # Extract authentication result
@@ -201,41 +174,5 @@ class CognitoAuthenticator:
             }
 
         except ClientError as e:
-            error_message = e.response.get("Error", {}).get("Message")
+            error_message = e.response.get("Error", {}).get("Message", "Unknown error")
             raise Exception(f"Token refresh failed: {error_message}")
-
-
-def get_cognito_authenticator(
-    region: str = None,
-    user_pool_id: str = None,
-    client_id: str = None,
-    env_file: str = ".env",
-) -> CognitoAuthenticator:
-    """Create a CognitoAuthenticator instance using environment variables or provided values.
-
-    Args:
-        region (str, optional): AWS region. Defaults to value from environment.
-        user_pool_id (str, optional): Cognito user pool ID. Defaults to value from environment.
-        client_id (str, optional): Cognito client ID. Defaults to value from environment.
-        env_file (str, optional): Path to .env file. Defaults to ".env".
-
-    Returns:
-        CognitoAuthenticator: Configured authenticator instance
-    """
-    # Load environment variables if they exist
-    load_dotenv(env_file)
-
-    # Use provided values or environment variables
-    region = region or os.getenv("COGNITO_REGION")
-    user_pool_id = user_pool_id or os.getenv("COGNITO_USER_POOL_ID")
-    client_id = client_id or os.getenv("COGNITO_CLIENT_ID")
-
-    if not all([region, user_pool_id, client_id]):
-        raise ValueError(
-            "Missing required configuration. Provide region, user_pool_id, and client_id "
-            "either as parameters or in your environment variables."
-        )
-
-    return CognitoAuthenticator(
-        region=region, user_pool_id=user_pool_id, client_id=client_id, env_file=env_file
-    )

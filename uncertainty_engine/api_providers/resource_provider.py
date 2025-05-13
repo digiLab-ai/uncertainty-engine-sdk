@@ -57,6 +57,8 @@ class ResourceProvider(ApiProviderBase):
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
+        print("is auth?", auth_service.is_authenticated)
+
         if auth_service.is_authenticated:
             self._update_auth_headers()
 

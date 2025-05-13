@@ -12,23 +12,43 @@ class AuthService:
     """Authentication service that manages tokens and provides them to API clients"""
 
     def __init__(self, authenticator: CognitoAuthenticator):
-        self.account_id = None
+        self.account_id: str = None
+        self.token: Optional[CognitoToken] = None
         self.authenticator = authenticator
 
-    def authenticate(self, account_id: str) -> None:
+        # Load auth details, if not found they will remain None
+        self._load_from_file()
+
+    def authenticate(
+        self,
+        account_id: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
         """
         Set authentication credentials
 
         Args:
             account_id : The account ID to authenticate with.
+            username : The username to authenticate with. If not provided, it will be loaded from the environment variable COGNITO_USERNAME.
+            password : The password to authenticate with. If not provided, it will be loaded from the environment variable COGNITO_PASSWORD.
         """
-        auth_details = self.authenticator.authenticate(account_id)
+
+        # Load username + password from .env or take inputs
+        username = username or os.getenv("COGNITO_USERNAME")
+        password = password or os.getenv("COGNITO_PASSWORD")
+
+        auth_details = self.authenticator.authenticate(username, password)
+
         self.token = CognitoToken(
             access_token=auth_details["access_token"],
             refresh_token=auth_details["refresh_token"],
             account_id=account_id,
         )
         self.account_id = account_id
+
+        # Save tokens to AUTH_FILE_NAME in the user's home directory
+        self._save_to_file()
 
     @property
     def is_authenticated(self) -> bool:
@@ -38,7 +58,14 @@ class AuthService:
         Returns:
             ``True`` if authenticated, ``False`` otherwise.
         """
-        return self.account_id is not None
+        return all(
+            [
+                self.token is not None,
+                self.token.access_token is not None,
+                self.token.refresh_token is not None,
+                self.account_id is not None,
+            ]
+        )
 
     @property
     def auth_file_path(self) -> Path:
@@ -54,8 +81,6 @@ class AuthService:
 
     def _save_to_file(self) -> None:
         """Save authentication details to a file"""
-        if not self.token:
-            return
 
         auth_data = {
             "account_id": self.token.account_id,
@@ -63,13 +88,11 @@ class AuthService:
             "refresh_token": self.token.refresh_token,
         }
 
-        auth_file = self.auth_file_path
-
-        with open(auth_file, "w") as f:
+        with open(self.auth_file_path, "w") as f:
             json.dump(auth_data, f)
 
         # Set file permissions (owner read/write only - 0600)
-        os.chmod(auth_file, 0o600)
+        os.chmod(self.auth_file_path, 0o600)
 
     def refresh(self) -> CognitoToken:
         """Refresh the access token"""
@@ -103,14 +126,15 @@ class AuthService:
     def _load_from_file(self) -> None:
         """Load authentication details from file if it exists"""
         auth_file = self.auth_file_path
-
+        print("Loading tokens from ", auth_file)
         if not auth_file.exists():
+            self.token = None
             return
 
         try:
             with open(auth_file, "r") as f:
                 auth_data = json.load(f)
-
+            print(auth_data)
             if all(
                 k in auth_data for k in ["account_id", "access_token", "refresh_token"]
             ):
@@ -119,6 +143,7 @@ class AuthService:
                     refresh_token=auth_data["refresh_token"],
                     account_id=auth_data["account_id"],
                 )
+                self.account_id = auth_data["account_id"]
         except (json.JSONDecodeError, IOError):
             raise Exception(
                 "Error loading authentication details. Please ensure you have authenticated."
