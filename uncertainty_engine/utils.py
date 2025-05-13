@@ -49,7 +49,12 @@ def format_api_error(e: ApiException) -> str:
     Returns:
         A string containing the error message.
     """
+
+    reason = getattr(e, "reason", None)
+    reason = reason if reason else "No error reason"
     try:
-        return e.reason if e.reason else "Unknown error"
+        detail = json.loads(e.body).get("detail", "No error message")
     except Exception:
-        return str(e)
+        detail = "No error message"
+
+    return f"API Error: {reason}\nDetails: {detail}"
