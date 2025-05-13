@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 import requests
-from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
 from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
@@ -13,115 +12,38 @@ from uncertainty_engine_resource_client.models import (
     ResourceVersionRecordInput,
 )
 
-from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.api_providers.resource_provider import (
     DATETIME_STRING_FORMAT,
-    DEFAULT_RESOURCE_DEPLOYMENT,
     ResourceProvider,
 )
 
-
-@pytest.fixture
-def mock_auth_service():
-    """Fixture for a mock authentication provider."""
-    auth_service = MagicMock()
-    auth_service.account_id = "test-account-id"
-    return auth_service
-
-
-@pytest.fixture
-def mock_api_client():
-    """Fixture for a mock API client."""
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_projects_client():
-    """Fixture for a mock projects client."""
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_resources_client():
-    """Fixture for a mock resources client."""
-    return MagicMock()
-
-
-@pytest.fixture
-def resource_provider(
-    mock_auth_service, mock_api_client, mock_projects_client, mock_resources_client
-):
-    """Fixture for a ResourceProvider with mocked dependencies."""
-    with patch(
-        "uncertainty_engine_resource_client.api_client.ApiClient",
-        return_value=mock_api_client,
-    ):
-        with patch.object(ProjectRecordsApi, "__init__", return_value=None):
-            with patch.object(ResourcesApi, "__init__", return_value=None):
-                provider = ResourceProvider(auth_service=mock_auth_service)
-                provider.projects_client = mock_projects_client
-                provider.resources_client = mock_resources_client
-                return provider
+### __init__ ###
 
 
 def test_init_default(mock_auth_service):
     """Test initializing with default parameters."""
-    with patch(
-        "uncertainty_engine.api_providers.resource_provider.Configuration"
-    ) as mock_config_class:
-        mock_config_instance = MagicMock()
-        mock_config_class.return_value = mock_config_instance
 
-        with patch(
-            "uncertainty_engine.api_providers.resource_provider.ApiClient"
-        ) as mock_client:
-            with patch.object(ProjectRecordsApi, "__init__", return_value=None):
-                with patch.object(ResourcesApi, "__init__", return_value=None):
-                    provider = ResourceProvider(mock_auth_service)
+    provider = ResourceProvider(mock_auth_service)
 
-                    # Verify configuration is created with default URL
-                    mock_config_class.assert_called_once_with(
-                        host=DEFAULT_RESOURCE_DEPLOYMENT
-                    )
-
-                    # Verify clients are created
-                    mock_client.assert_called_once_with(
-                        configuration=mock_config_instance
-                    )
-                    assert provider.auth_service is mock_auth_service
-                    assert provider.client is not None
-                    assert provider.projects_client is not None
-                    assert provider.resources_client is not None
+    assert provider.auth_service is mock_auth_service
+    assert provider.client is not None
+    assert provider.projects_client is not None
+    assert provider.resources_client is not None
 
 
-def test_init_custom(mock_auth_service):
+def test_init_custom(mock_auth_service, patched_api_classes):
     """Test initializing with custom parameters."""
+    from uncertainty_engine.api_providers.resource_provider import ResourceProvider
+
     custom_url = "http://custom-url.com"
 
-    with patch(
-        "uncertainty_engine.api_providers.resource_provider.Configuration"
-    ) as mock_config_class:
-        mock_config_instance = MagicMock()
-        mock_config_class.return_value = mock_config_instance
+    provider = ResourceProvider(deployment=custom_url, auth_service=mock_auth_service)
 
-        with patch(
-            "uncertainty_engine.api_providers.resource_provider.ApiClient"
-        ) as mock_client:
-            with patch.object(ProjectRecordsApi, "__init__", return_value=None):
-                with patch.object(ResourcesApi, "__init__", return_value=None):
-                    provider = ResourceProvider(
-                        deployment=custom_url, auth_service=mock_auth_service
-                    )
+    assert provider.auth_service is mock_auth_service
+    assert provider.client is not None
 
-                    # Verify configuration is created with custom URL
-                    mock_config_class.assert_called_once_with(host=custom_url)
 
-                    # Verify clients are created
-                    mock_client.assert_called_once_with(
-                        configuration=mock_config_instance
-                    )
-                    assert provider.auth_service is mock_auth_service
-                    assert provider.client is not None
+### resource_provider.account_id ###
 
 
 def test_account_id_with_auth_service(resource_provider, mock_auth_service):
@@ -129,29 +51,28 @@ def test_account_id_with_auth_service(resource_provider, mock_auth_service):
     assert resource_provider.account_id == mock_auth_service.account_id
 
 
-def test_account_id_without_auth_service():
+def test_account_id_without_auth_service(patched_api_classes):
     """Test the account_id property when auth_service is not available."""
-    with patch("uncertainty_engine_resource_client.api_client.ApiClient"):
-        with patch.object(ProjectRecordsApi, "__init__", return_value=None):
-            with patch.object(ResourcesApi, "__init__", return_value=None):
-                provider = ResourceProvider(auth_service=None)
-                assert provider.account_id is None
+    from uncertainty_engine.api_providers.resource_provider import ResourceProvider
+
+    provider = ResourceProvider(auth_service=None)
+    assert provider.account_id is None
 
 
-def test_upload_success(resource_provider, mock_resources_client):
+### resource_provider.upload ###
+
+
+def test_upload_success(
+    resource_provider,
+    mock_resources_client,
+    mock_file,
+    mock_resource_record,
+    mock_version_response,
+):
     """Test the upload method when successful."""
     # Setup mock responses
-    resource_record = MagicMock(id="test-resource-id")
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.post_resource_record.return_value = resource_response
-
-    version_response = MagicMock(
-        url="https://upload-url.com", pending_record_id="test-pending-id"
-    )
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"test file content")
+    mock_resources_client.post_resource_record.return_value = mock_resource_record
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock
     mock_put_response = MagicMock()
@@ -211,10 +132,8 @@ def test_upload_success(resource_provider, mock_resources_client):
 
 def test_upload_no_auth(resource_provider):
     """Test upload fails when not authenticated."""
-
     # Set auth provider to None
     with patch.object(resource_provider, "auth_service", None):
-
         # Call and verify exception
         with pytest.raises(
             ValueError, match="Authentication required before uploading resources"
@@ -236,13 +155,11 @@ def test_upload_api_exception_on_record_creation(
 
 
 def test_upload_api_exception_on_version_creation(
-    resource_provider, mock_resources_client
+    resource_provider, mock_resources_client, mock_resource_record
 ):
     """Test handling of ApiException during version record creation."""
     # Setup mocks
-    resource_record = MagicMock(id="test-resource-id")
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.post_resource_record.return_value = resource_response
+    mock_resources_client.post_resource_record.return_value = mock_resource_record
 
     # Setup exception
     api_exception = ApiException(status=400, reason="Bad Request")
@@ -253,51 +170,53 @@ def test_upload_api_exception_on_version_creation(
         resource_provider.upload("project-id", "name", "type", "path/to/file.txt")
 
 
-def test_upload_failed_file_upload(resource_provider, mock_resources_client):
-    """Test handling of failed upload to presigned URL."""
+@pytest.mark.parametrize(
+    "status_code,error_text,expected_error_msg",
+    [
+        (403, "Forbidden", "Upload failed with status 403: Forbidden"),
+        (500, "Server Error", "Upload failed with status 500: Server Error"),
+    ],
+)
+def test_upload_failed_file_upload(
+    resource_provider,
+    mock_resources_client,
+    mock_resource_record,
+    mock_version_response,
+    mock_file,
+    status_code,
+    error_text,
+    expected_error_msg,
+):
+    """Test handling of failed upload to presigned URL with various error codes."""
     # Setup mocks
-    resource_record = MagicMock(id="test-resource-id")
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.post_resource_record.return_value = resource_response
-
-    version_response = MagicMock(
-        url="https://upload-url.com", pending_record_id="test-pending-id"
-    )
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"test file content")
+    mock_resources_client.post_resource_record.return_value = mock_resource_record
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock with error
     mock_put_response = MagicMock()
-    mock_put_response.status_code = 403
-    mock_put_response.text = "Forbidden"
+    mock_put_response.status_code = status_code
+    mock_put_response.text = error_text
 
     with patch("builtins.open", mock_file):
         with patch("requests.put", return_value=mock_put_response):
             # Call and verify exception
-            with pytest.raises(
-                Exception, match="Upload failed with status 403: Forbidden"
-            ):
+            with pytest.raises(Exception, match=expected_error_msg):
                 resource_provider.upload(
                     "project-id", "name", "type", "path/to/file.txt"
                 )
 
 
-def test_upload_failed_completion(resource_provider, mock_resources_client):
+def test_upload_failed_completion(
+    resource_provider,
+    mock_resources_client,
+    mock_resource_record,
+    mock_version_response,
+    mock_file,
+):
     """Test handling of exception during upload completion."""
     # Setup mocks
-    resource_record = MagicMock(id="test-resource-id")
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.post_resource_record.return_value = resource_response
-
-    version_response = MagicMock(
-        url="https://upload-url.com", pending_record_id="test-pending-id"
-    )
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"test file content")
+    mock_resources_client.post_resource_record.return_value = mock_resource_record
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock
     mock_put_response = MagicMock()
@@ -316,21 +235,21 @@ def test_upload_failed_completion(resource_provider, mock_resources_client):
                 )
 
 
-def test_download_success_with_filepath(resource_provider):
+### resource_provider.download ###
+
+
+def test_download_success_with_filepath(
+    resource_provider, mock_file, mock_version_response
+):
     """Test downloading a resource with a specified filepath."""
     # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
     resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
+        mock_version_response
     )
 
     # Setup requests mock
     mock_get_response = MagicMock()
     mock_get_response.content = b"test file content"
-
-    # Setup file mock
-    mock_file = mock_open()
 
     with patch("os.makedirs") as mock_makedirs:
         with patch("builtins.open", mock_file):
@@ -352,19 +271,17 @@ def test_download_success_with_filepath(resource_provider):
                     os.path.dirname(os.path.abspath("path/to/download/file.csv")),
                     exist_ok=True,
                 )
-                requests.get.assert_called_once_with("https://download-url.com")
+                requests.get.assert_called_once_with("https://upload-url.com")
                 mock_get_response.raise_for_status.assert_called_once()
                 mock_file.assert_called_once_with("path/to/download/file.csv", "wb")
                 mock_file().write.assert_called_once_with(b"test file content")
 
 
-def test_download_success_without_filepath(resource_provider):
+def test_download_success_without_filepath(resource_provider, mock_version_response):
     """Test downloading a resource without a specified filepath (return content)."""
     # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
     resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
+        mock_version_response
     )
 
     # Setup requests mock
@@ -385,7 +302,7 @@ def test_download_success_without_filepath(resource_provider):
         resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
             "test-project", "dataset", "test-resource-id"
         )
-        requests.get.assert_called_once_with("https://download-url.com")
+        requests.get.assert_called_once_with("https://upload-url.com")
         mock_get_response.raise_for_status.assert_called_once()
 
 
@@ -393,7 +310,6 @@ def test_download_no_auth(resource_provider):
     """Test download fails when not authenticated."""
     # Set auth provider to None
     with patch.object(resource_provider, "auth_service", None):
-
         # Call and verify exception
         with pytest.raises(
             ValueError, match="Authentication required before downloading resources"
@@ -431,13 +347,11 @@ def test_download_generic_exception_on_retrieval(resource_provider):
         )
 
 
-def test_download_http_error(resource_provider):
+def test_download_http_error(resource_provider, mock_version_response):
     """Test handling of HTTP error during download."""
     # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
     resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
+        mock_version_response
     )
 
     # Setup requests mock with error
@@ -453,13 +367,11 @@ def test_download_http_error(resource_provider):
             )
 
 
-def test_download_file_not_found_error(resource_provider):
+def test_download_file_not_found_error(resource_provider, mock_version_response):
     """Test handling of FileNotFoundError when writing to a file."""
     # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
     resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
+        mock_version_response
     )
 
     # Setup requests mock
@@ -467,7 +379,7 @@ def test_download_file_not_found_error(resource_provider):
     mock_get_response.content = b"test file content"
 
     # Setup file mock to raise FileNotFoundError
-    mock_file = mock_open()
+    mock_file = MagicMock()
     mock_file.side_effect = FileNotFoundError("No such file or directory")
 
     with patch("os.makedirs"):
@@ -485,20 +397,18 @@ def test_download_file_not_found_error(resource_provider):
                 mock_get_response.raise_for_status.assert_called_once()
 
 
-def test_download_other_file_exception(resource_provider):
+def test_download_other_file_exception(resource_provider, mock_version_response):
     """Test handling of generic exceptions when writing to a file."""
     # Setup mocks
-    version_response = MagicMock()
-    version_response.url = "https://download-url.com"
     resource_provider.resources_client.get_latest_resource_version.return_value = (
-        version_response
+        mock_version_response
     )
 
     # Setup requests mock
     mock_get_response = MagicMock()
     mock_get_response.content = b"test file content"
 
-    # Setup file mock to raise a permission error - this is more specific and appropriate
+    # Setup file mock to raise a permission error
     mock_file = mock_open()
     # Configure the write method to raise the exception
     mock_file.return_value.write.side_effect = PermissionError("Permission denied")
@@ -516,25 +426,21 @@ def test_download_other_file_exception(resource_provider):
                     )
 
 
-def test_update_success(resource_provider, mock_resources_client):
+### resource_provider.update ###
+
+
+def test_update_success(
+    resource_provider,
+    mock_resources_client,
+    mock_resource_record,
+    mock_version_response,
+    mock_file,
+):
     """Test updating a resource successfully."""
-    # Setup mocks for resource info with direct attribute assignment
-    resource_record = MagicMock()
-    resource_record.name = "Test Resource"  # Direct assignment for string value
-    resource_record.versions = ["v1", "v2"]
-
-    resource_response = MagicMock()
-    resource_response.resource_record = resource_record
-    mock_resources_client.get_resource_record.return_value = resource_response
-
-    # Setup mocks for version creation
-    version_response = MagicMock()
-    version_response.url = "https://upload-url.com"
-    version_response.pending_record_id = "test-pending-id"
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"updated content")
+    # Setup mocks for resource info - simulate two existing versions
+    mock_resource_record.resource_record.versions = ["v1", "v2"]
+    mock_resources_client.get_resource_record.return_value = mock_resource_record
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock
     mock_put_response = MagicMock()
@@ -580,20 +486,14 @@ def test_update_success(resource_provider, mock_resources_client):
                 )
 
 
-def test_update_resource_not_found(resource_provider, mock_resources_client):
+def test_update_resource_not_found(
+    resource_provider, mock_resources_client, mock_version_response, mock_file
+):
     """Test handling when the resource to update is not found."""
     # Setup exception for resource lookup
     api_exception = ApiException(status=404, reason="Not Found")
     mock_resources_client.get_resource_record.side_effect = api_exception
-
-    # Setup mocks for version creation
-    version_response = MagicMock(
-        url="https://upload-url.com", pending_record_id="test-pending-id"
-    )
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"updated content")
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock
     mock_put_response = MagicMock()
@@ -633,8 +533,6 @@ def test_update_no_auth(resource_provider):
     """Test update fails when not authenticated."""
     # Set auth provider to None
     with patch.object(resource_provider, "auth_service", None):
-        resource_provider.auth_service = None
-
         # Call and verify exception
         with pytest.raises(
             ValueError, match="Authentication required before updating resources"
@@ -655,13 +553,11 @@ def test_update_file_not_found(resource_provider):
 
 
 def test_update_api_exception_on_version_creation(
-    resource_provider, mock_resources_client
+    resource_provider, mock_resources_client, mock_resource_record
 ):
     """Test handling of ApiException during version record creation."""
     # Setup mocks for resource info
-    resource_record = MagicMock(name="Test Resource", versions=["v1"])
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.get_resource_record.return_value = resource_response
+    mock_resources_client.get_resource_record.return_value = mock_resource_record
 
     # Setup exception for version creation
     api_exception = ApiException(status=400, reason="Bad Request")
@@ -675,34 +571,38 @@ def test_update_api_exception_on_version_creation(
             )
 
 
-def test_update_upload_error(resource_provider, mock_resources_client):
+@pytest.mark.parametrize(
+    "status_code,error_text,expected_error_msg",
+    [
+        (403, "Forbidden", "Upload failed with status 403: Forbidden"),
+        (500, "Server Error", "Upload failed with status 500: Server Error"),
+    ],
+)
+def test_update_upload_error(
+    resource_provider,
+    mock_resources_client,
+    mock_resource_record,
+    mock_version_response,
+    mock_file,
+    status_code,
+    error_text,
+    expected_error_msg,
+):
     """Test handling of error during upload to presigned URL."""
     # Setup mocks for resource info
-    resource_record = MagicMock(name="Test Resource", versions=["v1"])
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.get_resource_record.return_value = resource_response
-
-    # Setup mocks for version creation
-    version_response = MagicMock(
-        url="https://upload-url.com", pending_record_id="test-pending-id"
-    )
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"updated content")
+    mock_resources_client.get_resource_record.return_value = mock_resource_record
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock with error
     mock_put_response = MagicMock()
-    mock_put_response.status_code = 403
-    mock_put_response.text = "Forbidden"
+    mock_put_response.status_code = status_code
+    mock_put_response.text = error_text
 
     with patch("os.path.exists", return_value=True):
         with patch("builtins.open", mock_file):
             with patch("requests.put", return_value=mock_put_response):
                 # Call and verify exception
-                with pytest.raises(
-                    Exception, match="Upload failed with status 403: Forbidden"
-                ):
+                with pytest.raises(Exception, match=expected_error_msg):
                     resource_provider.update(
                         "test-project",
                         "dataset",
@@ -711,21 +611,17 @@ def test_update_upload_error(resource_provider, mock_resources_client):
                     )
 
 
-def test_update_finalize_error(resource_provider, mock_resources_client):
+def test_update_finalize_error(
+    resource_provider,
+    mock_resources_client,
+    mock_resource_record,
+    mock_version_response,
+    mock_file,
+):
     """Test handling of error during finalization of upload."""
     # Setup mocks for resource info
-    resource_record = MagicMock(name="Test Resource", versions=["v1"])
-    resource_response = MagicMock(resource_record=resource_record)
-    mock_resources_client.get_resource_record.return_value = resource_response
-
-    # Setup mocks for version creation
-    version_response = MagicMock(
-        url="https://upload-url.com", pending_record_id="test-pending-id"
-    )
-    mock_resources_client.post_resource_version.return_value = version_response
-
-    # Setup file mock
-    mock_file = mock_open(read_data=b"updated content")
+    mock_resources_client.get_resource_record.return_value = mock_resource_record
+    mock_resources_client.post_resource_version.return_value = mock_version_response
 
     # Setup requests mock
     mock_put_response = MagicMock()
@@ -748,14 +644,17 @@ def test_update_finalize_error(resource_provider, mock_resources_client):
                     )
 
 
+### resource_provider.list_resources ###
+
+
 def test_list_resources_success(resource_provider, mock_resources_client):
     """Test listing resources successfully."""
     # Setup mock response
     created_time = datetime.now()
 
-    # Create proper mock objects with attributes that return expected values
+    # Create mock resource records
     record1 = MagicMock()
-    record1.id = "resource-1"  # Direct assignment to make it return the string
+    record1.id = "resource-1"
     record1.name = "Resource 1"
     record1.created_at = created_time
 
@@ -764,8 +663,9 @@ def test_list_resources_success(resource_provider, mock_resources_client):
     record2.name = "Resource 2"
     record2.created_at = created_time
 
-    resource_records = [record1, record2]
-    response = MagicMock(resource_records=resource_records)
+    # Create response with list of resource records
+    response = MagicMock()
+    response.resource_records = [record1, record2]
     mock_resources_client.get_project_resource_records.return_value = response
 
     # Call the method
@@ -796,7 +696,7 @@ def test_list_resources_empty(resource_provider, mock_resources_client):
     """Test listing resources when none exist."""
     # Setup mock response with empty list
     response = MagicMock()
-    response.resource_records = []  # Direct assignment for clean mocking
+    response.resource_records = []
     mock_resources_client.get_project_resource_records.return_value = response
 
     # Call the method
