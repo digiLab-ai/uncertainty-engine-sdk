@@ -116,18 +116,17 @@ class CognitoAuthenticator:
 
             return {"access_token": access_token, "refresh_token": refresh_token}
 
+        except self.client.exceptions.NotAuthorizedException:
+            raise Exception("Invalid username or password")
+        except self.client.exceptions.UserNotFoundException:
+            raise Exception("User not found")
+        except self.client.exceptions.PasswordResetRequiredException:
+            raise Exception("Password reset required")
+        except self.client.exceptions.UserNotConfirmedException:
+            raise Exception("User is not confirmed")
         except ClientError as e:
-            error_code = e.response.get("Error", {}).get("Code")
             error_message = e.response.get("Error", {}).get("Message")
-
-            if error_code == "NotAuthorizedException":
-                raise Exception("Invalid username or password")
-            elif error_code == "UserNotFoundException":
-                raise Exception("User not found")
-            elif error_code == "UserNotConfirmedException":
-                raise Exception("User is not confirmed")
-            else:
-                raise Exception(f"Authentication failed: {error_message}")
+            raise Exception(f"Authentication failed: {error_message}")
         except Exception:
             raise
 
