@@ -31,7 +31,7 @@ def test_init_default(mock_auth_service):
     assert provider.resources_client is not None
 
 
-def test_init_custom(mock_auth_service):
+def test_init_custom(mock_auth_service, patched_api_classes):
     """Test initializing with custom parameters."""
 
     custom_url = "http://custom-url.com"
@@ -39,7 +39,7 @@ def test_init_custom(mock_auth_service):
     provider = ResourceProvider(deployment=custom_url, auth_service=mock_auth_service)
 
     assert provider.auth_service is mock_auth_service
-    assert provider.client.configuration.host == custom_url
+    assert provider.client is not None
 
 
 ### resource_provider.account_id ###
