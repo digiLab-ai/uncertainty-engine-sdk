@@ -14,14 +14,17 @@ from uncertainty_engine_resource_client.models import (
     ResourceVersionRecordInput,
 )
 
-from uncertainty_engine.auth_provider import AuthProvider
+from uncertainty_engine.api_providers import ApiProviderBase
+from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
 
 DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
 DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
-class ResourceProvider:
+class ResourceProvider(ApiProviderBase):
+    deployment: str
+    auth_service: AuthService
     """
     Client for managing resources in the Uncertainty Engine platform.
 
@@ -37,9 +40,7 @@ class ResourceProvider:
     """
 
     def __init__(
-        self,
-        deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
-        auth_provider: Optional[AuthProvider] = None,
+        self, auth_service: AuthService, deployment: str = DEFAULT_RESOURCE_DEPLOYMENT
     ):
         """
         Create an instance of a ResourceProvider
@@ -47,19 +48,33 @@ class ResourceProvider:
         Args:
             deployment: The URL of the resource service. You typically won't need
                         to change this unless instructed by support.
-            auth_provider: Handles your authentication. This is usually provided
-                           by the parent application.
+            auth_service: Handles your authentication.
         """
-        self.auth_provider = auth_provider
-        config = Configuration(host=deployment)
-        self.client = ApiClient(configuration=config)
+        super().__init__(deployment, auth_service)
+
+        # Initialize the generated API client
+        self.client = ApiClient(configuration=Configuration(host=deployment))
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
+    def authenticate(self, account_id: str) -> None:
+        """
+        Set the account ID
+
+        Args:
+            account_id: The account ID to authenticate with.
+        """
+        self.auth_service.authenticate(account_id)
+
     @property
     def account_id(self) -> Optional[str]:
-        """Get the current account ID from the auth provider"""
-        return None if self.auth_provider is None else self.auth_provider.account_id
+        """
+        Get the current account ID from the auth provider
+
+        Returns:
+            The account ID if authenticated, otherwise None.
+        """
+        return self.auth_service.account_id
 
     def upload(
         self,
