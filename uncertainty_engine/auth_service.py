@@ -30,13 +30,13 @@ class AuthService:
 
         Args:
             account_id : The account ID to authenticate with.
-            username : The username to authenticate with. If not provided, it will be loaded from the environment variable COGNITO_USERNAME.
-            password : The password to authenticate with. If not provided, it will be loaded from the environment variable COGNITO_PASSWORD.
+            username : The username to authenticate with. If not provided, it will be loaded from the environment variable UE_USERNAME.
+            password : The password to authenticate with. If not provided, it will be loaded from the environment variable UE_PASSWORD.
         """
 
         # Load username + password from .env or take inputs
-        username = username or os.getenv("COGNITO_USERNAME")
-        password = password or os.getenv("COGNITO_PASSWORD")
+        username = username or os.getenv("UE_USERNAME")
+        password = password or os.getenv("UE_PASSWORD")
 
         auth_details = self.authenticator.authenticate(username, password)
 
@@ -61,8 +61,6 @@ class AuthService:
         return all(
             [
                 self.token is not None,
-                self.token.access_token is not None,
-                self.token.refresh_token is not None,
                 self.account_id is not None,
             ]
         )
@@ -98,7 +96,6 @@ class AuthService:
         """Refresh the access token"""
         if not self.token or not self.token.refresh_token:
             raise ValueError("No refresh token available. Please authenticate first.")
-
         try:
             response = self.authenticator.refresh_tokens(self.token.refresh_token)
             self.token = CognitoToken(
@@ -117,10 +114,6 @@ class AuthService:
         if not self.token:
             raise ValueError("Not authenticated")
 
-        # Refresh if token is expired
-        if self.token.is_expired:
-            self.refresh()
-
         return {"Authorization": f"Bearer {self.token.access_token}"}
 
     def _load_from_file(self) -> None:
@@ -134,7 +127,6 @@ class AuthService:
         try:
             with open(auth_file, "r") as f:
                 auth_data = json.load(f)
-            print(auth_data)
             if all(
                 k in auth_data for k in ["account_id", "access_token", "refresh_token"]
             ):

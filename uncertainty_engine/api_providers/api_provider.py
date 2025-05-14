@@ -24,7 +24,6 @@ class ApiProviderBase:
         def wrapper(self, *args: Any, **kwargs: Any) -> T:
             try:
                 # Update auth headers before the call
-                self._update_auth_headers()
                 return func(self, *args, **kwargs)
             except UnauthorizedException:
                 # If it's an auth error, refresh and retry

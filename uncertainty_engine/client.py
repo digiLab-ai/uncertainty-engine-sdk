@@ -70,14 +70,22 @@ class Client:
         self.auth_service = AuthService(authenticator)
         self.resources = ResourceProvider(self.auth_service, resource_deployment)
 
-    def authenticate(self, account_id: str) -> None:
+    def authenticate(
+        self,
+        account_id: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
         """
         Authenticate the user with the Uncertainty Engine"
 
         Args:
             account_id : The account ID to authenticate with.
+            username : The username to authenticate with. If not provided, it will be loaded from the environment variable UE_USERNAME.
+            password : The password to authenticate with. If not provided, it will be loaded from the environment variable UE_PASSWORD.
         """
-        self.resources.authenticate(account_id)
+        self.auth_service.authenticate(account_id, username, password)
+        self.resources._update_auth_headers()
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """

@@ -57,19 +57,8 @@ class ResourceProvider(ApiProviderBase):
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
-        print("is auth?", auth_service.is_authenticated)
-
         if auth_service.is_authenticated:
             self._update_auth_headers()
-
-    def authenticate(self, account_id: str) -> None:
-        """
-        Set the account ID
-
-        Args:
-            account_id: The account ID to authenticate with.
-        """
-        self.auth_service.authenticate(account_id)
 
     def _update_auth_headers(self):
         """Update API client with current auth headers"""
