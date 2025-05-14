@@ -1,6 +1,8 @@
+import json
 from typing import TypeAlias, TypeVar, Union
 
 from typeguard import typechecked
+from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_types import Handle
 
 # Define a type alias for a union of a type and a Handle.
@@ -34,3 +36,25 @@ def dict_to_csv_str(data: dict[str, list[float]]) -> str:
     for row in zip(*data.values()):
         csv_str += ",".join(str(x) for x in row) + "\n"
     return csv_str
+
+
+@typechecked
+def format_api_error(e: ApiException) -> str:
+    """
+    Load an API error message from a JSON string.
+
+    Args:
+        e: An exception object.
+
+    Returns:
+        A string containing the error message.
+    """
+
+    reason = getattr(e, "reason", None)
+    reason = reason if reason else "No error reason"
+    try:
+        detail = json.loads(e.body).get("detail", "No error message")
+    except Exception:
+        detail = "No error message"
+
+    return f"API Error: {reason}\nDetails: {detail}"
