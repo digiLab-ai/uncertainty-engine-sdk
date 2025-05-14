@@ -58,9 +58,9 @@ class ResourceProvider(ApiProviderBase):
         self.resources_client = ResourcesApi(self.client)
 
         if auth_service.is_authenticated:
-            self._update_auth_headers()
+            self.update_api_authentication()
 
-    def _update_auth_headers(self):
+    def update_api_authentication(self):
         """Update API client with current auth headers"""
         if self.auth_service.is_authenticated:
             auth_header = self.auth_service.get_auth_header()
