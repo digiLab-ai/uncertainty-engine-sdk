@@ -65,7 +65,9 @@ def mock_file_content():
 @pytest.fixture
 def mock_file(mock_file_content):
     """Mock the open function for file operations."""
-    return mock_open(read_data=mock_file_content)
+    _mock_file = mock_open(read_data=mock_file_content)
+    with patch("builtins.open", _mock_file):
+        yield _mock_file
 
 
 @pytest.fixture
