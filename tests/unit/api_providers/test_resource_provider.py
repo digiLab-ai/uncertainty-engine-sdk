@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
@@ -50,13 +50,6 @@ def test_account_id_with_auth_service(resource_provider, mock_auth_service):
     assert resource_provider.account_id == mock_auth_service.account_id
 
 
-def test_account_id_without_auth_service():
-    """Test the account_id property when auth_service is not available."""
-
-    provider = ResourceProvider(auth_service=None)
-    assert provider.account_id is None
-
-
 ### resource_provider.upload ###
 
 
@@ -82,56 +75,57 @@ def test_upload_success(
     resource_type = "dataset"
     file_path = "path/to/test_file.csv"
 
-    with patch("builtins.open", mock_file):
-        with patch("requests.put", return_value=mock_put_response):
-            # Call the method
-            result = resource_provider.upload(
-                project_id=project_id,
-                name=name,
-                resource_type=resource_type,
-                file_path=file_path,
-            )
+    with patch("requests.put", return_value=mock_put_response):
+        # Call the method
+        result = resource_provider.upload(
+            project_id=project_id,
+            name=name,
+            resource_type=resource_type,
+            file_path=file_path,
+        )
 
-            # Verify the result
-            assert result == "test-resource-id"
+        # Verify the result
+        assert result == "test-resource-id"
 
-            # Verify method calls
-            mock_resources_client.post_resource_record.assert_called_once_with(
-                project_id,
-                resource_type,
-                PostResourceRecordRequest(
-                    resource_record=ResourceRecordInput(
-                        name=name, owner_id=resource_provider.account_id
-                    )
+        # Verify method calls
+        mock_resources_client.post_resource_record.assert_called_once_with(
+            project_id,
+            resource_type,
+            PostResourceRecordRequest(
+                resource_record=ResourceRecordInput(
+                    name=name, owner_id=resource_provider.account_id
+                )
+            ),
+        )
+
+        mock_resources_client.post_resource_version.assert_called_once_with(
+            project_id,
+            resource_type,
+            "test-resource-id",
+            PostResourceVersionRequest(
+                resource_version_record=ResourceVersionRecordInput(
+                    name=f"{name}-v1", owner_id=resource_provider.account_id
                 ),
-            )
+                resource_file_extension="csv",
+            ),
+        )
 
-            mock_resources_client.post_resource_version.assert_called_once_with(
-                project_id,
-                resource_type,
-                "test-resource-id",
-                PostResourceVersionRequest(
-                    resource_version_record=ResourceVersionRecordInput(
-                        name=f"{name}-v1", owner_id=resource_provider.account_id
-                    ),
-                    resource_file_extension="csv",
-                ),
-            )
+        mock_file.assert_called_once_with(file_path, "rb")
+        requests.put.assert_called_once_with("https://upload-url.com", data=mock_file())
 
-            mock_file.assert_called_once_with(file_path, "rb")
-            requests.put.assert_called_once_with(
-                "https://upload-url.com", data=mock_file()
-            )
-
-            mock_resources_client.put_upload_resource_version.assert_called_once_with(
-                project_id, resource_type, "test-resource-id", "test-pending-id"
-            )
+        mock_resources_client.put_upload_resource_version.assert_called_once_with(
+            project_id, resource_type, "test-resource-id", "test-pending-id"
+        )
 
 
 def test_upload_no_auth(resource_provider):
     """Test upload fails when not authenticated."""
     # Set auth provider to None
-    with patch.object(resource_provider, "auth_service", None):
+    with patch.object(
+        resource_provider,
+        "auth_service",
+        MagicMock(is_authenticated=False, account_id=None),
+    ):
         # Call and verify exception
         with pytest.raises(
             ValueError, match="Authentication required before uploading resources"
@@ -175,7 +169,7 @@ def test_upload_api_exception_on_version_creation(
         (500, "Server Error", "Upload failed with status 500: Server Error"),
     ],
 )
-def test_upload_failed_file_upload(
+def test_upload_file_upload_error(
     resource_provider,
     mock_resources_client,
     mock_resource_record,
@@ -195,13 +189,10 @@ def test_upload_failed_file_upload(
     mock_put_response.status_code = status_code
     mock_put_response.text = error_text
 
-    with patch("builtins.open", mock_file):
-        with patch("requests.put", return_value=mock_put_response):
-            # Call and verify exception
-            with pytest.raises(Exception, match=expected_error_msg):
-                resource_provider.upload(
-                    "project-id", "name", "type", "path/to/file.txt"
-                )
+    with patch("requests.put", return_value=mock_put_response):
+        # Call and verify exception
+        with pytest.raises(Exception, match=expected_error_msg):
+            resource_provider.upload("project-id", "name", "type", "path/to/file.txt")
 
 
 def test_upload_failed_completion(
@@ -224,13 +215,10 @@ def test_upload_failed_completion(
     api_exception = ApiException(status=400, reason="Bad Request")
     mock_resources_client.put_upload_resource_version.side_effect = api_exception
 
-    with patch("builtins.open", mock_file):
-        with patch("requests.put", return_value=mock_put_response):
-            # Call and verify exception
-            with pytest.raises(Exception, match="Error completing upload:"):
-                resource_provider.upload(
-                    "project-id", "name", "type", "path/to/file.txt"
-                )
+    with patch("requests.put", return_value=mock_put_response):
+        # Call and verify exception
+        with pytest.raises(Exception, match="Error completing upload:"):
+            resource_provider.upload("project-id", "name", "type", "path/to/file.txt")
 
 
 ### resource_provider.download ###
@@ -250,29 +238,28 @@ def test_download_success_with_filepath(
     mock_get_response.content = b"test file content"
 
     with patch("os.makedirs") as mock_makedirs:
-        with patch("builtins.open", mock_file):
-            with patch("requests.get", return_value=mock_get_response):
-                # Call the method
-                resource_provider.download(
-                    project_id="test-project",
-                    resource_type="dataset",
-                    resource_id="test-resource-id",
-                    file_path="path/to/download/file.csv",
-                )
+        with patch("requests.get", return_value=mock_get_response):
+            # Call the method
+            resource_provider.download(
+                project_id="test-project",
+                resource_type="dataset",
+                resource_id="test-resource-id",
+                file_path="path/to/download/file.csv",
+            )
 
-                # Verify method calls
-                resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
-                    "test-project", "dataset", "test-resource-id"
-                )
+            # Verify method calls
+            resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
+                "test-project", "dataset", "test-resource-id"
+            )
 
-                mock_makedirs.assert_called_once_with(
-                    os.path.dirname(os.path.abspath("path/to/download/file.csv")),
-                    exist_ok=True,
-                )
-                requests.get.assert_called_once_with("https://upload-url.com")
-                mock_get_response.raise_for_status.assert_called_once()
-                mock_file.assert_called_once_with("path/to/download/file.csv", "wb")
-                mock_file().write.assert_called_once_with(b"test file content")
+            mock_makedirs.assert_called_once_with(
+                os.path.dirname(os.path.abspath("path/to/download/file.csv")),
+                exist_ok=True,
+            )
+            requests.get.assert_called_once_with("https://upload-url.com")
+            mock_get_response.raise_for_status.assert_called_once()
+            mock_file.assert_called_once_with("path/to/download/file.csv", "wb")
+            mock_file().write.assert_called_once_with(b"test file content")
 
 
 def test_download_success_without_filepath(resource_provider, mock_version_response):
@@ -307,7 +294,11 @@ def test_download_success_without_filepath(resource_provider, mock_version_respo
 def test_download_no_auth(resource_provider):
     """Test download fails when not authenticated."""
     # Set auth provider to None
-    with patch.object(resource_provider, "auth_service", None):
+    with patch.object(
+        resource_provider,
+        "auth_service",
+        MagicMock(is_authenticated=False, account_id=None),
+    ):
         # Call and verify exception
         with pytest.raises(
             ValueError, match="Authentication required before downloading resources"
@@ -365,7 +356,9 @@ def test_download_http_error(resource_provider, mock_version_response):
             )
 
 
-def test_download_file_not_found_error(resource_provider, mock_version_response):
+def test_download_file_not_found_error(
+    resource_provider, mock_version_response, mock_file
+):
     """Test handling of FileNotFoundError when writing to a file."""
     # Setup mocks
     resource_provider.resources_client.get_latest_resource_version.return_value = (
@@ -377,25 +370,25 @@ def test_download_file_not_found_error(resource_provider, mock_version_response)
     mock_get_response.content = b"test file content"
 
     # Setup file mock to raise FileNotFoundError
-    mock_file = MagicMock()
     mock_file.side_effect = FileNotFoundError("No such file or directory")
 
     with patch("os.makedirs"):
-        with patch("builtins.open", mock_file):
-            with patch("requests.get", return_value=mock_get_response):
-                # Call and verify exception
-                with pytest.raises(Exception, match="Invalid filepath provided"):
-                    resource_provider.download(
-                        project_id="test-project",
-                        resource_type="dataset",
-                        resource_id="test-resource-id",
-                        file_path="path/to/download/file.csv",
-                    )
+        with patch("requests.get", return_value=mock_get_response):
+            # Call and verify exception
+            with pytest.raises(Exception, match="Invalid filepath provided"):
+                resource_provider.download(
+                    project_id="test-project",
+                    resource_type="dataset",
+                    resource_id="test-resource-id",
+                    file_path="path/to/download/file.csv",
+                )
 
-                mock_get_response.raise_for_status.assert_called_once()
+            mock_get_response.raise_for_status.assert_called_once()
 
 
-def test_download_other_file_exception(resource_provider, mock_version_response):
+def test_download_other_file_exception(
+    resource_provider, mock_version_response, mock_file
+):
     """Test handling of generic exceptions when writing to a file."""
     # Setup mocks
     resource_provider.resources_client.get_latest_resource_version.return_value = (
@@ -406,22 +399,19 @@ def test_download_other_file_exception(resource_provider, mock_version_response)
     mock_get_response = MagicMock()
     mock_get_response.content = b"test file content"
 
-    # Setup file mock to raise a permission error
-    mock_file = mock_open()
     # Configure the write method to raise the exception
     mock_file.return_value.write.side_effect = PermissionError("Permission denied")
 
     with patch("os.makedirs"):
-        with patch("builtins.open", mock_file):
-            with patch("requests.get", return_value=mock_get_response):
-                # Call and verify exception
-                with pytest.raises(PermissionError, match="Permission denied"):
-                    resource_provider.download(
-                        project_id="test-project",
-                        resource_type="dataset",
-                        resource_id="test-resource-id",
-                        file_path="path/to/download/file.csv",
-                    )
+        with patch("requests.get", return_value=mock_get_response):
+            # Call and verify exception
+            with pytest.raises(PermissionError, match="Permission denied"):
+                resource_provider.download(
+                    project_id="test-project",
+                    resource_type="dataset",
+                    resource_id="test-resource-id",
+                    file_path="path/to/download/file.csv",
+                )
 
 
 ### resource_provider.update ###
@@ -445,43 +435,42 @@ def test_update_success(
     mock_put_response.status_code = 200
 
     with patch("os.path.exists", return_value=True):
-        with patch("builtins.open", mock_file):
-            with patch("requests.put", return_value=mock_put_response):
-                # Call the method
-                resource_provider.update(
-                    project_id="test-project",
-                    resource_type="dataset",
-                    resource_id="test-resource-id",
-                    file_path="path/to/updated_file.json",
-                )
+        with patch("requests.put", return_value=mock_put_response):
+            # Call the method
+            resource_provider.update(
+                project_id="test-project",
+                resource_type="dataset",
+                resource_id="test-resource-id",
+                file_path="path/to/updated_file.json",
+            )
 
-                # Verify method calls
-                mock_resources_client.get_resource_record.assert_called_once_with(
-                    "test-project", "dataset", "test-resource-id"
-                )
+            # Verify method calls
+            mock_resources_client.get_resource_record.assert_called_once_with(
+                "test-project", "dataset", "test-resource-id"
+            )
 
-                # Expected version name should be resource name + v3 (since there are two existing versions)
-                mock_resources_client.post_resource_version.assert_called_once_with(
-                    "test-project",
-                    "dataset",
-                    "test-resource-id",
-                    PostResourceVersionRequest(
-                        resource_version_record=ResourceVersionRecordInput(
-                            name="Test Resource-v3",
-                            owner_id=resource_provider.account_id,
-                        ),
-                        resource_file_extension="json",
+            # Expected version name should be resource name + v3 (since there are two existing versions)
+            mock_resources_client.post_resource_version.assert_called_once_with(
+                "test-project",
+                "dataset",
+                "test-resource-id",
+                PostResourceVersionRequest(
+                    resource_version_record=ResourceVersionRecordInput(
+                        name="Test Resource-v3",
+                        owner_id=resource_provider.account_id,
                     ),
-                )
+                    resource_file_extension="json",
+                ),
+            )
 
-                mock_file.assert_called_once_with("path/to/updated_file.json", "rb")
-                requests.put.assert_called_once_with(
-                    "https://upload-url.com", data=mock_file()
-                )
+            mock_file.assert_called_once_with("path/to/updated_file.json", "rb")
+            requests.put.assert_called_once_with(
+                "https://upload-url.com", data=mock_file()
+            )
 
-                mock_resources_client.put_upload_resource_version.assert_called_once_with(
-                    "test-project", "dataset", "test-resource-id", "test-pending-id"
-                )
+            mock_resources_client.put_upload_resource_version.assert_called_once_with(
+                "test-project", "dataset", "test-resource-id", "test-pending-id"
+            )
 
 
 def test_update_resource_not_found(
@@ -498,39 +487,42 @@ def test_update_resource_not_found(
     mock_put_response.status_code = 200
 
     with patch("os.path.exists", return_value=True):
-        with patch("builtins.open", mock_file):
-            with patch("requests.put", return_value=mock_put_response):
-                with patch(
-                    "uncertainty_engine.api_providers.resource_provider.uuid4",
-                    return_value="test-uuid",
-                ):
-                    # Call the method
-                    resource_provider.update(
-                        project_id="test-project",
-                        resource_type="dataset",
-                        resource_id="test-resource-id",
-                        file_path="path/to/updated_file.json",
-                    )
+        with patch("requests.put", return_value=mock_put_response):
+            with patch(
+                "uncertainty_engine.api_providers.resource_provider.uuid4",
+                return_value="test-uuid",
+            ):
+                # Call the method
+                resource_provider.update(
+                    project_id="test-project",
+                    resource_type="dataset",
+                    resource_id="test-resource-id",
+                    file_path="path/to/updated_file.json",
+                )
 
-                    # Verify the generic version name is used
-                    mock_resources_client.post_resource_version.assert_called_once_with(
-                        "test-project",
-                        "dataset",
-                        "test-resource-id",
-                        PostResourceVersionRequest(
-                            resource_version_record=ResourceVersionRecordInput(
-                                name="version-test-uuid",
-                                owner_id=resource_provider.account_id,
-                            ),
-                            resource_file_extension="json",
+                # Verify the generic version name is used
+                mock_resources_client.post_resource_version.assert_called_once_with(
+                    "test-project",
+                    "dataset",
+                    "test-resource-id",
+                    PostResourceVersionRequest(
+                        resource_version_record=ResourceVersionRecordInput(
+                            name="version-test-uuid",
+                            owner_id=resource_provider.account_id,
                         ),
-                    )
+                        resource_file_extension="json",
+                    ),
+                )
 
 
 def test_update_no_auth(resource_provider):
     """Test update fails when not authenticated."""
     # Set auth provider to None
-    with patch.object(resource_provider, "auth_service", None):
+    with patch.object(
+        resource_provider,
+        "auth_service",
+        MagicMock(is_authenticated=False, account_id=None),
+    ):
         # Call and verify exception
         with pytest.raises(
             ValueError, match="Authentication required before updating resources"
@@ -597,16 +589,15 @@ def test_update_upload_error(
     mock_put_response.text = error_text
 
     with patch("os.path.exists", return_value=True):
-        with patch("builtins.open", mock_file):
-            with patch("requests.put", return_value=mock_put_response):
-                # Call and verify exception
-                with pytest.raises(Exception, match=expected_error_msg):
-                    resource_provider.update(
-                        "test-project",
-                        "dataset",
-                        "test-resource-id",
-                        "path/to/updated_file.json",
-                    )
+        with patch("requests.put", return_value=mock_put_response):
+            # Call and verify exception
+            with pytest.raises(Exception, match=expected_error_msg):
+                resource_provider.update(
+                    "test-project",
+                    "dataset",
+                    "test-resource-id",
+                    "path/to/updated_file.json",
+                )
 
 
 def test_update_finalize_error(
@@ -630,16 +621,15 @@ def test_update_finalize_error(
     mock_resources_client.put_upload_resource_version.side_effect = api_exception
 
     with patch("os.path.exists", return_value=True):
-        with patch("builtins.open", mock_file):
-            with patch("requests.put", return_value=mock_put_response):
-                # Call and verify exception
-                with pytest.raises(Exception, match="Error finalizing upload:"):
-                    resource_provider.update(
-                        "test-project",
-                        "dataset",
-                        "test-resource-id",
-                        "path/to/updated_file.json",
-                    )
+        with patch("requests.put", return_value=mock_put_response):
+            # Call and verify exception
+            with pytest.raises(Exception, match="Error finalizing upload:"):
+                resource_provider.update(
+                    "test-project",
+                    "dataset",
+                    "test-resource-id",
+                    "path/to/updated_file.json",
+                )
 
 
 ### resource_provider.list_resources ###

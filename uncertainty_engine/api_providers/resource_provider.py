@@ -63,7 +63,12 @@ class ResourceProvider(ApiProviderBase):
             self._update_auth_headers()
 
     def authenticate(self, account_id: str) -> None:
-        """Set the account ID"""
+        """
+        Set the account ID
+
+        Args:
+            account_id: The account ID to authenticate with.
+        """
         self.auth_service.authenticate(account_id)
 
     def _update_auth_headers(self):
@@ -78,8 +83,13 @@ class ResourceProvider(ApiProviderBase):
 
     @property
     def account_id(self) -> Optional[str]:
-        """Get the current account ID from the auth provider"""
-        return None if self.auth_service is None else self.auth_service.account_id
+        """
+        Get the current account ID from the auth provider
+
+        Returns:
+            The account ID if authenticated, otherwise None.
+        """
+        return self.auth_service.account_id
 
     @ApiProviderBase.with_auth_refresh
     def upload(
