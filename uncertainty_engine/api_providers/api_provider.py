@@ -16,22 +16,22 @@ class ApiProviderBase:
         self.deployment = deployment
         self.auth_service = auth_service
 
-    @classmethod
-    def with_auth_refresh(cls, func: Callable[..., T]) -> Callable[..., T]:
-        """Decorator for API methods that need authentication with auto-refresh"""
-
+    def with_auth_refresh(
+        cls, func: Callable[..., T], max_retries: int = 1
+    ) -> Callable[..., T]:
         @wraps(func)
         def wrapper(self, *args: Any, **kwargs: Any) -> T:
-            try:
-                # Update auth headers before the call
-                return func(self, *args, **kwargs)
-            except UnauthorizedException:
-                # If it's an auth error, refresh and retry
-                self.auth_service.refresh()
-                self._update_auth_headers()
-                return func(self, *args, **kwargs)
-            except Exception:
-                raise
+            retries = 0
+            while retries <= max_retries:
+                try:
+                    return func(self, *args, **kwargs)
+                except UnauthorizedException:
+                    if retries >= max_retries:
+                        raise
+                    self.auth_service.refresh()
+                    self._update_auth_headers()
+                    retries += 1
+            return func(self, *args, **kwargs)  # One final attempt
 
         return wrapper
 
