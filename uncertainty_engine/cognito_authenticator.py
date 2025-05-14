@@ -46,7 +46,6 @@ class CognitoToken:
         """Check if token is expired"""
         exp = self.decoded_payload.get("exp", 0)
         exp_datetime = datetime.fromtimestamp(exp)
-        print(f"Token expiration time: {exp_datetime}")
         return datetime.now() > exp_datetime
 
 
@@ -132,7 +131,7 @@ class CognitoAuthenticator:
         except Exception:
             raise
 
-    def get_access_token(self) -> str:
+    def get_access_token(self, username: str, password: str) -> str:
         """Get only the access token from Cognito.
 
         A convenience method to get just the access token.
@@ -143,7 +142,7 @@ class CognitoAuthenticator:
         Raises:
             Exception: If authentication fails
         """
-        auth_result = self.authenticate()
+        auth_result = self.authenticate(username, password)
         return auth_result.get("access_token")
 
     def refresh_tokens(self, refresh_token: str) -> Dict:
