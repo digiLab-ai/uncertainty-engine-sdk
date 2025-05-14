@@ -38,6 +38,11 @@ class AuthService:
         username = username or os.getenv("UE_USERNAME")
         password = password or os.getenv("UE_PASSWORD")
 
+        if not username or not password:
+            raise ValueError(
+                "Username and password must be provided or set in environment variables UE_USERNAME and UE_PASSWORD"
+            )
+
         auth_details = self.authenticator.authenticate(username, password)
 
         self.token = CognitoToken(
@@ -119,7 +124,6 @@ class AuthService:
     def _load_from_file(self) -> None:
         """Load authentication details from file if it exists"""
         auth_file = self.auth_file_path
-        print("Loading tokens from ", auth_file)
         if not auth_file.exists():
             self.token = None
             return
