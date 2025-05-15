@@ -57,14 +57,20 @@ class ResourceProvider(ApiProviderBase):
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
-    def authenticate(self, account_id: str) -> None:
-        """
-        Set the account ID
+        # Update auth headers of the API client (only if authenticated)
+        self.update_api_authentication()
 
-        Args:
-            account_id: The account ID to authenticate with.
-        """
-        self.auth_service.authenticate(account_id)
+    def update_api_authentication(self):
+        """Update API client with current auth headers"""
+        if self.auth_service.is_authenticated:
+
+            auth_header = self.auth_service.get_auth_header()
+
+            self.client.default_headers.update(auth_header)
+
+            # Update the API instances with the new header
+            self.projects_client.api_client.default_headers.update(auth_header)
+            self.resources_client.api_client.default_headers.update(auth_header)
 
     @property
     def account_id(self) -> Optional[str]:
@@ -76,6 +82,7 @@ class ResourceProvider(ApiProviderBase):
         """
         return self.auth_service.account_id
 
+    @ApiProviderBase.with_auth_refresh
     def upload(
         self,
         project_id: str,
@@ -178,6 +185,7 @@ class ResourceProvider(ApiProviderBase):
 
         return resource_id
 
+    @ApiProviderBase.with_auth_refresh
     def download(
         self,
         project_id: str,
@@ -251,6 +259,7 @@ class ResourceProvider(ApiProviderBase):
             # Otherwise return the response content
             return response.content
 
+    @ApiProviderBase.with_auth_refresh
     def update(
         self,
         project_id: str,
@@ -343,6 +352,7 @@ class ResourceProvider(ApiProviderBase):
         except Exception as e:
             raise Exception(f"Error finalizing upload: {str(e)}")
 
+    @ApiProviderBase.with_auth_refresh
     def list_resources(self, project_id, resource_type: str) -> list:
         """
         Get a list of all resources of a specific type in your project.
