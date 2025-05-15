@@ -7,7 +7,16 @@ from botocore.exceptions import ClientError
 
 
 class CognitoToken:
-    """Wrapper around authentication tokens with decoding capabilities"""
+    """
+    Wrapper around authentication tokens with decoding capabilities
+
+    Attributes:
+        access_token (str): The access token for the user
+        refresh_token (str): The refresh token for the user
+        account_id (str): The account ID associated with the tokens
+        decoded_payload (dict): The decoded payload of the JWT token
+
+    """
 
     def __init__(self, access_token: str, refresh_token: str, account_id: str):
         self.access_token = access_token
