@@ -12,7 +12,7 @@ class AuthService:
     """Authentication service that manages tokens and provides them to API clients"""
 
     def __init__(self, authenticator: CognitoAuthenticator):
-        self.account_id: str = None
+        self.account_id: Optional[str] = None
         self.token: Optional[CognitoToken] = None
         self.authenticator = authenticator
 
@@ -140,7 +140,7 @@ class AuthService:
                     account_id=auth_data["account_id"],
                 )
                 self.account_id = auth_data["account_id"]
-        except (json.JSONDecodeError, IOError):
+        except Exception as e:
             raise Exception(
-                "Error loading authentication details. Please ensure you have authenticated."
+                f"Error loading authentication details: {str(e)}. Please ensure you have authenticated."
             )

@@ -27,6 +27,7 @@ class ApiProviderBase:
                 try:
                     return func(self, *args, **kwargs)
                 except UnauthorizedException:
+                    retries += 1
                     # If it's an auth error, refresh and retry
                     self.auth_service.refresh()
                     self.update_api_authentication()

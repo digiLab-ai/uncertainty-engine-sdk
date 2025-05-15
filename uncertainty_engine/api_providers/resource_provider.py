@@ -57,13 +57,15 @@ class ResourceProvider(ApiProviderBase):
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
-        if auth_service.is_authenticated:
-            self.update_api_authentication()
+        # Update auth headers of the API client (only if authenticated)
+        self.update_api_authentication()
 
     def update_api_authentication(self):
         """Update API client with current auth headers"""
         if self.auth_service.is_authenticated:
+
             auth_header = self.auth_service.get_auth_header()
+
             self.client.default_headers.update(auth_header)
 
             # Update the API instances with the new header
@@ -183,6 +185,7 @@ class ResourceProvider(ApiProviderBase):
 
         return resource_id
 
+    @ApiProviderBase.with_auth_refresh
     def download(
         self,
         project_id: str,
@@ -256,6 +259,7 @@ class ResourceProvider(ApiProviderBase):
             # Otherwise return the response content
             return response.content
 
+    @ApiProviderBase.with_auth_refresh
     def update(
         self,
         project_id: str,

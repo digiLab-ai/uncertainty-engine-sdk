@@ -85,6 +85,7 @@ class Client:
             password : The password to authenticate with. If not provided, it will be loaded from the environment variable UE_PASSWORD.
         """
         self.auth_service.authenticate(account_id, username, password)
+
         self.resources.update_api_authentication()
 
     def list_nodes(self, category: Optional[str] = None) -> list:
