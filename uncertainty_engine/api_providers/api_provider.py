@@ -28,10 +28,13 @@ class ApiProviderBase:
                     return func(self, *args, **kwargs)
                 except UnauthorizedException:
                     retries += 1
-                    # If it's an auth error, refresh and retry
+                    # If it's our last retry, just let the exception propagate
+                    if retries > MAX_RETRIES:
+                        raise
+                    # Otherwise, refresh and retry
                     self.auth_service.refresh()
                     self.update_api_authentication()
-                    return func(self, *args, **kwargs)
+                    # Continue to the next iteration of the loop
                 except Exception:
                     raise
 

@@ -23,8 +23,6 @@ DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
 class ResourceProvider(ApiProviderBase):
-    deployment: str
-    auth_service: AuthService
     """
     Client for managing resources in the Uncertainty Engine platform.
 
@@ -306,10 +304,10 @@ class ResourceProvider(ApiProviderBase):
             resource_name = resource.resource_record.name
             version_count = len(resource.resource_record.versions)
             version_name = f"{resource_name}-v{version_count + 1}"
-        except ApiException:
-            # If we can't get the resource info, create a generic version name
-            version_name = f"version-{uuid4()}"
-
+        except Exception as e:
+            raise Exception(
+                "Unable to retrieve resource record. Please ensure the resource exists before attempting to update it."
+            )
         resource_version_record = PostResourceVersionRequest(
             resource_version_record=ResourceVersionRecordInput(
                 name=version_name,
