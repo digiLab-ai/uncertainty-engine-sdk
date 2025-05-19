@@ -48,7 +48,6 @@ class AuthService:
         self.token = CognitoToken(
             access_token=auth_details["access_token"],
             refresh_token=auth_details["refresh_token"],
-            account_id=account_id,
         )
         self.account_id = account_id
 
@@ -86,7 +85,7 @@ class AuthService:
         """Save authentication details to a file"""
 
         auth_data = {
-            "account_id": self.token.account_id,
+            "account_id": self.account_id,
             "access_token": self.token.access_token,
             "refresh_token": self.token.refresh_token,
         }
@@ -106,7 +105,6 @@ class AuthService:
             self.token = CognitoToken(
                 access_token=response["access_token"],
                 refresh_token=self.token.refresh_token,  # Keep existing refresh token
-                account_id=self.token.account_id,
             )
             self._save_to_file()
             return self.token
@@ -137,10 +135,9 @@ class AuthService:
                 self.token = CognitoToken(
                     access_token=auth_data["access_token"],
                     refresh_token=auth_data["refresh_token"],
-                    account_id=auth_data["account_id"],
                 )
                 self.account_id = auth_data["account_id"]
         except Exception as e:
             raise Exception(
-                f"Error loading authentication details: {str(e)}. Please ensure you have authenticated."
+                f"Error loading authentication details: {str(e)}. Please ensure you are authenticated."
             )
