@@ -1,117 +1,10 @@
 import json
-import time
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock, mock_open, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
 from uncertainty_engine.auth_service import AuthService
-from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
-
-MOCK_ACCESS_TOKEN = "mock_access_token"
-MOCK_REFRESH_TOKEN = "mock_refresh_token"
-MOCK_ID_TOKEN = "mock_id_token"
-MOCK_ACCOUNT_ID = "mock_account_id"
-MOCK_DECODED_TOKEN = {
-    "sub": "mock_sub_id",
-    "username": "mock_username",
-    "exp": int(time.time()) + 18000,
-}
-
-
-@pytest.fixture
-def mock_cognito_token():
-    mock_token = MagicMock(spec=CognitoToken)
-    mock_token.access_token = MOCK_ACCESS_TOKEN
-    mock_token.refresh_token = MOCK_REFRESH_TOKEN
-    mock_token._decoded_payload = MOCK_DECODED_TOKEN
-    return mock_token
-
-
-@pytest.fixture
-def mock_cognito_authenticator(mock_cognito_token):
-    mock_authenticator = MagicMock(spec=CognitoAuthenticator)
-    mock_authenticator.authenticate.return_value = {
-        "access_token": MOCK_ACCESS_TOKEN,
-        "refresh_token": MOCK_REFRESH_TOKEN,
-    }
-    mock_authenticator.get_access_token.return_value = MOCK_ACCESS_TOKEN
-    mock_authenticator.refresh_tokens.return_value = {
-        "access_token": MOCK_ACCESS_TOKEN,
-        "id_token": MOCK_ID_TOKEN,
-        "expires_in": int(time.time() + 18000),
-    }
-    return mock_authenticator
-
-
-@pytest.fixture
-def mock_auth_file_data():
-    """Default mock data for auth file"""
-    return {
-        "account_id": MOCK_ACCOUNT_ID,
-        "access_token": MOCK_ACCESS_TOKEN,
-        "refresh_token": MOCK_REFRESH_TOKEN,
-    }
-
-
-@pytest.fixture
-def auth_service_with_file(mock_cognito_authenticator, mock_auth_file_data):
-    """
-    Creates an AuthService instance with mocked file operations to simulate a file that exists.
-
-    Args:
-        mock_cognito_authenticator: Mock authenticator
-        mock_auth_file_data: Mock auth file data
-
-    Returns:
-        AuthService: The AuthService instance with mocked file operations
-    """
-    # Mock path for auth file
-    mock_path = MagicMock()
-    mock_path.exists.return_value = True  # File exists
-
-    # Create a mock file handler using mock_open
-    m = mock_open(read_data=json.dumps(mock_auth_file_data))
-
-    # Create patches
-    path_patch = patch.object(
-        AuthService, "auth_file_path", new_callable=PropertyMock, return_value=mock_path
-    )
-    open_patch = patch("builtins.open", m)
-    chmod_patch = patch("os.chmod")  # Mock os.chmod
-
-    # Apply patches
-    with path_patch, open_patch, chmod_patch:
-        # Create AuthService instance
-        auth_service = AuthService(mock_cognito_authenticator)
-        yield auth_service, m  # Return both the service and the mock file handler
-
-
-@pytest.fixture
-def auth_service_no_file(mock_cognito_authenticator):
-    """
-    Creates an AuthService instance with mocked file operations to simulate a file that doesn't exist.
-
-    Args:
-        mock_cognito_authenticator: Mock authenticator
-
-    Returns:
-        AuthService: The AuthService instance with mocked file operations
-    """
-    # Mock path for auth file
-    mock_path = MagicMock()
-    mock_path.exists.return_value = False  # File doesn't exist
-
-    # Create patches
-    path_patch = patch.object(
-        AuthService, "auth_file_path", new_callable=PropertyMock, return_value=mock_path
-    )
-
-    # Apply patches
-    with path_patch:
-        # Create AuthService instance
-        auth_service = AuthService(mock_cognito_authenticator)
-        yield auth_service
 
 
 def test_init_no_file(auth_service_no_file):
@@ -121,13 +14,13 @@ def test_init_no_file(auth_service_no_file):
     assert auth_service_no_file.is_authenticated is False
 
 
-def test_init_with_file(auth_service_with_file):
+def test_init_with_file(auth_service_with_file, mock_access_token, mock_account_id):
     """Test initialization with auth file"""
     auth_service, _ = auth_service_with_file
 
-    assert auth_service.account_id == MOCK_ACCOUNT_ID
+    assert auth_service.account_id == mock_account_id
     assert auth_service.token is not None
-    assert auth_service.token.access_token == MOCK_ACCESS_TOKEN
+    assert auth_service.token.access_token == mock_access_token
     assert auth_service.is_authenticated is True
 
 

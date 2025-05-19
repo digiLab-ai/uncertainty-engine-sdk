@@ -1,31 +1,9 @@
-import time
 from unittest.mock import MagicMock
 
 import pytest
 from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 
 from uncertainty_engine.api_providers.api_provider import MAX_RETRIES, ApiProviderBase
-from uncertainty_engine.auth_service import AuthService
-
-
-@pytest.fixture
-def valid_token():
-    current_timestamp = int(time.time())
-    return {
-        "exp": current_timestamp + 3600,  # Expires 1 hour in the future
-        "sub": "user123",
-        "iss": "auth-service",
-    }
-
-
-@pytest.fixture
-def mock_auth_service():
-    auth_service = MagicMock(spec=AuthService)
-    auth_service.refresh = MagicMock()
-    auth_service.get_auth_header = MagicMock(
-        return_value={"Authorization": "Bearer fresh_token"}
-    )
-    return auth_service
 
 
 class TestApiProvider(ApiProviderBase):
@@ -80,7 +58,7 @@ def test_api_call_success(mock_auth_service):
     mock_auth_service.refresh.assert_not_called()
 
 
-def test_api_call_with_single_refresh(mock_auth_service):
+def test_api_call_with_single_refresh(mock_auth_service, mock_access_token):
     """Test API call that fails once but succeeds after token refresh"""
     provider = TestApiProvider("test-deployment", mock_auth_service)
     provider.set_fail_count(1)  # Fail first call
@@ -90,10 +68,13 @@ def test_api_call_with_single_refresh(mock_auth_service):
     assert provider.call_count == 2  # Initial call + retry
     mock_auth_service.refresh.assert_called_once()
     mock_auth_service.get_auth_header.assert_called_once()
-    assert "Success with header: {'Authorization': 'Bearer fresh_token'}" == result
+    assert (
+        result
+        == f"Success with header: {{'Authorization': 'Bearer {mock_access_token}'}}"
+    )
 
 
-def test_api_call_with_max_retries(mock_auth_service):
+def test_api_call_with_max_retries(mock_auth_service, mock_access_token):
     """Test API call that uses exactly MAX_RETRIES and succeeds"""
     provider = TestApiProvider("test-deployment", mock_auth_service)
 
@@ -104,7 +85,10 @@ def test_api_call_with_max_retries(mock_auth_service):
     # Initial call + MAX_RETRIES
     assert provider.call_count == MAX_RETRIES + 1
     assert mock_auth_service.refresh.call_count == MAX_RETRIES
-    assert "Success with header: {'Authorization': 'Bearer fresh_token'}" == result
+    assert (
+        result
+        == f"Success with header: {{'Authorization': 'Bearer {mock_access_token}'}}"
+    )
 
 
 def test_api_call_exceeds_max_retries(mock_auth_service):

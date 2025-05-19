@@ -1,23 +1,11 @@
 from unittest.mock import patch
 
-import boto3
 import pytest
 from botocore.stub import Stubber
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 
-MOCK_ACCESS_TOKEN = "mock_access_token"
-MOCK_REFRESH_TOKEN = "mock_refresh_token"
-MOCK_ID_TOKEN = "mock_id_token"
-
 ### Fixtures ###
-
-
-@pytest.fixture
-def cognito_client():
-    """Fixture to create a Cognito client with Stubber."""
-    client = boto3.client("cognito-idp", region_name="eu-west-2")
-    return client
 
 
 @pytest.fixture
@@ -102,7 +90,7 @@ def test_init(cognito_client, authenticator_args):
             "method": "initiate_auth",
             "response": {
                 "AuthenticationResult": {
-                    "AccessToken": MOCK_ACCESS_TOKEN,
+                    "AccessToken": "mock_access_token",
                     "RefreshToken": "mock_refresh_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
@@ -117,7 +105,9 @@ def test_init(cognito_client, authenticator_args):
     ],
     indirect=True,
 )
-def test_authenticate(cognito_client_stub, authenticator_args):
+def test_authenticate(
+    cognito_client_stub, authenticator_args, mock_access_token, mock_refresh_token
+):
     """Test the authenticate method of CognitoAuthenticator."""
 
     username = "testuser"
@@ -127,8 +117,8 @@ def test_authenticate(cognito_client_stub, authenticator_args):
     token = authenticator.authenticate(username, password)
 
     assert token == {
-        "access_token": MOCK_ACCESS_TOKEN,
-        "refresh_token": MOCK_REFRESH_TOKEN,
+        "access_token": mock_access_token,
+        "refresh_token": mock_refresh_token,
     }
 
 
@@ -201,7 +191,7 @@ def test_authenticate_exception(cognito_client_stub, authenticator_args):
             "method": "initiate_auth",
             "response": {
                 "AuthenticationResult": {
-                    "AccessToken": MOCK_ACCESS_TOKEN,
+                    "AccessToken": "mock_access_token",
                     "RefreshToken": "mock_refresh_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
@@ -216,13 +206,13 @@ def test_authenticate_exception(cognito_client_stub, authenticator_args):
     ],
     indirect=True,
 )
-def test_get_access_token(cognito_client_stub, authenticator_args):
+def test_get_access_token(cognito_client_stub, authenticator_args, mock_access_token):
     """Test the authenticate method of CognitoAuthenticator."""
 
     authenticator = CognitoAuthenticator(**authenticator_args)
     token = authenticator.get_access_token("testuser", "testpassword")
 
-    assert token == MOCK_ACCESS_TOKEN
+    assert token == mock_access_token
 
 
 @pytest.mark.parametrize(
@@ -232,8 +222,8 @@ def test_get_access_token(cognito_client_stub, authenticator_args):
             "method": "initiate_auth",
             "response": {
                 "AuthenticationResult": {
-                    "AccessToken": MOCK_ACCESS_TOKEN,
-                    "IdToken": MOCK_ID_TOKEN,
+                    "AccessToken": "mock_access_token",
+                    "IdToken": "mock_id_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
                 }
@@ -241,23 +231,25 @@ def test_get_access_token(cognito_client_stub, authenticator_args):
             "method_args": {
                 "AuthFlow": "REFRESH_TOKEN_AUTH",
                 "ClientId": "1234567890abcdef",
-                "AuthParameters": {"REFRESH_TOKEN": MOCK_REFRESH_TOKEN},
+                "AuthParameters": {"REFRESH_TOKEN": "mock_refresh_token"},
             },
         }
     ],
     indirect=True,
 )
-def test_refresh_tokens(cognito_client_stub):
+def test_refresh_tokens(
+    cognito_client_stub, mock_access_token, mock_refresh_token, mock_id_token
+):
     region = "eu-west-1"
     user_pool_id = "eu-west-1_123456789"
     client_id = "1234567890abcdef"
 
     authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
-    tokens = authenticator.refresh_tokens(MOCK_REFRESH_TOKEN)
+    tokens = authenticator.refresh_tokens(mock_refresh_token)
 
     assert tokens == {
-        "access_token": MOCK_ACCESS_TOKEN,
-        "id_token": MOCK_ID_TOKEN,
+        "access_token": mock_access_token,
+        "id_token": mock_id_token,
         "expires_in": 3600,
     }
 
@@ -276,7 +268,9 @@ def test_refresh_tokens(cognito_client_stub):
     ],
     indirect=["cognito_client_exception_stub"],
 )
-def test_refresh_tokens_exceptions(cognito_client_exception_stub, error):
+def test_refresh_tokens_exceptions(
+    cognito_client_exception_stub, error, mock_access_token
+):
     """Test the authenticate method of CognitoAuthenticator."""
     region = "eu-west-1"
     user_pool_id = "eu-west-1_123456789"
@@ -284,5 +278,5 @@ def test_refresh_tokens_exceptions(cognito_client_exception_stub, error):
 
     with pytest.raises(Exception) as excinfo:
         authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
-        authenticator.refresh_tokens(MOCK_ACCESS_TOKEN)
+        authenticator.refresh_tokens(mock_access_token)
     assert error == str(excinfo.value)
