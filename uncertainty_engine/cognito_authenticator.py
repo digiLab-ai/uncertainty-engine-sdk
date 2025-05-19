@@ -13,22 +13,21 @@ class CognitoToken:
     Attributes:
         access_token (str): The access token for the user
         refresh_token (str): The refresh token for the user
-        account_id (str): The account ID associated with the tokens
-        decoded_payload (dict): The decoded payload of the JWT token
+        _decoded_payload (dict): The decoded payload of the JWT token
 
     """
 
-    def __init__(self, access_token: str, refresh_token: str, account_id: str):
+    def __init__(self, access_token: str, refresh_token: str):
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.account_id = account_id
         self._decoded_payload = None
 
     @property
     def decoded_payload(self) -> Dict:
         """Decode and cache the JWT token payload"""
         if self._decoded_payload is None:
-            # Decode without verification since we just want the payload
+            # Decode without verification since we just want the payload.
+            # Verification just means we check where the token came from.
             self._decoded_payload = jwt.decode(
                 self.access_token, options={"verify_signature": False}
             )
@@ -38,22 +37,25 @@ class CognitoToken:
     def user_sub_id(self) -> str:
         """Get user ID from token"""
         try:
-            return self.decoded_payload.get("sub")
+            return self.decoded_payload["sub"]
         except KeyError:
-            raise ValueError("Invalid token: 'sub' key not found in payload")
+            raise KeyError("Invalid token: 'sub' key not found in payload")
 
     @property
     def username(self) -> str:
         """Get username from token"""
         try:
-            return self.decoded_payload.get("username", "")
+            return self.decoded_payload["username"]
         except KeyError:
-            raise ValueError("Invalid token: 'username' key not found in payload")
+            raise KeyError("Invalid token: 'username' key not found in payload")
 
     @property
     def is_expired(self) -> bool:
         """Check if token is expired"""
-        exp = self.decoded_payload.get("exp", 0)
+        try:
+            exp = self.decoded_payload["exp"]
+        except KeyError:
+            raise KeyError("Invalid token: Token did not include an expiry time")
         exp_datetime = datetime.fromtimestamp(exp)
         return datetime.now() > exp_datetime
 
