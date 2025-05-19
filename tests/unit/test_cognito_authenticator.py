@@ -1,10 +1,10 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import boto3
 import pytest
 from botocore.stub import Stubber
 
-from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 
 MOCK_ACCESS_TOKEN = "mock_access_token"
 MOCK_REFRESH_TOKEN = "mock_refresh_token"
@@ -43,7 +43,7 @@ def cognito_client_stub(request, cognito_client):
 
 
 @pytest.fixture()
-def cognito_exception_stub(request, cognito_client):
+def cognito_client_exception_stub(request, cognito_client):
 
     # Get the stubber for the client
     stubber = Stubber(cognito_client)
@@ -133,7 +133,7 @@ def test_authenticate(cognito_client_stub, authenticator_args):
 
 
 @pytest.mark.parametrize(
-    "cognito_exception_stub, error",
+    "cognito_client_exception_stub, error",
     [
         (
             {"method": "initiate_auth", "code": "NotAuthorizedException"},
@@ -160,10 +160,10 @@ def test_authenticate(cognito_client_stub, authenticator_args):
             "Authentication failed: Unknown Error",
         ),
     ],
-    indirect=["cognito_exception_stub"],
+    indirect=["cognito_client_exception_stub"],
 )
 def test_authenticate_client_exceptions(
-    cognito_exception_stub, error, authenticator_args
+    cognito_client_exception_stub, error, authenticator_args
 ):
     """Test the authenticate method of CognitoAuthenticator."""
 
@@ -263,7 +263,7 @@ def test_refresh_tokens(cognito_client_stub):
 
 
 @pytest.mark.parametrize(
-    "cognito_exception_stub, error",
+    "cognito_client_exception_stub, error",
     [
         (
             {
@@ -274,9 +274,9 @@ def test_refresh_tokens(cognito_client_stub):
             "Token refresh failed: Unknown Error",
         ),
     ],
-    indirect=["cognito_exception_stub"],
+    indirect=["cognito_client_exception_stub"],
 )
-def test_refresh_tokens_exceptions(cognito_exception_stub, error):
+def test_refresh_tokens_exceptions(cognito_client_exception_stub, error):
     """Test the authenticate method of CognitoAuthenticator."""
     region = "eu-west-1"
     user_pool_id = "eu-west-1_123456789"
