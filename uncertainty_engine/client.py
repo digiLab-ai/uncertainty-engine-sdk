@@ -73,18 +73,14 @@ class Client:
     def authenticate(
         self,
         account_id: str,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
     ) -> None:
         """
         Authenticate the user with the Uncertainty Engine"
 
         Args:
             account_id : The account ID to authenticate with.
-            username : The username to authenticate with. If not provided, it will be loaded from the environment variable UE_USERNAME.
-            password : The password to authenticate with. If not provided, it will be loaded from the environment variable UE_PASSWORD.
         """
-        self.auth_service.authenticate(account_id, username, password)
+        self.auth_service.authenticate(account_id)
 
         self.resources.update_api_authentication()
 
