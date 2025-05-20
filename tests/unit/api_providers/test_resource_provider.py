@@ -39,7 +39,7 @@ def test_init_custom(
     provider = ResourceProvider(deployment=custom_url, auth_service=mock_auth_service)
 
     assert provider.auth_service is mock_auth_service
-    assert provider.client is not None
+    assert provider.client.configuration.host == custom_url
 
 
 def test_account_id_when_authenticated(resource_provider, mock_auth_service):
@@ -86,7 +86,7 @@ def test_upload_success(
     resource_type = "dataset"
     file_path = "path/to/test_file.csv"
 
-    with patch("requests.put", return_value=mock_put_response):
+    with patch("requests.put", return_value=mock_put_response) as mock_requests_put:
         # Call the method
         result = resource_provider.upload(
             project_id=project_id,
@@ -122,7 +122,9 @@ def test_upload_success(
         )
 
         mock_file.assert_called_once_with(file_path, "rb")
-        requests.put.assert_called_once_with("https://upload-url.com", data=mock_file())
+        mock_requests_put.assert_called_once_with(
+            "https://upload-url.com", data=mock_file()
+        )
 
         resource_provider.resources_client.put_upload_resource_version.assert_called_once_with(
             project_id, resource_type, "test-resource-id", "test-pending-id"

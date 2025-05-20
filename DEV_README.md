@@ -23,7 +23,7 @@ classDiagram
     }
     
     class CognitoAuthenticator {
-        +region: str
+        +region: str 
         +user_pool_id: str
         +client_id: str
         +client: boto3.client
@@ -74,10 +74,10 @@ The authentication system is built around AWS Cognito and consists of three main
 - **AuthService** - Manages authentication state and token persistence
 
 Authentication follows this flow:
-1. User provides credentials (either directly or via environment variables)
+1. User provides credentials (via environment variables)
 2. Credentials are sent to Cognito for verification
 3. Tokens are returned and stored in a secure file (`~/.ue_auth`)
-4. Tokens are automatically refreshed when expired
+4. Tokens are automatically refreshed when expired (access token is valid for 1 hour, refresh token for 30 days)
 
 ### API Providers
 
@@ -103,8 +103,6 @@ client = Client(email="user@example.com")
 # Authenticate with credentials
 client.authenticate(
     account_id="123456789",
-    username="username",  # Optional if UE_USERNAME env var is set
-    password="password"   # Optional if UE_PASSWORD env var is set
 )
 ```
 

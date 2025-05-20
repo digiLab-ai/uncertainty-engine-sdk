@@ -6,7 +6,7 @@ from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 from uncertainty_engine.api_providers.api_provider import MAX_RETRIES, ApiProviderBase
 
 
-class TestApiProvider(ApiProviderBase):
+class ApiProviderTestClass(ApiProviderBase):
     """
     A test API Provider class with a `make_api_call` function that can be made
     to fail after `n` calls.
@@ -48,7 +48,7 @@ class TestApiProvider(ApiProviderBase):
 # Tests for ApiProviderBase and with_auth_refresh decorator
 def test_api_call_success(mock_auth_service):
     """Test successful API call with no auth errors"""
-    provider = TestApiProvider("test-deployment", mock_auth_service)
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
     provider.set_fail_count(0)  # No failures
 
     result = provider.make_api_call()
@@ -60,7 +60,7 @@ def test_api_call_success(mock_auth_service):
 
 def test_api_call_with_single_refresh(mock_auth_service, mock_access_token):
     """Test API call that fails once but succeeds after token refresh"""
-    provider = TestApiProvider("test-deployment", mock_auth_service)
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
     provider.set_fail_count(1)  # Fail first call
 
     result = provider.make_api_call()
@@ -76,7 +76,7 @@ def test_api_call_with_single_refresh(mock_auth_service, mock_access_token):
 
 def test_api_call_with_max_retries(mock_auth_service, mock_access_token):
     """Test API call that uses exactly MAX_RETRIES and succeeds"""
-    provider = TestApiProvider("test-deployment", mock_auth_service)
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
 
     # Fail exactly MAX_RETRIES times
     provider.set_fail_count(MAX_RETRIES)
@@ -93,7 +93,7 @@ def test_api_call_with_max_retries(mock_auth_service, mock_access_token):
 
 def test_api_call_exceeds_max_retries(mock_auth_service):
     """Test API call that still fails after MAX_RETRIES refreshes"""
-    provider = TestApiProvider("test-deployment", mock_auth_service)
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
 
     # Fail more than MAX_RETRIES times
     provider.set_fail_count(MAX_RETRIES + 1)
@@ -109,7 +109,7 @@ def test_api_call_exceeds_max_retries(mock_auth_service):
 
 def test_api_call_other_exception(mock_auth_service):
     """Test API call that raises a non-auth exception"""
-    provider = TestApiProvider("test-deployment", mock_auth_service)
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
 
     with pytest.raises(ValueError, match="Some other error"):
         provider.make_other_error_call()
