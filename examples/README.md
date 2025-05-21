@@ -4,7 +4,7 @@ This directory contains example notebooks demonstrating the core functionality o
 
 ## Prerequisites
 
-You will need to have a valid Uncertainty Engine account and deployment URL (these are used to configure the uncertainty engine client).
+You will need to have a valid Uncertainty Engine account and deployment URL (these are used to configure the Uncertainty Engine client).
 
 Before running any examples, install the SDK with the required extras:
 
@@ -50,7 +50,7 @@ poetry install --extras "vis notebook data"
 
 ## Getting Started
 
-You will need to make sure you have all the [prerequisites](#prerequisites) above before following these steps. Then, within your jupyter notebook you can start defining nodes as follows:
+You will need to make sure you have all the [prerequisites](#prerequisites) above before following these steps. Then, within your Jupyter Notebook you can start defining nodes as follows:
 
 1. **Configure Your Client**
 
@@ -58,8 +58,8 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    from uncertainty_engine.client import Client
 
    client = Client(
-   email="<you-email>",  # Note: There must be token associated with this email.
-   deployment="<a-deployment-url>",
+       email="<you-email>",  # Note: There must be token associated with this email.
+       deployment="<a-deployment-url>",
    )
    ```
 
