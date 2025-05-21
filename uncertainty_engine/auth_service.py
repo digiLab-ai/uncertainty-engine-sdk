@@ -84,6 +84,11 @@ class AuthService:
     def _save_to_file(self) -> None:
         """Save authentication details to a file"""
 
+        if not self.is_authenticated:
+            raise Exception(
+                "Must be authenticated before saving authentication details."
+            )
+
         auth_data = {
             "account_id": self.account_id,
             "access_token": self.token.access_token,
@@ -97,7 +102,13 @@ class AuthService:
         os.chmod(self.auth_file_path, 0o600)
 
     def refresh(self) -> CognitoToken:
-        """Refresh the access token"""
+        """
+        Refresh the access token
+
+        Returns
+            A Cognito Token containing the user's new access token.
+
+        """
         if not self.token or not self.token.refresh_token:
             raise ValueError("No refresh token available. Please authenticate first.")
         try:
@@ -113,7 +124,12 @@ class AuthService:
             raise ValueError(f"Failed to refresh token: {str(e)}")
 
     def get_auth_header(self) -> dict[str, str]:
-        """Get the Authorization header with the current token"""
+        """
+        Get the Authorization header with the current token
+
+        Returns:
+            A configure API Header containing the access token in a dictionary format.
+        """
         if not self.token:
             raise ValueError("Not authenticated")
 
