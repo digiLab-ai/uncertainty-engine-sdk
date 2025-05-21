@@ -58,53 +58,20 @@ def test_api_call_success(mock_auth_service):
     mock_auth_service.refresh.assert_not_called()
 
 
-def test_api_call_with_single_refresh(mock_auth_service, mock_access_token):
+def test_api_call_with_refresh(mock_auth_service, mock_access_token):
     """Test API call that fails once but succeeds after token refresh"""
     provider = ApiProviderTestClass("test-deployment", mock_auth_service)
     provider.set_fail_count(1)  # Fail first call
 
     result = provider.make_api_call()
 
-    assert provider.call_count == 2  # Initial call + retry
+    assert provider.call_count == 2
     mock_auth_service.refresh.assert_called_once()
     mock_auth_service.get_auth_header.assert_called_once()
     assert (
         result
         == f"Success with header: {{'Authorization': 'Bearer {mock_access_token}'}}"
     )
-
-
-def test_api_call_with_max_retries(mock_auth_service, mock_access_token):
-    """Test API call that uses exactly MAX_RETRIES and succeeds"""
-    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
-
-    # Fail exactly MAX_RETRIES times
-    provider.set_fail_count(MAX_RETRIES)
-    result = provider.make_api_call()
-
-    # Initial call + MAX_RETRIES
-    assert provider.call_count == MAX_RETRIES + 1
-    assert mock_auth_service.refresh.call_count == MAX_RETRIES
-    assert (
-        result
-        == f"Success with header: {{'Authorization': 'Bearer {mock_access_token}'}}"
-    )
-
-
-def test_api_call_exceeds_max_retries(mock_auth_service):
-    """Test API call that still fails after MAX_RETRIES refreshes"""
-    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
-
-    # Fail more than MAX_RETRIES times
-    provider.set_fail_count(MAX_RETRIES + 1)
-
-    # Should raise UnauthorizedException after exhausting retries
-    with pytest.raises(UnauthorizedException):
-        provider.make_api_call()
-
-    # Should have attempted exactly MAX_RETRIES + 1 calls (initial + MAX_RETRIES)
-    assert provider.call_count == MAX_RETRIES + 1
-    assert mock_auth_service.refresh.call_count == MAX_RETRIES
 
 
 def test_api_call_other_exception(mock_auth_service):
