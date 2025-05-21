@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, NoReturn, TypeVar
 
 from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 
@@ -21,26 +21,21 @@ class ApiProviderBase:
     @classmethod
     def with_auth_refresh(cls, func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
-        def wrapper(self, *args: Any, **kwargs: Any) -> T:
-            retries = 0
-            while retries <= MAX_RETRIES:
-                try:
-                    return func(self, *args, **kwargs)
-                except UnauthorizedException:
-                    retries += 1
-                    # If it's our last retry, just let the exception propagate
-                    if retries > MAX_RETRIES:
-                        raise
-                    # Otherwise, refresh and retry
-                    self.auth_service.refresh()
-                    self.update_api_authentication()
-                    # Continue to the next iteration of the loop
-                except Exception:
-                    raise
+        def wrapper(self: ApiProviderBase, *args: Any, **kwargs: Any) -> T:
+            try:
+                return func(self, *args, **kwargs)
+            except UnauthorizedException:
+                # Refresh token
+                self.auth_service.refresh()
+                self.update_api_authentication()
+                # Retry the operation with refreshed token
+                return func(self, *args, **kwargs)
+            except Exception:
+                raise
 
         return wrapper
 
-    def update_api_authentication(self):
+    def update_api_authentication(self) -> None:
         """
         All API providers that wish to use token refreshing must implement this method.
         This method should update the authorization header in the api client.
