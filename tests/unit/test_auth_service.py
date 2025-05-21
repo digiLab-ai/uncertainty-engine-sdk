@@ -5,16 +5,21 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 
 
-def test_init_no_file(auth_service_no_file):
+def test_init_no_file(auth_service_no_file: AuthService):
     """Test that a new AuthService has no account_id set."""
     assert auth_service_no_file.account_id is None
     assert auth_service_no_file.token is None
     assert auth_service_no_file.is_authenticated is False
 
 
-def test_init_with_file(auth_service_with_file, mock_access_token, mock_account_id):
+def test_init_with_file(
+    auth_service_with_file: tuple[AuthService, MagicMock],
+    mock_access_token: str,
+    mock_account_id: str,
+):
     """Test initialization with auth file"""
     auth_service, _ = auth_service_with_file
 
@@ -24,7 +29,11 @@ def test_init_with_file(auth_service_with_file, mock_access_token, mock_account_
     assert auth_service.is_authenticated is True
 
 
-def test_authenticate(auth_service_no_file, mock_cognito_authenticator, monkeypatch):
+def test_authenticate(
+    auth_service_no_file: AuthService,
+    mock_cognito_authenticator: CognitoAuthenticator,
+    monkeypatch,
+):
     """Test successful authentication"""
     # Setup
     username = "test_user"
@@ -47,7 +56,9 @@ def test_authenticate(auth_service_no_file, mock_cognito_authenticator, monkeypa
 
 
 def test_authenticate_from_env_vars(
-    auth_service_no_file, mock_cognito_authenticator, monkeypatch
+    auth_service_no_file: AuthService,
+    mock_cognito_authenticator: CognitoAuthenticator,
+    monkeypatch,
 ):
     """Test authentication using environment variables"""
     # Setup
@@ -71,7 +82,9 @@ def test_authenticate_from_env_vars(
     )
 
 
-def test_authenticate_missing_credentials(auth_service_no_file, monkeypatch):
+def test_authenticate_missing_credentials(
+    auth_service_no_file: AuthService, monkeypatch
+):
     """Test authentication fails when no credentials provided"""
     # Clear environment variables using monkeypatch
     monkeypatch.delenv("UE_USERNAME", raising=False)
@@ -84,7 +97,7 @@ def test_authenticate_missing_credentials(auth_service_no_file, monkeypatch):
     assert "Username and password must be provided" in str(excinfo.value)
 
 
-def test_is_authenticated_property(auth_service_no_file):
+def test_is_authenticated_property(auth_service_no_file: AuthService):
     """Test is_authenticated property"""
     # Initially not authenticated
     assert auth_service_no_file.is_authenticated is False
@@ -115,7 +128,7 @@ def test_auth_file_path():
     assert service.auth_file_path == expected_path
 
 
-def test_clear(auth_service_with_file):
+def test_clear(auth_service_with_file: tuple[AuthService, MagicMock]):
     """Test clearing auth data"""
     auth_service, _ = auth_service_with_file
 
@@ -133,7 +146,9 @@ def test_clear(auth_service_with_file):
 
 
 def test_refresh_successful(
-    auth_service_with_file, mock_cognito_authenticator, monkeypatch
+    auth_service_with_file: tuple[AuthService, MagicMock],
+    mock_cognito_authenticator: CognitoAuthenticator,
+    monkeypatch,
 ):
     """Test successful token refresh"""
     auth_service, _ = auth_service_with_file
@@ -160,7 +175,7 @@ def test_refresh_successful(
     )
 
 
-def test_refresh_no_token(auth_service_no_file):
+def test_refresh_no_token(auth_service_no_file: AuthService):
     """Test refresh fails when no token available"""
     with pytest.raises(ValueError) as excinfo:
         auth_service_no_file.refresh()
@@ -168,7 +183,10 @@ def test_refresh_no_token(auth_service_no_file):
     assert "No refresh token available" in str(excinfo.value)
 
 
-def test_refresh_exception(auth_service_with_file, mock_cognito_authenticator):
+def test_refresh_exception(
+    auth_service_with_file: tuple[AuthService, MagicMock],
+    mock_cognito_authenticator: CognitoAuthenticator,
+):
     """Test refresh error handling"""
     auth_service, _ = auth_service_with_file
 
@@ -188,7 +206,7 @@ def test_refresh_exception(auth_service_with_file, mock_cognito_authenticator):
         auth_service.clear.assert_called_once()
 
 
-def test_get_auth_header(auth_service_with_file):
+def test_get_auth_header(auth_service_with_file: tuple[AuthService, MagicMock]):
     """Test getting authorization header"""
     auth_service, _ = auth_service_with_file
 
@@ -199,7 +217,7 @@ def test_get_auth_header(auth_service_with_file):
     assert header == {"Authorization": f"Bearer {auth_service.token.access_token}"}
 
 
-def test_get_auth_header_not_authenticated(auth_service_no_file):
+def test_get_auth_header_not_authenticated(auth_service_no_file: AuthService):
     """Test get_auth_header fails when not authenticated"""
     with pytest.raises(ValueError) as excinfo:
         auth_service_no_file.get_auth_header()
@@ -207,7 +225,7 @@ def test_get_auth_header_not_authenticated(auth_service_no_file):
     assert "Not authenticated" in str(excinfo.value)
 
 
-def test_save_to_file(auth_service_with_file):
+def test_save_to_file(auth_service_with_file: tuple[AuthService, MagicMock]):
     """Test saving to file"""
     auth_service, mock_file = auth_service_with_file
 
@@ -227,7 +245,7 @@ def test_save_to_file(auth_service_with_file):
     assert parsed_data["account_id"] == "new_account_id"
 
 
-def test_load_from_file_exception(auth_service_no_file):
+def test_load_from_file_exception(auth_service_no_file: AuthService):
     """Test error handling when loading from file"""
     # Mock file exists but has invalid content
     with patch.object(auth_service_no_file.auth_file_path, "exists", return_value=True):
@@ -239,7 +257,7 @@ def test_load_from_file_exception(auth_service_no_file):
             assert "Error loading authentication details" in str(excinfo.value)
 
 
-def test_load_from_file_missing_keys(auth_service_no_file):
+def test_load_from_file_missing_keys(auth_service_no_file: AuthService):
     """Test handling incomplete data in auth file"""
     # Mock file exists with incomplete data
     incomplete_data = json.dumps({"account_id": "test_account"})  # Missing tokens

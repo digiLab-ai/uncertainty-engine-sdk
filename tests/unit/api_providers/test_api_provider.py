@@ -4,6 +4,7 @@ import pytest
 from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 
 from uncertainty_engine.api_providers.api_provider import MAX_RETRIES, ApiProviderBase
+from uncertainty_engine.auth_service import AuthService
 
 
 class ApiProviderTestClass(ApiProviderBase):
@@ -12,14 +13,14 @@ class ApiProviderTestClass(ApiProviderBase):
     to fail after `n` calls.
     """
 
-    def __init__(self, deployment, auth_service):
+    def __init__(self, deployment: str, auth_service: AuthService):
         super().__init__(deployment, auth_service)
         self.auth_header = "Initial Auth Header"
         self.call_count = 0
         # Track number of consecutive failures to simulate
         self.fail_count = 0
 
-    def set_fail_count(self, count):
+    def set_fail_count(self, count: int):
         """Set how many consecutive calls should fail with UnauthorizedException"""
         self.fail_count = count
         self.call_count = 0
@@ -29,7 +30,7 @@ class ApiProviderTestClass(ApiProviderBase):
         self.auth_header = self.auth_service.get_auth_header()
 
     @ApiProviderBase.with_auth_refresh
-    def make_api_call(self):
+    def make_api_call(self) -> str:
         """Test API method that will fail based on fail_count"""
         self.call_count += 1
 
@@ -46,7 +47,7 @@ class ApiProviderTestClass(ApiProviderBase):
 
 
 # Tests for ApiProviderBase and with_auth_refresh decorator
-def test_api_call_success(mock_auth_service):
+def test_api_call_success(mock_auth_service: AuthService):
     """Test successful API call with no auth errors"""
     provider = ApiProviderTestClass("test-deployment", mock_auth_service)
     provider.set_fail_count(0)  # No failures
@@ -58,7 +59,7 @@ def test_api_call_success(mock_auth_service):
     mock_auth_service.refresh.assert_not_called()
 
 
-def test_api_call_with_refresh(mock_auth_service, mock_access_token):
+def test_api_call_with_refresh(mock_auth_service: AuthService, mock_access_token: str):
     """Test API call that fails once but succeeds after token refresh"""
     provider = ApiProviderTestClass("test-deployment", mock_auth_service)
     provider.set_fail_count(1)  # Fail first call
@@ -74,7 +75,7 @@ def test_api_call_with_refresh(mock_auth_service, mock_access_token):
     )
 
 
-def test_api_call_other_exception(mock_auth_service):
+def test_api_call_other_exception(mock_auth_service: AuthService):
     """Test API call that raises a non-auth exception"""
     provider = ApiProviderTestClass("test-deployment", mock_auth_service)
 

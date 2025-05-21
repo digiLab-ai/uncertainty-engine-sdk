@@ -16,9 +16,10 @@ from uncertainty_engine.api_providers.resource_provider import (
     DATETIME_STRING_FORMAT,
     ResourceProvider,
 )
+from uncertainty_engine.auth_service import AuthService
 
 
-def test_init_default(mock_auth_service):
+def test_init_default(mock_auth_service: AuthService):
     """Test initializing with default parameters."""
 
     provider = ResourceProvider(mock_auth_service)
@@ -30,7 +31,7 @@ def test_init_default(mock_auth_service):
 
 
 def test_init_custom(
-    mock_auth_service,
+    mock_auth_service: AuthService,
 ):
     """Test initializing with custom parameters."""
 
@@ -42,7 +43,9 @@ def test_init_custom(
     assert provider.client.configuration.host == custom_url
 
 
-def test_account_id_when_authenticated(resource_provider, mock_auth_service):
+def test_account_id_when_authenticated(
+    resource_provider: ResourceProvider, mock_auth_service: AuthService
+):
     # Set up the mock auth service to return an account_id
     mock_auth_service.account_id = "test-user-123"
 
@@ -50,7 +53,9 @@ def test_account_id_when_authenticated(resource_provider, mock_auth_service):
     assert resource_provider.account_id == "test-user-123"
 
 
-def test_account_id_when_not_authenticated(resource_provider, mock_auth_service):
+def test_account_id_when_not_authenticated(
+    resource_provider: ResourceProvider, mock_auth_service: AuthService
+):
     # Set up the mock auth service to return None (not authenticated)
     mock_auth_service.account_id = None
 
@@ -59,10 +64,10 @@ def test_account_id_when_not_authenticated(resource_provider, mock_auth_service)
 
 
 def test_upload_success(
-    resource_provider,
-    mock_file,
-    mock_resource_record,
-    mock_version_response,
+    resource_provider: ResourceProvider,
+    mock_file: MagicMock,
+    mock_resource_record: MagicMock,
+    mock_version_response: ResourceProvider,
 ):
     """Test the upload method when successful."""
     # Setup mock responses
@@ -131,7 +136,7 @@ def test_upload_success(
         )
 
 
-def test_upload_no_auth(resource_provider):
+def test_upload_no_auth(resource_provider: ResourceProvider):
     """Test upload fails when not authenticated."""
 
     # Set auth provider authentication to None
@@ -145,7 +150,7 @@ def test_upload_no_auth(resource_provider):
         resource_provider.upload("project-id", "name", "type", "path")
 
 
-def test_upload_api_exception_on_record_creation(resource_provider):
+def test_upload_api_exception_on_record_creation(resource_provider: ResourceProvider):
     """Test handling of ApiException during resource record creation."""
     # Setup mock error
     api_exception = ApiException(status=400, reason="Bad Request")
@@ -159,7 +164,7 @@ def test_upload_api_exception_on_record_creation(resource_provider):
 
 
 def test_upload_api_exception_on_version_creation(
-    resource_provider, mock_resource_record
+    resource_provider: ResourceProvider, mock_resource_record: MagicMock
 ):
     """Test handling of ApiException during version record creation."""
     resource_provider.resources_client.post_resource_record = MagicMock(
@@ -185,13 +190,13 @@ def test_upload_api_exception_on_version_creation(
     ],
 )
 def test_upload_file_upload_error(
-    resource_provider,
-    mock_resource_record,
-    mock_version_response,
-    mock_file,
-    status_code,
-    error_text,
-    expected_error_msg,
+    resource_provider: ResourceProvider,
+    mock_resource_record: MagicMock,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
+    status_code: int,
+    error_text: str,
+    expected_error_msg: str,
 ):
     """Test handling of failed upload to presigned URL with various error codes."""
     # Setup mocks
@@ -214,10 +219,10 @@ def test_upload_file_upload_error(
 
 
 def test_upload_failed_completion(
-    resource_provider,
-    mock_resource_record,
-    mock_version_response,
-    mock_file,
+    resource_provider: ResourceProvider,
+    mock_resource_record: MagicMock,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
 ):
     """Test handling of exception during upload completion."""
     # Setup mocks
@@ -245,7 +250,9 @@ def test_upload_failed_completion(
 
 
 def test_download_success_with_filepath(
-    resource_provider, mock_file, mock_version_response
+    resource_provider: ResourceProvider,
+    mock_file: MagicMock,
+    mock_version_response: MagicMock,
 ):
     """Test downloading a resource with a specified filepath."""
     # Setup mocks
@@ -282,7 +289,9 @@ def test_download_success_with_filepath(
             mock_file().write.assert_called_once_with(b"test file content")
 
 
-def test_download_success_without_filepath(resource_provider, mock_version_response):
+def test_download_success_without_filepath(
+    resource_provider: ResourceProvider, mock_version_response: MagicMock
+):
     """Test downloading a resource without a specified filepath (return content)."""
     # Setup mocks
     resource_provider.resources_client.get_latest_resource_version = MagicMock(
@@ -311,7 +320,7 @@ def test_download_success_without_filepath(resource_provider, mock_version_respo
         mock_get_response.raise_for_status.assert_called_once()
 
 
-def test_download_no_auth(resource_provider):
+def test_download_no_auth(resource_provider: ResourceProvider):
     """Test download fails when not authenticated."""
 
     # Set auth provider authentication to None
@@ -326,7 +335,7 @@ def test_download_no_auth(resource_provider):
         resource_provider.download("project-id", "type", "resource-id")
 
 
-def test_download_api_exception(resource_provider):
+def test_download_api_exception(resource_provider: ResourceProvider):
     """Test handling of ApiException during resource version retrieval."""
     # Setup exception
     api_exception = ApiException(status=404, reason="Not Found")
@@ -341,7 +350,7 @@ def test_download_api_exception(resource_provider):
         )
 
 
-def test_download_generic_exception_on_retrieval(resource_provider):
+def test_download_generic_exception_on_retrieval(resource_provider: ResourceProvider):
     """Test handling of generic Exception during resource retrieval."""
     # Setup exception
     generic_exception = Exception("Random error")
@@ -356,7 +365,9 @@ def test_download_generic_exception_on_retrieval(resource_provider):
         )
 
 
-def test_download_http_error(resource_provider, mock_version_response):
+def test_download_http_error(
+    resource_provider: ResourceProvider, mock_version_response: MagicMock
+):
     """Test handling of HTTP error during download."""
     # Setup mocks
     resource_provider.resources_client.get_latest_resource_version = MagicMock(
@@ -377,7 +388,9 @@ def test_download_http_error(resource_provider, mock_version_response):
 
 
 def test_download_file_not_found_error(
-    resource_provider, mock_version_response, mock_file
+    resource_provider: ResourceProvider,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
 ):
     """Test handling of FileNotFoundError when writing to a file."""
     # Setup mocks
@@ -407,7 +420,9 @@ def test_download_file_not_found_error(
 
 
 def test_download_other_file_exception(
-    resource_provider, mock_version_response, mock_file
+    resource_provider: ResourceProvider,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
 ):
     """Test handling of generic exceptions when writing to a file."""
     # Setup mocks
@@ -438,10 +453,10 @@ def test_download_other_file_exception(
 
 
 def test_update_success(
-    resource_provider,
-    mock_resource_record,
-    mock_version_response,
-    mock_file,
+    resource_provider: ResourceProvider,
+    mock_resource_record: MagicMock,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
 ):
     """Test updating a resource successfully."""
     # Setup mocks for resource info - simulate two existing versions
@@ -499,7 +514,11 @@ def test_update_success(
             )
 
 
-def test_update_resource_not_found(resource_provider, mock_version_response, mock_file):
+def test_update_resource_not_found(
+    resource_provider: ResourceProvider,
+    mock_version_response: ResourceProvider,
+    mock_file: ResourceProvider,
+):
     """Test handling when the resource to update is not found."""
     # Setup exception for resource lookup
 
@@ -531,7 +550,7 @@ def test_update_resource_not_found(resource_provider, mock_version_response, moc
                 )
 
 
-def test_update_no_auth(resource_provider):
+def test_update_no_auth(resource_provider: ResourceProvider):
     """Test update fails when not authenticated."""
     # Set auth provider authentication to None
     resource_provider.auth_service = MagicMock(
@@ -547,7 +566,7 @@ def test_update_no_auth(resource_provider):
         )
 
 
-def test_update_file_not_found(resource_provider):
+def test_update_file_not_found(resource_provider: ResourceProvider):
     """Test update fails when the file doesn't exist."""
     with patch("os.path.exists", return_value=False):
         # Call and verify exception
@@ -558,7 +577,7 @@ def test_update_file_not_found(resource_provider):
 
 
 def test_update_api_exception_on_version_creation(
-    resource_provider, mock_resource_record
+    resource_provider: ResourceProvider, mock_resource_record: MagicMock
 ):
     """Test handling of ApiException during version record creation."""
     # Setup mocks for resource info
@@ -587,13 +606,13 @@ def test_update_api_exception_on_version_creation(
     ],
 )
 def test_update_upload_error(
-    resource_provider,
-    mock_resource_record,
-    mock_version_response,
-    mock_file,
-    status_code,
-    error_text,
-    expected_error_msg,
+    resource_provider: ResourceProvider,
+    mock_resource_record: MagicMock,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
+    status_code: str,
+    error_text: str,
+    expected_error_msg: str,
 ):
     """Test handling of error during upload to presigned URL."""
     # Setup mocks for resource info
@@ -622,10 +641,10 @@ def test_update_upload_error(
 
 
 def test_update_finalize_error(
-    resource_provider,
-    mock_resource_record,
-    mock_version_response,
-    mock_file,
+    resource_provider: ResourceProvider,
+    mock_resource_record: MagicMock,
+    mock_version_response: MagicMock,
+    mock_file: MagicMock,
 ):
     """Test handling of error during finalization of upload."""
     # Setup mocks for resource info
@@ -656,7 +675,7 @@ def test_update_finalize_error(
                 )
 
 
-def test_list_resources_success(resource_provider):
+def test_list_resources_success(resource_provider: ResourceProvider):
     """Test listing resources successfully."""
     # Setup mock response
     created_time = datetime.now()
@@ -698,7 +717,7 @@ def test_list_resources_success(resource_provider):
     assert result == expected_result
 
 
-def test_list_resources_empty(resource_provider):
+def test_list_resources_empty(resource_provider: ResourceProvider):
     """Test listing resources when none exist."""
     # Setup mock response with empty list
     response = MagicMock()

@@ -57,7 +57,11 @@ def valid_token():
 
 # Auth fixtures
 @pytest.fixture
-def mock_cognito_token(mock_access_token, mock_refresh_token, mock_decoded_token):
+def mock_cognito_token(
+    mock_access_token: str,
+    mock_refresh_token: str,
+    mock_decoded_token: dict[str, str | int],
+):
     mock_token = MagicMock(spec=CognitoToken)
     mock_token.access_token = mock_access_token
     mock_token.refresh_token = mock_refresh_token
@@ -66,7 +70,9 @@ def mock_cognito_token(mock_access_token, mock_refresh_token, mock_decoded_token
 
 
 @pytest.fixture
-def mock_cognito_authenticator(mock_access_token, mock_refresh_token, mock_id_token):
+def mock_cognito_authenticator(
+    mock_access_token: str, mock_refresh_token: str, mock_id_token: str
+):
     mock_authenticator = MagicMock(spec=CognitoAuthenticator)
     mock_authenticator.authenticate.return_value = {
         "access_token": mock_access_token,
@@ -82,7 +88,7 @@ def mock_cognito_authenticator(mock_access_token, mock_refresh_token, mock_id_to
 
 
 @pytest.fixture
-def mock_auth_service(mock_access_token, mock_account_id):
+def mock_auth_service(mock_access_token: str, mock_account_id: str):
     auth_service = MagicMock(spec=AuthService)
     auth_service.refresh = MagicMock()
     auth_service.get_auth_header = MagicMock(
@@ -93,7 +99,9 @@ def mock_auth_service(mock_access_token, mock_account_id):
 
 
 @pytest.fixture
-def mock_auth_file_data(mock_account_id, mock_access_token, mock_refresh_token):
+def mock_auth_file_data(
+    mock_account_id: str, mock_access_token: str, mock_refresh_token: str
+):
     """Default mock data for auth file"""
     return {
         "account_id": mock_account_id,
@@ -110,7 +118,7 @@ def mock_file_content():
 
 
 @pytest.fixture
-def mock_file(mock_file_content):
+def mock_file(mock_file_content: bytes):
     """Mock the open function for file operations."""
     _mock_file = mock_open(read_data=mock_file_content)
     with patch("builtins.open", _mock_file):
@@ -127,7 +135,10 @@ def cognito_client():
 
 # Auth service instances
 @pytest.fixture
-def auth_service_with_file(mock_cognito_authenticator, mock_auth_file_data):
+def auth_service_with_file(
+    mock_cognito_authenticator: CognitoAuthenticator,
+    mock_auth_file_data: dict[str, str],
+):
     """Creates an AuthService instance with a mocked file that exists."""
     # Mock path for auth file
     mock_path = MagicMock()
@@ -151,7 +162,7 @@ def auth_service_with_file(mock_cognito_authenticator, mock_auth_file_data):
 
 
 @pytest.fixture
-def auth_service_no_file(mock_cognito_authenticator):
+def auth_service_no_file(mock_cognito_authenticator: CognitoAuthenticator):
     """Creates an AuthService instance with a mocked file that doesn't exist."""
     mock_path = MagicMock()
     mock_path.exists.return_value = False  # File doesn't exist

@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 import pytest
 from botocore.stub import Stubber
+from mypy_boto3_cognito_idp.client import CognitoIdentityProviderClient
+from pytest import FixtureRequest
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 
@@ -9,7 +11,9 @@ from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 
 
 @pytest.fixture
-def cognito_client_stub(request, cognito_client):
+def cognito_client_stub(
+    request: FixtureRequest, cognito_client: CognitoIdentityProviderClient
+):
 
     # Get the stubber for the client
     stubber = Stubber(cognito_client)
@@ -31,7 +35,9 @@ def cognito_client_stub(request, cognito_client):
 
 
 @pytest.fixture()
-def cognito_client_exception_stub(request, cognito_client):
+def cognito_client_exception_stub(
+    request: FixtureRequest, cognito_client: CognitoIdentityProviderClient
+):
 
     # Get the stubber for the client
     stubber = Stubber(cognito_client)
@@ -65,7 +71,9 @@ def authenticator_args():
 ### Tests ###
 
 
-def test_init(cognito_client, authenticator_args):
+def test_init(
+    cognito_client: CognitoIdentityProviderClient, authenticator_args: dict[str, str]
+):
     """Test the initialization of CognitoAuthenticator."""
 
     # Patch boto3.client to return our fixture client when called with the correct parameters
@@ -106,7 +114,10 @@ def test_init(cognito_client, authenticator_args):
     indirect=True,
 )
 def test_authenticate(
-    cognito_client_stub, authenticator_args, mock_access_token, mock_refresh_token
+    cognito_client_stub,
+    authenticator_args: dict[str, str],
+    mock_access_token: str,
+    mock_refresh_token: str,
 ):
     """Test the authenticate method of CognitoAuthenticator."""
 
@@ -153,7 +164,7 @@ def test_authenticate(
     indirect=["cognito_client_exception_stub"],
 )
 def test_authenticate_client_exceptions(
-    cognito_client_exception_stub, error, authenticator_args
+    cognito_client_exception_stub, error: str, authenticator_args: dict[str, str]
 ):
     """Test the authenticate method of CognitoAuthenticator."""
 
@@ -178,7 +189,9 @@ def test_authenticate_client_exceptions(
     ],
     indirect=True,
 )
-def test_authenticate_exception(cognito_client_stub, authenticator_args):
+def test_authenticate_exception(
+    cognito_client_stub, authenticator_args: dict[str, str]
+):
     with pytest.raises(KeyError) as excinfo:
         authenticator = CognitoAuthenticator(**authenticator_args)
         authenticator.authenticate("testuser", "testpassword")
@@ -206,7 +219,9 @@ def test_authenticate_exception(cognito_client_stub, authenticator_args):
     ],
     indirect=True,
 )
-def test_get_access_token(cognito_client_stub, authenticator_args, mock_access_token):
+def test_get_access_token(
+    cognito_client_stub, authenticator_args: dict[str, str], mock_access_token: str
+):
     """Test the authenticate method of CognitoAuthenticator."""
 
     authenticator = CognitoAuthenticator(**authenticator_args)
@@ -238,7 +253,10 @@ def test_get_access_token(cognito_client_stub, authenticator_args, mock_access_t
     indirect=True,
 )
 def test_refresh_tokens(
-    cognito_client_stub, mock_access_token, mock_refresh_token, mock_id_token
+    cognito_client_stub,
+    mock_access_token: str,
+    mock_refresh_token: str,
+    mock_id_token: str,
 ):
     region = "eu-west-1"
     user_pool_id = "eu-west-1_123456789"
@@ -269,7 +287,7 @@ def test_refresh_tokens(
     indirect=["cognito_client_exception_stub"],
 )
 def test_refresh_tokens_exceptions(
-    cognito_client_exception_stub, error, mock_access_token
+    cognito_client_exception_stub, error: str, mock_access_token: str
 ):
     """Test the authenticate method of CognitoAuthenticator."""
     region = "eu-west-1"
