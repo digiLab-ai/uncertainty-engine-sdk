@@ -1,6 +1,5 @@
 import os
 from typing import Any, Optional
-from uuid import uuid4
 
 import requests
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
@@ -304,7 +303,7 @@ class ResourceProvider(ApiProviderBase):
             resource_name = resource.resource_record.name
             version_count = len(resource.resource_record.versions)
             version_name = f"{resource_name}-v{version_count + 1}"
-        except Exception as e:
+        except Exception:
             raise Exception(
                 "Unable to retrieve resource record. Please ensure the resource exists before attempting to update it."
             )
