@@ -187,7 +187,7 @@ def test_authenticate_client_exceptions(
 def test_authenticate_exception(
     cognito_client_stub, authenticator_args: dict[str, str]
 ):
-    with pytest.raises(KeyError) as excinfo:
+    with pytest.raises(KeyError):
         authenticator = CognitoAuthenticator(**authenticator_args)
         authenticator.authenticate("testuser", "testpassword")
 
