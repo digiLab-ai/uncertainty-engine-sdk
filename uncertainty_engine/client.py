@@ -59,14 +59,9 @@ class Client:
             resource_deployment: The URL of the resource deployment.
         """
 
-        # Use environment variables
-        region = os.getenv("COGNITO_REGION")
-        user_pool_id = os.getenv("COGNITO_USER_POOL_ID")
-        client_id = os.getenv("COGNITO_CLIENT_ID")
-
         self.email = email
         self.deployment = deployment
-        authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
+        authenticator = CognitoAuthenticator()
         self.auth_service = AuthService(authenticator)
         self.resources = ResourceProvider(self.auth_service, resource_deployment)
 

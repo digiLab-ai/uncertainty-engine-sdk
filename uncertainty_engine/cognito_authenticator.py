@@ -5,6 +5,10 @@ import boto3
 import jwt
 from botocore.exceptions import ClientError
 
+REGION = "eu-west-2"
+USER_POOL_ID = "eu-west-2_2TTysTvda"
+CLIENT_ID = "4apo2c090gkgk35mu2118v2b0b"
+
 
 class CognitoToken:
     """
@@ -75,9 +79,9 @@ class CognitoAuthenticator:
 
     def __init__(
         self,
-        region: str,
-        user_pool_id: str,
-        client_id: str,
+        region: str = REGION,
+        user_pool_id: str = USER_POOL_ID,
+        client_id: str = CLIENT_ID,
     ):
         """Initialize the CognitoAuthenticator with AWS Cognito configuration.
 
