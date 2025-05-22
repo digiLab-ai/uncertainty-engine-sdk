@@ -6,9 +6,13 @@ import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
+from uncertainty_engine.api_providers import ResourceProvider
+from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
+DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
 
@@ -39,13 +43,19 @@ class Job(BaseModel):
 
 @typechecked
 class Client:
-    def __init__(self, email: str, deployment: str = DEFAULT_DEPLOYMENT):
+    def __init__(
+        self,
+        email: str,
+        deployment: str = DEFAULT_DEPLOYMENT,
+        resource_deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
+    ):
         """
         A client for interacting with the Uncertainty Engine.
 
         Args:
             email: The email address of the user.
             deployment: The URL of the Uncertainty Engine deployment.
+            resource_deployment: The URL of the resource deployment.
 
         Example:
             >>> client = Client(
@@ -55,8 +65,26 @@ class Client:
             >>> add_node = Add(lhs=1, rhs=2, label="add")
             >>> print(result["output"])  # Outputs: 3
         """
+
         self.email = email
         self.deployment = deployment
+        authenticator = CognitoAuthenticator()
+        self.auth_service = AuthService(authenticator)
+        self.resources = ResourceProvider(self.auth_service, resource_deployment)
+
+    def authenticate(
+        self,
+        account_id: str,
+    ) -> None:
+        """
+        Authenticate the user with the Uncertainty Engine"
+
+        Args:
+            account_id : The account ID to authenticate with.
+        """
+        self.auth_service.authenticate(account_id)
+
+        self.resources.update_api_authentication()
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """
