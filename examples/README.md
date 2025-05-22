@@ -48,7 +48,7 @@ poetry install --extras "vis notebook data"
    - Download your results
    - Visualise results
 
-## Getting Started
+## Basic Usage
 
 You will need to make sure you have all the [prerequisites](#prerequisites) above before following these steps. Then, within your Jupyter Notebook you can start defining nodes as follows:
 
@@ -94,5 +94,16 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    result = client.run_node(add_node)
    ```
 
-3. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
-4. Progress to more complex examples as needed
+3. **Run Your First Node**
+
+   Run your node and view your results.
+
+   ```python
+   response = client.run_node(add)
+   result = response["output"]
+
+   pprint(result)
+   ```
+
+4. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
+5. Progress to more complex examples as needed
