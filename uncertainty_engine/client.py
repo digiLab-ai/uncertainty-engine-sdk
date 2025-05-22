@@ -1,4 +1,3 @@
-import os
 from enum import Enum
 from time import sleep
 from typing import Optional, Union

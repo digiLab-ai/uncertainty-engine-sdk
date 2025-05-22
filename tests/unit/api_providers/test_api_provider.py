@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 
-from uncertainty_engine.api_providers.api_provider import MAX_RETRIES, ApiProviderBase
+from uncertainty_engine.api_providers.api_provider import ApiProviderBase
 from uncertainty_engine.auth_service import AuthService
 
 

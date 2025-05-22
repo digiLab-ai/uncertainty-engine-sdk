@@ -35,7 +35,7 @@ class ApiProviderBase:
 
         return wrapper
 
-    def update_api_authentication(self) -> None:
+    def update_api_authentication(self) -> NoReturn:
         """
         All API providers that wish to use token refreshing must implement this method.
         This method should update the authorization header in the api client.

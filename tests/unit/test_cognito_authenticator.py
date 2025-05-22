@@ -7,8 +7,6 @@ from pytest import FixtureRequest
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 
-### Fixtures ###
-
 
 @pytest.fixture
 def cognito_client_stub(
@@ -66,9 +64,6 @@ def authenticator_args():
         "user_pool_id": "eu-west-1_123456789",
         "client_id": "1234567890abcdef",
     }
-
-
-### Tests ###
 
 
 def test_init(
