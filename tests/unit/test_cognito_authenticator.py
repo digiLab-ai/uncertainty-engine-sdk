@@ -61,7 +61,6 @@ def cognito_client_exception_stub(
 def authenticator_args():
     return {
         "region": "eu-west-2",
-        "user_pool_id": "eu-west-1_123456789",
         "client_id": "1234567890abcdef",
     }
 
@@ -78,7 +77,6 @@ def test_init(
         authenticator = CognitoAuthenticator(**authenticator_args)
 
         assert authenticator.region == authenticator_args["region"]
-        assert authenticator.user_pool_id == authenticator_args["user_pool_id"]
         assert authenticator.client_id == authenticator_args["client_id"]
         assert authenticator.client == cognito_client
         mock_client.assert_called_once_with(
@@ -254,10 +252,9 @@ def test_refresh_tokens(
     mock_id_token: str,
 ):
     region = "eu-west-1"
-    user_pool_id = "eu-west-1_123456789"
     client_id = "1234567890abcdef"
 
-    authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
+    authenticator = CognitoAuthenticator(region, client_id)
     tokens = authenticator.refresh_tokens(mock_refresh_token)
 
     assert tokens == {
@@ -286,10 +283,9 @@ def test_refresh_tokens_exceptions(
 ):
     """Test the authenticate method of CognitoAuthenticator."""
     region = "eu-west-1"
-    user_pool_id = "eu-west-1_123456789"
     client_id = "1234567890abcdef"
 
     with pytest.raises(Exception) as excinfo:
-        authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
+        authenticator = CognitoAuthenticator(region, client_id)
         authenticator.refresh_tokens(mock_access_token)
     assert error == str(excinfo.value)
