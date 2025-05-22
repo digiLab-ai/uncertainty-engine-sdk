@@ -2,6 +2,25 @@
 
 # Python SDK for the Uncertainty Engine
 
+[![PyPI](https://badge.fury.io/py/uncertainty-engine.svg)](https://badge.fury.io/py/uncertainty-engine) [![Python Versions](https://img.shields.io/pypi/pyversions/uncertainty-engine.svg)](https://pypi.org/project/uncertainty-engine/)
+
+## Requirements
+
+- Python >=3.10, <3.13
+- Valid Uncertainty Engine account
+
+## Installation
+
+```bash
+pip install uncertainty-engine
+```
+
+With optional dependencies:
+
+```bash
+pip install "uncertainty_engine[vis,notebook,data]"
+```
+
 ## Basic usage
 
 ```python
