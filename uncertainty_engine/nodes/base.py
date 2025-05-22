@@ -13,6 +13,14 @@ class Node:
         node_name: The name of the node.
         label: A human-readable label for the node. Defaults to None.
         **kwargs: Arbitrary keyword arguments representing the input parameters of the node.
+
+    Example:
+        >>> train_node = Node(
+        ...     node_name="TrainModel",
+        ...     label="Train",
+        ...     inputs={"csv": train_data}
+        ... )
+        >>> handle = train_node.make_handle("model")
     """
 
     def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):
