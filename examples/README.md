@@ -58,7 +58,7 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    from uncertainty_engine.client import Client
 
    client = Client(
-       email="<you-email>",  # Note: There must be token associated with this email.
+       email="<your-email>",  # Note: There must be token associated with this email.
        deployment="<a-deployment-url>",
    )
    ```
