@@ -3086,10 +3086,12 @@ name = "uncertainty-engine-resource-client"
 version = "0.1.0"
 description = ""
 optional = false
-python-versions = "<4, >=3.10"
+python-versions = "<4,>=3.10"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "uncertainty_engine_resource_client-0.1.0-py3-none-any.whl", hash = "sha256:53cbbc5e09ba3e9cad4e5baa0b81ba5a33b4e55620203a2f9222fb65102a1cd3"},
+    {file = "uncertainty_engine_resource_client-0.1.0.tar.gz", hash = "sha256:fce7d606cd4e604b7518c3260b1d0a2a632c9e8cd2db7158d10841179537b3fb"},
+]
 
 [package.dependencies]
 aiohttp = ">=3.11.18,<4.0.0"
@@ -3097,12 +3099,6 @@ aiohttp-retry = ">=2.9.1,<3.0.0"
 pydantic = ">=2.11.3,<3.0.0"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
 urllib3 = ">=2.4.0,<3.0.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/digiLab-ai/uncertainty-engine-resource-client"
-reference = "HEAD"
-resolved_reference = "969d982f8e60fdfa8965d95d000205ee112fa6d2"
 
 [[package]]
 name = "uncertainty-engine-types"
@@ -3276,4 +3272,4 @@ vis = ["matplotlib", "networkx"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "051840cf8929fdc1aa63d086786bf30073e1806773bfc4ddf88643b7f9544eef"
+content-hash = "c023cc974498d0d50ddfd3d0fe938542ae1e28abdfee887a60b1dc0637bcfa16"
