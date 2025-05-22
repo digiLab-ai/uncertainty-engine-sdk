@@ -46,6 +46,14 @@ class Client:
         Args:
             email: The email address of the user.
             deployment: The URL of the Uncertainty Engine deployment.
+
+        Example:
+            >>> client = Client(
+            ...   email="<user-email>",
+            ...   deployment="<uncertainty-engine-api-url>",
+            ... )
+            >>> add_node = Add(lhs=1, rhs=2, label="add")
+            >>> print(result["output"])  # Outputs: 3
         """
         self.email = email
         self.deployment = deployment
