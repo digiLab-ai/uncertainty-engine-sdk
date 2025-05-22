@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from time import sleep
 from typing import Optional, Union
@@ -8,6 +9,7 @@ from typeguard import typechecked
 
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
@@ -56,19 +58,31 @@ class Client:
             deployment: The URL of the Uncertainty Engine deployment.
             resource_deployment: The URL of the resource deployment.
         """
+
+        # Use environment variables
+        region = os.getenv("COGNITO_REGION")
+        user_pool_id = os.getenv("COGNITO_USER_POOL_ID")
+        client_id = os.getenv("COGNITO_CLIENT_ID")
+
         self.email = email
         self.deployment = deployment
-        self.auth_service = AuthService()
+        authenticator = CognitoAuthenticator(region, user_pool_id, client_id)
+        self.auth_service = AuthService(authenticator)
         self.resources = ResourceProvider(self.auth_service, resource_deployment)
 
-    def authenticate(self, account_id: str) -> None:
+    def authenticate(
+        self,
+        account_id: str,
+    ) -> None:
         """
         Authenticate the user with the Uncertainty Engine"
 
         Args:
             account_id : The account ID to authenticate with.
         """
-        self.resources.authenticate(account_id)
+        self.auth_service.authenticate(account_id)
+
+        self.resources.update_api_authentication()
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """

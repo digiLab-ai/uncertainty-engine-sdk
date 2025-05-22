@@ -1,6 +1,5 @@
 import os
 from typing import Any, Optional
-from uuid import uuid4
 
 import requests
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, ResourcesApi
@@ -23,8 +22,6 @@ DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
 class ResourceProvider(ApiProviderBase):
-    deployment: str
-    auth_service: AuthService
     """
     Client for managing resources in the Uncertainty Engine platform.
 
@@ -57,14 +54,20 @@ class ResourceProvider(ApiProviderBase):
         self.projects_client = ProjectRecordsApi(self.client)
         self.resources_client = ResourcesApi(self.client)
 
-    def authenticate(self, account_id: str) -> None:
-        """
-        Set the account ID
+        # Update auth headers of the API client (only if authenticated)
+        self.update_api_authentication()
 
-        Args:
-            account_id: The account ID to authenticate with.
-        """
-        self.auth_service.authenticate(account_id)
+    def update_api_authentication(self):
+        """Update API client with current auth headers"""
+        if self.auth_service.is_authenticated:
+
+            auth_header = self.auth_service.get_auth_header()
+
+            self.client.default_headers.update(auth_header)
+
+            # Update the API instances with the new header
+            self.projects_client.api_client.default_headers.update(auth_header)
+            self.resources_client.api_client.default_headers.update(auth_header)
 
     @property
     def account_id(self) -> Optional[str]:
@@ -76,6 +79,7 @@ class ResourceProvider(ApiProviderBase):
         """
         return self.auth_service.account_id
 
+    @ApiProviderBase.with_auth_refresh
     def upload(
         self,
         project_id: str,
@@ -178,6 +182,7 @@ class ResourceProvider(ApiProviderBase):
 
         return resource_id
 
+    @ApiProviderBase.with_auth_refresh
     def download(
         self,
         project_id: str,
@@ -238,19 +243,13 @@ class ResourceProvider(ApiProviderBase):
 
         if file_path:
             # If a filepath is provided save the file to the provided path
-            try:
-                with open(file_path, "wb") as file:
-                    file.write(response.content)
-            except FileNotFoundError:
-                raise Exception(
-                    "Invalid filepath provided. Please ensure your file exists."
-                )
-            except Exception:
-                raise
+            with open(file_path, "wb") as file:
+                file.write(response.content)
         else:
             # Otherwise return the response content
             return response.content
 
+    @ApiProviderBase.with_auth_refresh
     def update(
         self,
         project_id: str,
@@ -297,10 +296,10 @@ class ResourceProvider(ApiProviderBase):
             resource_name = resource.resource_record.name
             version_count = len(resource.resource_record.versions)
             version_name = f"{resource_name}-v{version_count + 1}"
-        except ApiException:
-            # If we can't get the resource info, create a generic version name
-            version_name = f"version-{uuid4()}"
-
+        except Exception:
+            raise Exception(
+                "Unable to retrieve resource record. Please ensure the resource exists before attempting to update it."
+            )
         resource_version_record = PostResourceVersionRequest(
             resource_version_record=ResourceVersionRecordInput(
                 name=version_name,
@@ -343,6 +342,7 @@ class ResourceProvider(ApiProviderBase):
         except Exception as e:
             raise Exception(f"Error finalizing upload: {str(e)}")
 
+    @ApiProviderBase.with_auth_refresh
     def list_resources(self, project_id, resource_type: str) -> list:
         """
         Get a list of all resources of a specific type in your project.

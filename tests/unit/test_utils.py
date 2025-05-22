@@ -7,8 +7,6 @@ from uncertainty_engine_resource_client.exceptions import ApiException
 
 from uncertainty_engine import utils as ue_utils
 
-# dict_to_csv_str
-
 
 def test_dict_to_csv_str():
     """
