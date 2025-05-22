@@ -20,18 +20,13 @@ class CognitoToken:
     def __init__(self, access_token: str, refresh_token: str):
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self._decoded_payload = None
 
     @property
     def decoded_payload(self) -> Dict:
         """Decode and cache the JWT token payload"""
-        if self._decoded_payload is None:
-            # Decode without verification since we just want the payload.
-            # Verification just means we check where the token came from.
-            self._decoded_payload = jwt.decode(
-                self.access_token, options={"verify_signature": False}
-            )
-        return self._decoded_payload
+        # Decode without verification since we just want the payload.
+        # Verification just means we check where the token came from.
+        return jwt.decode(self.access_token, options={"verify_signature": False})
 
     @property
     def user_sub_id(self) -> str:

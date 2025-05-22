@@ -10,7 +10,6 @@ def test_init(mock_access_token: str, mock_refresh_token: str):
     token = CognitoToken(mock_access_token, mock_refresh_token)
     assert token.access_token == mock_access_token
     assert token.refresh_token == mock_refresh_token
-    assert token._decoded_payload is None
 
 
 def test_decoded_payload(mock_access_token: str, mock_refresh_token: str):

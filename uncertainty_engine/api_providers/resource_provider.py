@@ -243,15 +243,8 @@ class ResourceProvider(ApiProviderBase):
 
         if file_path:
             # If a filepath is provided save the file to the provided path
-            try:
-                with open(file_path, "wb") as file:
-                    file.write(response.content)
-            except FileNotFoundError:
-                raise Exception(
-                    "Invalid filepath provided. Please ensure your file exists."
-                )
-            except Exception:
-                raise
+            with open(file_path, "wb") as file:
+                file.write(response.content)
         else:
             # Otherwise return the response content
             return response.content

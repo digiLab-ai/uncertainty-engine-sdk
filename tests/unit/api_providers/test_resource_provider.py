@@ -264,29 +264,29 @@ def test_download_success_with_filepath(
     mock_get_response = MagicMock()
     mock_get_response.content = b"test file content"
 
-    with patch("os.makedirs") as mock_makedirs:
-        with patch("requests.get", return_value=mock_get_response):
-            # Call the method
-            resource_provider.download(
-                project_id="test-project",
-                resource_type="dataset",
-                resource_id="test-resource-id",
-                file_path="path/to/download/file.csv",
-            )
+    with patch("os.makedirs") as mock_makedirs, patch(
+        "requests.get", return_value=mock_get_response
+    ):
+        resource_provider.download(
+            project_id="test-project",
+            resource_type="dataset",
+            resource_id="test-resource-id",
+            file_path="path/to/download/file.csv",
+        )
 
-            # Verify method calls
-            resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
-                "test-project", "dataset", "test-resource-id"
-            )
+        # Verify method calls
+        resource_provider.resources_client.get_latest_resource_version.assert_called_once_with(
+            "test-project", "dataset", "test-resource-id"
+        )
 
-            mock_makedirs.assert_called_once_with(
-                os.path.dirname(os.path.abspath("path/to/download/file.csv")),
-                exist_ok=True,
-            )
-            requests.get.assert_called_once_with("https://upload-url.com")
-            mock_get_response.raise_for_status.assert_called_once()
-            mock_file.assert_called_once_with("path/to/download/file.csv", "wb")
-            mock_file().write.assert_called_once_with(b"test file content")
+        mock_makedirs.assert_called_once_with(
+            os.path.dirname(os.path.abspath("path/to/download/file.csv")),
+            exist_ok=True,
+        )
+        requests.get.assert_called_once_with("https://upload-url.com")
+        mock_get_response.raise_for_status.assert_called_once()
+        mock_file.assert_called_once_with("path/to/download/file.csv", "wb")
+        mock_file().write.assert_called_once_with(b"test file content")
 
 
 def test_download_success_without_filepath(
@@ -385,71 +385,6 @@ def test_download_http_error(
             resource_provider.download(
                 "project-id", "type", "resource-id", "path/to/file.txt"
             )
-
-
-def test_download_file_not_found_error(
-    resource_provider: ResourceProvider,
-    mock_version_response: MagicMock,
-    mock_file: MagicMock,
-):
-    """Test handling of FileNotFoundError when writing to a file."""
-    # Setup mocks
-    resource_provider.resources_client.get_latest_resource_version = MagicMock(
-        return_value=mock_version_response
-    )
-
-    # Setup requests mock
-    mock_get_response = MagicMock()
-    mock_get_response.content = b"test file content"
-
-    # Setup file mock to raise FileNotFoundError
-    mock_file.side_effect = FileNotFoundError("No such file or directory")
-
-    with patch("os.makedirs"):
-        with patch("requests.get", return_value=mock_get_response):
-            # Call and verify exception
-            with pytest.raises(Exception, match="Invalid filepath provided"):
-                resource_provider.download(
-                    project_id="test-project",
-                    resource_type="dataset",
-                    resource_id="test-resource-id",
-                    file_path="path/to/download/file.csv",
-                )
-
-            mock_get_response.raise_for_status.assert_called_once()
-
-
-def test_download_other_file_exception(
-    resource_provider: ResourceProvider,
-    mock_version_response: MagicMock,
-    mock_file: MagicMock,
-):
-    """Test handling of generic exceptions when writing to a file."""
-    # Setup mocks
-    resource_provider.resources_client.get_latest_resource_version = MagicMock(
-        return_value=mock_version_response
-    )
-
-    # Setup requests mock
-    mock_get_response = MagicMock()
-    mock_get_response.content = b"test file content"
-
-    # Configure the write method to raise the exception
-    mock_file.return_value.write.side_effect = PermissionError("Permission denied")
-
-    with patch("os.makedirs"):
-        with patch("requests.get", return_value=mock_get_response):
-            # Call and verify exception
-            with pytest.raises(PermissionError, match="Permission denied"):
-                resource_provider.download(
-                    project_id="test-project",
-                    resource_type="dataset",
-                    resource_id="test-resource-id",
-                    file_path="path/to/download/file.csv",
-                )
-
-
-### resource_provider.update ###
 
 
 def test_update_success(

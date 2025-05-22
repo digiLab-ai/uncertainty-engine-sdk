@@ -19,24 +19,17 @@ class AuthService:
         # Load auth details, if not found they will remain None
         self._load_from_file()
 
-    def authenticate(
-        self,
-        account_id: str,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-    ) -> None:
+    def authenticate(self, account_id: str) -> None:
         """
         Set authentication credentials
 
         Args:
             account_id : The account ID to authenticate with.
-            username : The username to authenticate with. If not provided, it will be loaded from the environment variable UE_USERNAME.
-            password : The password to authenticate with. If not provided, it will be loaded from the environment variable UE_PASSWORD.
         """
 
         # Load username + password from .env or take inputs
-        username = username or os.getenv("UE_USERNAME")
-        password = password or os.getenv("UE_PASSWORD")
+        username = os.getenv("UE_USERNAME")
+        password = os.getenv("UE_PASSWORD")
 
         if not username or not password:
             raise ValueError(

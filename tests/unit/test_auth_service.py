@@ -43,8 +43,12 @@ def test_authenticate(
     # Mock save_to_file to prevent actual file operations
     monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
 
+    # Set environment variables using monkeypatch
+    monkeypatch.setenv("UE_USERNAME", username)
+    monkeypatch.setenv("UE_PASSWORD", password)
+
     # Call authenticate
-    auth_service_no_file.authenticate(account_id, username, password)
+    auth_service_no_file.authenticate(account_id)
 
     # Verify authenticator was called with correct params
     mock_cognito_authenticator.authenticate.assert_called_once_with(username, password)
