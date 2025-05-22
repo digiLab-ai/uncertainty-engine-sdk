@@ -48,6 +48,16 @@ poetry install --extras "vis notebook data"
    - Download your results
    - Visualise results
 
+4. **Handling Resources** ([demo_resource.ipynb](./demo_resource.ipynb))
+
+   Learn how to manage resources in the Uncertainty Engine:
+
+   - Authenticate your account
+   - Upload files as resources
+   - View available resources
+   - Download resources
+   - Work with projects
+
 ## Basic Usage
 
 You will need to make sure you have all the [prerequisites](#prerequisites) above before following these steps. Then, within your Jupyter Notebook you can start defining nodes as follows:
