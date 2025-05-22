@@ -29,3 +29,8 @@ openapitools.json
 
 # PyPI distribution folder
 dist/
+
+# Testing
+coverage.xml
+htmlcov/
+.coverage
