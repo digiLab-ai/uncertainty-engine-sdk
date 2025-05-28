@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
+from tests.mock_api_invoker import mock_core_api
 from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client, Job, ValidStatus
 from uncertainty_engine.nodes.base import Node
 
@@ -42,15 +43,16 @@ class TestClientMethods:
         Args:
             client: A Client instance.
         """
-        with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_get.return_value.json.return_value = {
-                "node_a": {"node_a": "I'm a node."}
-            }
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/nodes/list",
+                {"node_a": {"node_a": "I'm a node."}},
+            )
 
             response = client.list_nodes()
 
             assert response == [{"node_a": "I'm a node."}]
-            mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
 
     def test_list_nodes_category(self, client: Client):
         """
