@@ -28,8 +28,6 @@ class ApiInvoker(ABC):
             API response.
         """
 
-        ...
-
     def get(self, path: str) -> Any:
         """
         Invoke a GET request.
@@ -41,7 +39,10 @@ class ApiInvoker(ABC):
             API response.
         """
 
-        return self._invoke("GET", path)
+        return self._invoke(
+            "GET",
+            path,
+        )
 
     def post(self, path: str, body: Any) -> Any:
         """
@@ -55,12 +56,16 @@ class ApiInvoker(ABC):
             API response.
         """
 
-        return self._invoke("POST", path, body=body)
+        return self._invoke(
+            "POST",
+            path,
+            body=body,
+        )
 
 
-class LiveApiInvoker(ApiInvoker):
+class HttpApiInvoker(ApiInvoker):
     """
-    An implementation of `ApiInvoker` for live API calls.
+    An implementation of `ApiInvoker` for HTTP APIs.
 
     Args:
         endpoint: API endpoint. Must start with a protocol (i.e. "https://") and
@@ -88,8 +93,15 @@ class LiveApiInvoker(ApiInvoker):
             API response.
         """
 
+        url = self._endpoint + path
+
+        kwargs = {}
+
+        if body:
+            kwargs["json"] = body
+
         return request(
             method,
-            self._endpoint + path,
-            json=body,
+            url,
+            **kwargs,  # type: ignore
         ).json()

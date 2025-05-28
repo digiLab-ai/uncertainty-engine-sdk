@@ -25,7 +25,7 @@ class MockApiInvoker(ApiInvoker):
         response: Any | None,
     ) -> None:
         """
-        Append an expectation of an API request.
+        Appends an expectation of an API request.
 
         Args:
             expect_method: HTTP method to expect.
@@ -46,7 +46,7 @@ class MockApiInvoker(ApiInvoker):
         body: Any | None = None,
     ) -> Any:
         """
-        Mock an invocation of the API and assert that it was expected.
+        Mocks an invocation of the API and asserts that it was expected.
 
         Args:
             method: HTTP method.
@@ -83,7 +83,7 @@ class MockApiInvoker(ApiInvoker):
 
     def expect_get(self, expect_path: str, *response: Any) -> None:
         """
-        Append an expectation of a GET request.
+        Appends an expectation of a GET request.
 
         Args:
             expect_path: Path to expect.
@@ -105,7 +105,7 @@ class MockApiInvoker(ApiInvoker):
         response: Any | None = None,
     ) -> None:
         """
-        Append an expectation of a POST request.
+        Appends an expectation of a POST request.
 
         Args:
             expect_path: Path to expect.
