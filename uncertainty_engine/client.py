@@ -2,10 +2,10 @@ from enum import Enum
 from time import sleep
 from typing import Optional, Union
 
-import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
+from uncertainty_engine.api_invoker import ApiInvoker, LiveApiInvoker
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
@@ -58,6 +58,7 @@ class Client:
             resource_deployment: The URL of the resource deployment.
         """
 
+        self.core_api: ApiInvoker = LiveApiInvoker(deployment)
         self.email = email
         self.deployment = deployment
         authenticator = CognitoAuthenticator()
@@ -89,8 +90,8 @@ class Client:
         Returns:
             List of available nodes. Each list item is a dictionary of information about the node.
         """
-        response = requests.get(f"{self.deployment}/nodes/list")
-        nodes = response.json()
+
+        nodes = self.core_api.get("/nodes/list")
         node_list = [node_info for node_info in nodes.values()]
 
         if category is not None:
@@ -117,16 +118,14 @@ class Client:
                 "Input data/parameters are required when specifying a node by name."
             )
 
-        response = requests.post(
-            f"{self.deployment}/nodes/queue",
-            json={
+        job_id = self.core_api.post(
+            "/nodes/queue",
+            {
                 "email": self.email,
                 "node_id": node,
                 "inputs": input,
             },
         )
-
-        job_id = response.json()
 
         return Job(node_id=node, job_id=job_id)
 
@@ -155,10 +154,8 @@ class Client:
         Returns:
             A dictionary containing the status of the job.
         """
-        response = requests.get(
-            f"{self.deployment}/nodes/status/{job.node_id}/{job.job_id}"
-        )
-        return response.json()
+
+        return self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
 
     def view_tokens(self) -> Optional[int]:
         """
