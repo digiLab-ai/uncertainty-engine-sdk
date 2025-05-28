@@ -63,9 +63,9 @@ class ApiInvoker(ABC):
         )
 
 
-class LiveApiInvoker(ApiInvoker):
+class HttpApiInvoker(ApiInvoker):
     """
-    An implementation of `ApiInvoker` for live API calls.
+    An implementation of `ApiInvoker` for HTTP APIs.
 
     Args:
         endpoint: API endpoint. Must start with a protocol (i.e. "https://") and

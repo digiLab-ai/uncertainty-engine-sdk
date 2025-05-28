@@ -3,12 +3,12 @@ from unittest.mock import Mock, patch
 
 from pytest import fixture
 
-from uncertainty_engine.api_invoker import LiveApiInvoker
+from uncertainty_engine.api_invoker import HttpApiInvoker
 
 
 @fixture
-def api() -> LiveApiInvoker:
-    return LiveApiInvoker("https://test-api")
+def api() -> HttpApiInvoker:
+    return HttpApiInvoker("https://test-api")
 
 
 @fixture
@@ -22,16 +22,16 @@ def req() -> Iterator[Mock]:
         yield patched_request
 
 
-def test_deserialize(api: LiveApiInvoker, req: Mock) -> None:
+def test_deserialize(api: HttpApiInvoker, req: Mock) -> None:
     assert api.get("/foo") == {"foo": "bar"}
 
 
-def test_get(api: LiveApiInvoker, req: Mock) -> None:
+def test_get(api: HttpApiInvoker, req: Mock) -> None:
     api.get("/foo")
     req.assert_called_once_with("GET", "https://test-api/foo")
 
 
-def test_post(api: LiveApiInvoker, req: Mock) -> None:
+def test_post(api: HttpApiInvoker, req: Mock) -> None:
     api.post(
         "/foo",
         {"greeting": "hello"},
