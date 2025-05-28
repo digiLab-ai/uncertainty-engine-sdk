@@ -103,5 +103,5 @@ class HttpApiInvoker(ApiInvoker):
         return request(
             method,
             url,
-            **kwargs,  #  type: ignore
+            **kwargs,  # type: ignore
         ).json()
