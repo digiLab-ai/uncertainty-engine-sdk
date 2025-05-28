@@ -61,16 +61,25 @@ class TestClientMethods:
         Args:
             client: A Client instance.
         """
-        with patch("uncertainty_engine.client.requests.get") as mock_get:
-            mock_get.return_value.json.return_value = {
-                "node_a": {"node_a": "I'm a node.", "category": "cat_a"},
-                "node_b": {"node_b": "I'm another node.", "category": "cat_b"},
-            }
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/nodes/list",
+                {
+                    "node_a": {
+                        "node_a": "I'm a node.",
+                        "category": "cat_a",
+                    },
+                    "node_b": {
+                        "node_b": "I'm another node.",
+                        "category": "cat_b",
+                    },
+                },
+            )
 
             response = client.list_nodes(category="cat_a")
 
             assert response == [{"node_a": "I'm a node.", "category": "cat_a"}]
-            mock_get.assert_called_once_with(f"{DEFAULT_DEPLOYMENT}/nodes/list")
 
     def test_queue_node_name_input(self, client: Client, mock_job: Job):
         """
