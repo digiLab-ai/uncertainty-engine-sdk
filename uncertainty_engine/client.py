@@ -2,7 +2,6 @@ from enum import Enum
 from time import sleep
 from typing import Optional, Union
 
-import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
@@ -140,16 +139,14 @@ class Client:
                 "Input data/parameters are required when specifying a node by name."
             )
 
-        response = requests.post(
-            f"{self.env.core_api}/nodes/queue",
-            json={
+        job_id = self.core_api.post(
+            "/nodes/queue",
+            {
                 "email": self.email,
                 "node_id": node,
                 "inputs": input,
             },
         )
-
-        job_id = response.json()
 
         return Job(node_id=node, job_id=job_id)
 
@@ -178,10 +175,8 @@ class Client:
         Returns:
             A dictionary containing the status of the job.
         """
-        response = requests.get(
-            f"{self.env.core_api}/nodes/status/{job.node_id}/{job.job_id}"
-        )
-        return response.json()
+
+        return self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
 
     def view_tokens(self) -> Optional[int]:
         """
