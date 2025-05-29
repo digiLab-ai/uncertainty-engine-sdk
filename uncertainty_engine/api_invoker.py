@@ -3,11 +3,17 @@ from typing import Any
 
 from requests import request
 
+from uncertainty_engine.auth_service import AuthService
+
 
 class ApiInvoker(ABC):
     """
     Base implementation of an API invoker.
     """
+
+    def __init__(self, auth_service: AuthService) -> None:
+        self._auth_service = auth_service
+        super().__init__()
 
     @abstractmethod
     def _invoke(
@@ -72,8 +78,9 @@ class HttpApiInvoker(ApiInvoker):
             must not end with a slash.
     """
 
-    def __init__(self, endpoint: str) -> None:
+    def __init__(self, auth_service: AuthService, endpoint: str) -> None:
         self._endpoint = endpoint
+        super().__init__(auth_service)
 
     def _invoke(
         self,
@@ -95,13 +102,29 @@ class HttpApiInvoker(ApiInvoker):
 
         url = self._endpoint + path
 
-        kwargs = {}
+        kwargs = {
+            "headers": self._auth_service.get_auth_header(),
+        }
 
         if body:
             kwargs["json"] = body
 
-        return request(
-            method,
-            url,
-            **kwargs,  # type: ignore
-        ).json()
+        has_refreshed_token = False
+
+        while True:
+            response = request(
+                method,
+                url,
+                **kwargs,  # type: ignore
+            )
+
+            if 200 <= response.status_code < 300:
+                return response.json()
+
+            if not has_refreshed_token:
+                self._auth_service.refresh()
+                has_refreshed_token = True
+                # Try again with the refreshed token.
+                continue
+
+            response.raise_for_status()

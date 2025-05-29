@@ -40,10 +40,14 @@ def e2e_client():
         UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
         UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
     """
-    return Client(
+
+    client = Client(
         os.environ["UE_USER_EMAIL"],
         "dev",
     )
+
+    client.authenticate(os.environ["UE_USER_ACCOUNT_ID"])
+    return client
 
 
 @pytest.fixture(scope="class")
