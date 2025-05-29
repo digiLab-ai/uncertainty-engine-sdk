@@ -90,20 +90,24 @@ class TestClientMethods:
             client: A Client instance.
             mock_job: A Job instance.
         """
-        with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_post.return_value.json.return_value = mock_job.job_id
 
-            response = client.queue_node(node=mock_job.node_id, input={"key": "value"})
-
-            assert response == mock_job
-            mock_post.assert_called_once_with(
-                f"{DEFAULT_DEPLOYMENT}/nodes/queue",
-                json={
+        with mock_core_api(client) as api:
+            api.expect_post(
+                "/nodes/queue",
+                expect_body={
                     "email": client.email,
                     "node_id": mock_job.node_id,
                     "inputs": {"key": "value"},
                 },
+                response=mock_job.job_id,
             )
+
+            response = client.queue_node(
+                node=mock_job.node_id,
+                input={"key": "value"},
+            )
+
+        assert response == mock_job
 
     def test_job_status(self, client: Client, mock_job: Job):
         """
@@ -132,8 +136,17 @@ class TestClientMethods:
             client: A Client instance.
             mock_job: A Job instance.
         """
-        with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_post.return_value.json.return_value = mock_job.job_id
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                "/nodes/queue",
+                expect_body={
+                    "email": client.email,
+                    "node_id": mock_job.node_id,
+                    "inputs": {"key": "value"},
+                },
+                response=mock_job.job_id,
+            )
 
             node_name = mock_job.node_id
             inputs = {"key": "value"}
@@ -141,14 +154,6 @@ class TestClientMethods:
             response = client.queue_node(node)
 
             assert response == mock_job
-            mock_post.assert_called_once_with(
-                f"{DEFAULT_DEPLOYMENT}/nodes/queue",
-                json={
-                    "email": client.email,
-                    "node_id": mock_job.node_id,
-                    "inputs": {"key": "value"},
-                },
-            )
 
     def test_queue_node_name_no_input(self, client: Client):
         """
@@ -157,8 +162,9 @@ class TestClientMethods:
         Args:
             client: A Client instance.
         """
-        with patch("uncertainty_engine.client.requests.post") as mock_post:
-            mock_post.return_value.json.return_value = "job_id"
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/queue", response="job_id")
 
             with pytest.raises(ValueError):
                 client.queue_node(node="node_a")

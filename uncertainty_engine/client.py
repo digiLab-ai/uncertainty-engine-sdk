@@ -132,16 +132,14 @@ class Client:
                 "Input data/parameters are required when specifying a node by name."
             )
 
-        response = requests.post(
-            f"{self.deployment}/nodes/queue",
-            json={
+        job_id = self.core_api.post(
+            "/nodes/queue",
+            {
                 "email": self.email,
                 "node_id": node,
                 "inputs": input,
             },
         )
-
-        job_id = response.json()
 
         return Job(node_id=node, job_id=job_id)
 
