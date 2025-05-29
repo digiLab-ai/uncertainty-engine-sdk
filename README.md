@@ -31,7 +31,6 @@ from uncertainty_engine.nodes.demo import Add
 
 # Set up the client
 client = Client(
-   email="<user-email>",  # Must have tokens!
    deployment="<uncertainty-engine-api-url>",
 )
 
