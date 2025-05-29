@@ -63,7 +63,8 @@ class Client:
             ...   deployment="<uncertainty-engine-api-url>",
             ... )
             >>> add_node = Add(lhs=1, rhs=2, label="add")
-            >>> print(result["output"])  # Outputs: 3
+            >>> client.queue_node(add_node)
+            "<job-id>"
         """
 
         self.email = email
