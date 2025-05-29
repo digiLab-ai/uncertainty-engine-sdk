@@ -2,7 +2,8 @@ import os
 
 import pytest
 
-from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client, Job
+from uncertainty_engine import Environment
+from uncertainty_engine.client import Client, Job
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.basic import Add
 
@@ -20,13 +21,13 @@ def deployment_url(request):
     """
     The deployment URL for the Uncertainty Engine service.
     """
-    return getattr(request, "param", DEFAULT_DEPLOYMENT)
+    return getattr(request, "param", Environment.get("local").core_api)
 
 
 @pytest.fixture(scope="class")
-def client(test_user_email: str, deployment_url: str):
+def client(test_user_email: str) -> Client:
     """Fixture to initialize the Client class once per test class."""
-    return Client(email=test_user_email, deployment=deployment_url)
+    return Client(test_user_email, Environment.get("local"))
 
 
 @pytest.fixture(scope="module")
@@ -40,7 +41,8 @@ def e2e_client():
         UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
     """
     return Client(
-        email=os.environ["UE_USER_EMAIL"], deployment=os.environ["UE_DEPLOYMENT_URL"]
+        os.environ["UE_USER_EMAIL"],
+        "dev",
     )
 
 
