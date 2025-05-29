@@ -1,4 +1,5 @@
 from enum import Enum
+from os import environ
 from time import sleep
 from typing import Optional, Union
 
@@ -10,6 +11,7 @@ from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
+from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
 
 DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
@@ -46,7 +48,6 @@ class Job(BaseModel):
 class Client:
     def __init__(
         self,
-        email: str,
         deployment: str = DEFAULT_DEPLOYMENT,
         resource_deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
     ):
@@ -54,13 +55,11 @@ class Client:
         A client for interacting with the Uncertainty Engine.
 
         Args:
-            email: The email address of the user.
             deployment: The URL of the Uncertainty Engine deployment.
             resource_deployment: The URL of the resource deployment.
 
         Example:
             >>> client = Client(
-            ...   email="<user-email>",
             ...   deployment="<uncertainty-engine-api-url>",
             ... )
             >>> add_node = Add(lhs=1, rhs=2, label="add")
@@ -73,7 +72,6 @@ class Client:
         Core API interaction.
         """
 
-        self.email = email
         self.deployment = deployment
         authenticator = CognitoAuthenticator()
         self.auth_service = AuthService(authenticator)
@@ -92,6 +90,23 @@ class Client:
         self.auth_service.authenticate(account_id)
 
         self.resources.update_api_authentication()
+
+    @property
+    def email(self) -> str:
+        """
+        The user's username, which is expected to be their email address.
+
+        Raises:
+            IncompleteCredentials: Raised if the UE_USERNAME environment
+                variable is not set.
+        """
+
+        env_var = "UE_USERNAME"
+
+        if username := environ.get(env_var):
+            return username
+
+        raise IncompleteCredentials(env_var)
 
     def list_nodes(self, category: Optional[str] = None) -> list:
         """

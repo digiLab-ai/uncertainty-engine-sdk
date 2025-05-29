@@ -9,28 +9,21 @@ from uncertainty_engine.nodes.base import Node
 # __init__
 
 
-def test_init_default(test_user_email: str):
+def test_init_default() -> None:
     """
     Verify that the Client class can be instantiated with the default deployment.
-
-    Args:
-        test_user_email: An email address for testing.
     """
-    client = Client(email=test_user_email)
 
-    assert client.email == test_user_email
+    client = Client()
     assert client.deployment == DEFAULT_DEPLOYMENT
 
 
-def test_init_custom(test_user_email: str):
+def test_init_custom() -> None:
     """
     Verify that the Client class can be instantiated with a custom deployment.
-
-    Args:
-        test_user_email: An email address for testing.
     """
     custom_deployment = "http://example.com"
-    client = Client(email=test_user_email, deployment=custom_deployment)
+    client = Client(deployment=custom_deployment)
 
     assert client.deployment == custom_deployment
 
