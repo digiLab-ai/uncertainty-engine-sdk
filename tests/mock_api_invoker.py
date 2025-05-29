@@ -1,6 +1,8 @@
-from typing import Any
+from contextlib import contextmanager
+from typing import Any, Iterator
 
 from uncertainty_engine.api_invoker import ApiInvoker
+from uncertainty_engine.client import Client
 
 
 class MockApiInvoker(ApiInvoker):
@@ -117,3 +119,25 @@ class MockApiInvoker(ApiInvoker):
             expect_body,
             response,
         )
+
+
+@contextmanager
+def mock_core_api(client: Client) -> Iterator[MockApiInvoker]:
+    """
+    Patches and yields a mock invoker for the Core API.
+
+    Args:
+        client: Client to patch.
+
+    Yields:
+        Mock invoker for the Core API.
+    """
+
+    original_invoker = client.core_api
+    mock_invoker = MockApiInvoker()
+    client.core_api = mock_invoker
+
+    try:
+        yield mock_invoker
+    finally:
+        client.core_api = original_invoker

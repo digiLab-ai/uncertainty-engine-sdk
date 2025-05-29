@@ -6,6 +6,7 @@ import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
+from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
@@ -58,6 +59,11 @@ class Client:
             resource_deployment: The URL of the resource deployment.
         """
 
+        self.core_api: ApiInvoker = HttpApiInvoker(deployment)
+        """
+        Core API interaction.
+        """
+
         self.email = email
         self.deployment = deployment
         authenticator = CognitoAuthenticator()
@@ -89,8 +95,8 @@ class Client:
         Returns:
             List of available nodes. Each list item is a dictionary of information about the node.
         """
-        response = requests.get(f"{self.deployment}/nodes/list")
-        nodes = response.json()
+
+        nodes = self.core_api.get("/nodes/list")
         node_list = [node_info for node_info in nodes.values()]
 
         if category is not None:
