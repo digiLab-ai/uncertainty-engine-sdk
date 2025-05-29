@@ -5,7 +5,7 @@ from typing import Optional, Union
 from pydantic import BaseModel
 from typeguard import typechecked
 
-from uncertainty_engine.api_invoker import ApiInvoker, LiveApiInvoker
+from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
@@ -58,7 +58,11 @@ class Client:
             resource_deployment: The URL of the resource deployment.
         """
 
-        self.core_api: ApiInvoker = LiveApiInvoker(deployment)
+        self.core_api: ApiInvoker = HttpApiInvoker(deployment)
+        """
+        Core API interaction.
+        """
+
         self.email = email
         self.deployment = deployment
         authenticator = CognitoAuthenticator()

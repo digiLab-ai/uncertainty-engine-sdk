@@ -47,11 +47,7 @@ class TestClientMethods:
         with mock_core_api(client) as api:
             api.expect_get(
                 "/nodes/list",
-                {
-                    "node_a": {
-                        "node_a": "I'm a node.",
-                    },
-                },
+                {"node_a": {"node_a": "I'm a node."}},
             )
 
             response = client.list_nodes()
