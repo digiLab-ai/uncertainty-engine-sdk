@@ -11,11 +11,9 @@ class Environment(BaseModel):
     An Uncertainty Engine environment.
     """
 
-    cognito_user_pool_client_id: str | None = None
+    cognito_user_pool_client_id: str
     """
     Cognito User Pool Application Client to authenticate with.
-
-    Omit for environments without authentication.
     """
 
     core_api: str
@@ -23,7 +21,7 @@ class Environment(BaseModel):
     Core API URL.
     """
 
-    region: str | None = None
+    region: str
     """
     Amazon Web Services region where the environment is deployed.
     """

@@ -46,7 +46,7 @@ class Client:
         self,
         email: str,
         env: Environment | str = "local",
-    ):
+    ) -> None:
         """
         A client for interacting with the Uncertainty Engine.
 
@@ -54,6 +54,21 @@ class Client:
             email: The email address of the user.
             env: Environment configuration or name of a deployed environment.
                 Defaults to a local development environment.
+
+        Example:
+            >>> client = Client(
+            ...     email="<user-email>",
+            ...     env=Environment(
+            ...          cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
+            ...          core_api="<UNCERTAINTY ENGINE CORE API URL>",
+            ...          region="<REGION>",
+            ...          resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
+            ...     ),
+            ... )
+            >>> client.authenticate("<ACCOUNT ID>")
+            >>> add_node = Add(lhs=1, rhs=2, label="add")
+            >>> client.queue_node(add_node)
+            "<job-id>"
         """
 
         self.env = Environment.get(env) if isinstance(env, str) else env
@@ -61,16 +76,12 @@ class Client:
         Uncertainty Engine environment.
         """
 
-        authenticator = (
-            CognitoAuthenticator(
-                self.env.region,
-                self.env.cognito_user_pool_client_id,
-            )
-            if self.env.region and self.env.cognito_user_pool_client_id
-            else None
+        authenticator = CognitoAuthenticator(
+            self.env.region,
+            self.env.cognito_user_pool_client_id,
         )
 
-        self.auth_service = AuthService(authenticator) if authenticator else None
+        self.auth_service = AuthService(authenticator)
 
         self.core_api: ApiInvoker = HttpApiInvoker(
             self.auth_service,
