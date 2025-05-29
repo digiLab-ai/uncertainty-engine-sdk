@@ -15,7 +15,6 @@ def test_init_default() -> None:
     """
 
     client = Client()
-
     assert client.deployment == DEFAULT_DEPLOYMENT
 
 
