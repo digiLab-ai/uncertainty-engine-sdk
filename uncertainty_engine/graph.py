@@ -14,6 +14,17 @@ class Graph:
 
     Args:
         external_input_id: String identifier that refers to external inputs to the graph.
+
+    Example:
+        >>> graph = Graph()
+        >>> graph.add_node(
+        ...    node=Add(lhs=1, rhs=2),
+        ...    label="add_1"
+        ... )
+        >>> graph.nodes
+        {'nodes': {'add_1': {'type': 'Add',
+        'inputs': {'lhs': {'node_name': '_', 'node_handle': 'add_1_lhs'},
+        'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
     """
 
     def __init__(self, external_input_id: str = "_"):
