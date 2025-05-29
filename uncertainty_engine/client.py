@@ -2,7 +2,6 @@ from enum import Enum
 from time import sleep
 from typing import Optional, Union
 
-import requests
 from pydantic import BaseModel
 from typeguard import typechecked
 
@@ -168,10 +167,8 @@ class Client:
         Returns:
             A dictionary containing the status of the job.
         """
-        response = requests.get(
-            f"{self.deployment}/nodes/status/{job.node_id}/{job.job_id}"
-        )
-        return response.json()
+
+        return self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
 
     def view_tokens(self) -> Optional[int]:
         """
