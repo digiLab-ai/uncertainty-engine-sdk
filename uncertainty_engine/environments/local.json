@@ -1,0 +1,6 @@
+{
+  "cognito_user_pool_client_id": "3n437fei4uhp4ouj8b4mmt09l9",
+  "core_api": "http://localhost:8000/api",
+  "region": "eu-west-2",
+  "resource_api": "http://localhost:8001/api"
+}

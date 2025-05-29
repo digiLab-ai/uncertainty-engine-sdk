@@ -5,7 +5,7 @@ on:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
 env:
-  UE_USER_EMAIL: ${{ secrets.UE_USER_EMAIL }}
+  UE_USERNAME: ${{ secrets.UE_USER_EMAIL }}
   UE_DEPLOYMENT_URL: ${{ secrets.UE_DEPLOYMENT_URL }}
 
 jobs:
@@ -38,4 +38,3 @@ jobs:
 
       - name: Run tests
         run: sh CI/run_tests_e2e.sh
-
