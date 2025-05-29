@@ -11,10 +11,6 @@ class ApiInvoker(ABC):
     Base implementation of an API invoker.
     """
 
-    def __init__(self, auth_service: AuthService) -> None:
-        self._auth_service = auth_service
-        super().__init__()
-
     @abstractmethod
     def _invoke(
         self,
@@ -78,9 +74,9 @@ class HttpApiInvoker(ApiInvoker):
             must not end with a slash.
     """
 
-    def __init__(self, auth_service: AuthService, endpoint: str) -> None:
+    def __init__(self, auth_service: AuthService | None, endpoint: str) -> None:
+        self._auth_service = auth_service
         self._endpoint = endpoint
-        super().__init__(auth_service)
 
     def _invoke(
         self,
@@ -102,9 +98,10 @@ class HttpApiInvoker(ApiInvoker):
 
         url = self._endpoint + path
 
-        kwargs = {
-            "headers": self._auth_service.get_auth_header(),
-        }
+        kwargs = {}
+
+        if self._auth_service:
+            kwargs["headers"] = self._auth_service.get_auth_header()
 
         if body:
             kwargs["json"] = body
@@ -122,6 +119,10 @@ class HttpApiInvoker(ApiInvoker):
                 return response.json()
 
             if not has_refreshed_token:
+                if not self._auth_service:
+                    response.raise_for_status()
+                    return
+
                 self._auth_service.refresh()
                 has_refreshed_token = True
                 # Try again with the refreshed token.

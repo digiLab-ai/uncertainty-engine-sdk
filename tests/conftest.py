@@ -37,12 +37,12 @@ def e2e_client():
 
     NOTE: For the e2e tests to run successfully, the following environment variables must be set:
 
-        UE_USER_EMAIL: A user email that has been registered with the Uncertainty Engine service.
+        UE_USERNAME: A user email that has been registered with the Uncertainty Engine service.
         UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
     """
 
     client = Client(
-        os.environ["UE_USER_EMAIL"],
+        os.environ["UE_USERNAME"],
         "dev",
     )
 
