@@ -15,12 +15,13 @@ class Node:
         **kwargs: Arbitrary keyword arguments representing the input parameters of the node.
 
     Example:
-        >>> train_node = Node(
-        ...     node_name="TrainModel",
-        ...     label="Train",
-        ...     inputs={"csv": train_data}
+        >>> add_node = Node(
+        ...     node_name="Add",
+        ...     lhs=1,
+        ...     rhs=2,
         ... )
-        >>> handle = train_node.make_handle("model")
+        >>> add_node()
+        ('Add', {'lhs': 1, 'rhs': 2})
     """
 
     def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):
