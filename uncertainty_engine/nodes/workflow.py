@@ -16,14 +16,15 @@ class Workflow(Node):
             Default is "_".
 
     Example:
-         >>> workflow = Workflow(
+        >>> workflow = Workflow(
         ...     graph=graph.nodes,
         ...     input=graph.external_input,
         ...     requested_output={
         ...         "Result": {"node_name": "Download", "node_handle": "file"}
         ...     }
         ... )
-        >>> result = client.run_node(workflow) # Runs the workflow
+        >>> client.queue_node(workflow)
+        "<job_id>"
     """
 
     node_name: str = "Workflow"
