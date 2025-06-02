@@ -11,9 +11,8 @@ from uncertainty_engine.nodes.basic import Add
 @pytest.fixture(scope="class")
 def client() -> Client:
     """Fixture to initialize the Client class once per test class."""
-    return Client(
-        env=Environment.get("local"),
-    )
+
+    return Client(env=Environment.get("local"))
 
 
 @pytest.fixture(scope="module")
