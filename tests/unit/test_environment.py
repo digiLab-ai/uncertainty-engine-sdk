@@ -1,6 +1,6 @@
 from pytest import raises
 
-from uncertainty_engine.environments import Environment
+from uncertainty_engine import Environment
 
 
 def test_get() -> None:
