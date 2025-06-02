@@ -1,6 +1,9 @@
 name: End-to-end tests
 
 on:
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
