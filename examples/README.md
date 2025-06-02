@@ -71,13 +71,18 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
 
 1. **Configure Your Client**
 
-   ```python
-   from uncertainty_engine.client import Client
+    ```python
+    from uncertainty_engine import Client, Environment
 
-   client = Client(
-       deployment="<a-deployment-url>",
-   )
-   ```
+    client = Client(
+        env=Environment(
+            cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
+            core_api="<UNCERTAINTY ENGINE CORE API URL>",
+            region="<REGION>",
+            resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
+        ),
+    )
+    ```
 
 2. **Create Your First Node**
 

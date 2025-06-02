@@ -3,7 +3,8 @@ from unittest.mock import patch
 import pytest
 
 from tests.mock_api_invoker import mock_core_api
-from uncertainty_engine.client import DEFAULT_DEPLOYMENT, Client, Job, ValidStatus
+from uncertainty_engine import Client, Environment
+from uncertainty_engine.client import Job, ValidStatus
 from uncertainty_engine.nodes.base import Node
 
 # __init__
@@ -15,17 +16,28 @@ def test_init_default() -> None:
     """
 
     client = Client()
-    assert client.deployment == DEFAULT_DEPLOYMENT
+    assert client.env == Environment.get("local")
 
 
-def test_init_custom() -> None:
+def test_init_with_named_env() -> None:
+    client = Client(env="dev")
+    assert client.env == Environment.get("dev")
+
+
+def test_init_with_custom_env() -> None:
     """
     Verify that the Client class can be instantiated with a custom deployment.
     """
-    custom_deployment = "http://example.com"
-    client = Client(deployment=custom_deployment)
 
-    assert client.deployment == custom_deployment
+    custom_env = Environment(
+        cognito_user_pool_client_id="custom_cognito_user_pool_client_id",
+        core_api="custom_core_api",
+        region="custom_region",
+        resource_api="custom_resource_api",
+    )
+
+    client = Client(env=custom_env)
+    assert client.env == custom_env
 
 
 class TestClientMethods:
