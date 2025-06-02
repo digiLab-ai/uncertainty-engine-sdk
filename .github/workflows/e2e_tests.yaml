@@ -6,7 +6,10 @@ on:
 
 env:
   UE_USERNAME: ${{ secrets.UE_USER_EMAIL }}
-  UE_DEPLOYMENT_URL: ${{ secrets.UE_DEPLOYMENT_URL }}
+  UE_COGNITO_CLIENT_ID: ${{ secrets.UE_COGNITO_CLIENT_ID }}
+  UE_CORE_API: ${{ secrets.UE_CORE_API }}
+  UE_REGION: ${{ secrets.UE_REGION }}
+  UE_RESOURCE_API: ${{ secrets.UE_RESOURCE_API }}
 
 jobs:
   e2e_tests:
