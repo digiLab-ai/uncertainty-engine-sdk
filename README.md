@@ -21,17 +21,64 @@ With optional dependencies:
 pip install "uncertainty_engine[vis,notebook,data]"
 ```
 
-## Basic usage
+## Usage
+
+### Creating a client
+
+All interactions with the Uncertainty Engine API are performed via a `Client`.
+
+To create a `Client` for a named environment:
+
+```python
+from uncertainty_engine import Client
+
+client = Client(env="<NAME>")
+
+# For example:
+client = Client(env="dev")
+```
+
+To create a `Client` for a custom environment:
+
+```python
+from uncertainty_engine import Client, Environment
+
+client = Client(
+   env=Environment(
+        cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
+        core_api="<UNCERTAINTY ENGINE CORE API URL>",
+        region="<REGION>",
+        resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
+   ),
+)
+
+# For example:
+client = Client(
+   env=Environment(
+        cognito_user_pool_client_id="3n437fei4uhp4ouj8b4mmt09l9",
+        core_api="https://s0r8fczyag.execute-api.eu-west-2.amazonaws.com",
+        region="eu-west-2",
+        resource_api="https://hmqdnx48x6.execute-api.eu-west-2.amazonaws.com",
+   ),
+)
+```
+
+### Example
 
 ```python
 from pprint import pprint
 
-from uncertainty_engine.client import Client
+from uncertainty_engine import Client, Environment
 from uncertainty_engine.nodes.demo import Add
 
 # Set up the client
 client = Client(
-   deployment="<uncertainty-engine-api-url>",
+   env=Environment(
+        cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
+        core_api="<UNCERTAINTY ENGINE CORE API URL>",
+        region="<REGION>",
+        resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
+   ),
 )
 
 # Create a node

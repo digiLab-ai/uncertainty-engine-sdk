@@ -10,11 +10,10 @@ from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import ResourceProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
+from uncertainty_engine.environments import Environment
 from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
 
-DEFAULT_DEPLOYMENT = "http://localhost:8000/api"
-DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
 
@@ -47,34 +46,46 @@ class Job(BaseModel):
 class Client:
     def __init__(
         self,
-        deployment: str = DEFAULT_DEPLOYMENT,
-        resource_deployment: str = DEFAULT_RESOURCE_DEPLOYMENT,
+        env: Environment | str = "local",
     ):
         """
         A client for interacting with the Uncertainty Engine.
 
         Args:
-            deployment: The URL of the Uncertainty Engine deployment.
-            resource_deployment: The URL of the resource deployment.
+            env: Environment configuration or name of a deployed environment.
+                Defaults to a local development environment.
 
         Example:
             >>> client = Client(
-            ...   deployment="<uncertainty-engine-api-url>",
+            ...     env=Environment(
+            ...         cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
+            ...         core_api="<UNCERTAINTY ENGINE CORE API URL>",
+            ...         region="<REGION>",
+            ...         resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
+            ...     ),
             ... )
             >>> add_node = Add(lhs=1, rhs=2, label="add")
             >>> client.queue_node(add_node)
             "<job-id>"
         """
 
-        self.core_api: ApiInvoker = HttpApiInvoker(deployment)
+        self.env = Environment.get(env) if isinstance(env, str) else env
+        """
+        Uncertainty Engine environment.
+        """
+
+        self.core_api: ApiInvoker = HttpApiInvoker(self.env.core_api)
         """
         Core API interaction.
         """
 
-        self.deployment = deployment
         authenticator = CognitoAuthenticator()
         self.auth_service = AuthService(authenticator)
-        self.resources = ResourceProvider(self.auth_service, resource_deployment)
+
+        self.resources = ResourceProvider(
+            self.auth_service,
+            self.env.resource_api,
+        )
 
     def authenticate(
         self,
