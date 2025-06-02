@@ -1,6 +1,9 @@
 name: End-to-end tests
 
 on:
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
@@ -15,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-        branch: ["main"]
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.branch }}
+        # If a branch triggered this workflow (i.e. a PR was created) then
+        # "actions/checkout" will check out that branch, otherwise (i.e. for
+        # scheduled runs) it'll check out the default (main) branch.
 
       - name: Install poetry
         run: pipx install poetry
