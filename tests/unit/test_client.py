@@ -35,9 +35,9 @@ def test_init_with_custom_env() -> None:
 
     custom_env = Environment(
         cognito_user_pool_client_id="custom_cognito_user_pool_client_id",
-        core_api="my_core_api",
-        region="my_region",
-        resource_api="my_resource_api",
+        core_api="custom_core_api",
+        region="custom_region",
+        resource_api="custom_resource_api",
     )
 
     client = Client(env=custom_env)
