@@ -1,4 +1,4 @@
-from uncertainty_engine.environments.environment import Environment
+from uncertainty_engine.environments import Environment
 
 __all__ = [
     "Environment",
