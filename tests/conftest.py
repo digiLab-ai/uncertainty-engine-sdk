@@ -9,14 +9,6 @@ from uncertainty_engine.nodes.basic import Add
 
 
 @pytest.fixture(scope="class")
-def test_user_email(request):
-    """
-    An email address for testing.
-    """
-    return getattr(request, "param", "a.user@digilab.co.uk")
-
-
-@pytest.fixture(scope="class")
 def deployment_url(request):
     """
     The deployment URL for the Uncertainty Engine service.
@@ -27,7 +19,9 @@ def deployment_url(request):
 @pytest.fixture(scope="class")
 def client(test_user_email: str) -> Client:
     """Fixture to initialize the Client class once per test class."""
-    return Client(test_user_email, Environment.get("local"))
+    return Client(
+        env=Environment.get("local"),
+    )
 
 
 @pytest.fixture(scope="module")
@@ -41,11 +35,7 @@ def e2e_client():
         UE_DEPLOYMENT_URL: The deployment URL for the Uncertainty Engine service.
     """
 
-    client = Client(
-        os.environ["UE_USERNAME"],
-        "dev",
-    )
-
+    client = Client(env="dev")
     client.authenticate(os.environ["UE_USER_ACCOUNT_ID"])
     return client
 

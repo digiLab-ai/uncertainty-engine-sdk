@@ -31,7 +31,6 @@ from uncertainty_engine.nodes.demo import Add
 
 # Set up the client
 client = Client(
-   email="<user-email>",  # Must have tokens!
    env=Environment(
         cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
         core_api="<UNCERTAINTY ENGINE CORE API URL>",
