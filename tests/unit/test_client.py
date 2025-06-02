@@ -20,10 +20,6 @@ def test_init_default() -> None:
 
 
 def test_init_with_named_env() -> None:
-    """
-    Verify that the Client class can be instantiated with the default deployment.
-    """
-
     client = Client(env="dev")
     assert client.env == Environment.get("dev")
 

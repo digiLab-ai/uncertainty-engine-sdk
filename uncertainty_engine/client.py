@@ -47,7 +47,7 @@ class Client:
     def __init__(
         self,
         env: Environment | str = "local",
-    ) -> None:
+    ):
         """
         A client for interacting with the Uncertainty Engine.
 
@@ -58,10 +58,10 @@ class Client:
         Example:
             >>> client = Client(
             ...     env=Environment(
-            ...          cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
-            ...          core_api="<UNCERTAINTY ENGINE CORE API URL>",
-            ...          region="<REGION>",
-            ...          resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
+            ...         cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
+            ...         core_api="<UNCERTAINTY ENGINE CORE API URL>",
+            ...         region="<REGION>",
+            ...         resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
             ...     ),
             ... )
             >>> client.authenticate("<ACCOUNT ID>")
