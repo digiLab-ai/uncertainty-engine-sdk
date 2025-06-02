@@ -15,6 +15,16 @@ class Workflow(Node):
         external_input_id: String identifier that refers to external inputs to the graph.
             Default is "_".
 
+    Example:
+        >>> workflow = Workflow(
+        ...     graph=graph.nodes,
+        ...     input=graph.external_input,
+        ...     requested_output={
+        ...         "Result": {"node_name": "Download", "node_handle": "file"}
+        ...     }
+        ... )
+        >>> client.queue_node(workflow)
+        "<job_id>"
     """
 
     node_name: str = "Workflow"

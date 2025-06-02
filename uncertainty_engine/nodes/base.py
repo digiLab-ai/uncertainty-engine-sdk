@@ -13,6 +13,15 @@ class Node:
         node_name: The name of the node.
         label: A human-readable label for the node. Defaults to None.
         **kwargs: Arbitrary keyword arguments representing the input parameters of the node.
+
+    Example:
+        >>> add_node = Node(
+        ...     node_name="Add",
+        ...     lhs=1,
+        ...     rhs=2,
+        ... )
+        >>> add_node()
+        ('Add', {'lhs': 1, 'rhs': 2})
     """
 
     def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):

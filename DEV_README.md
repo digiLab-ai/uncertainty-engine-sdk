@@ -21,25 +21,25 @@ classDiagram
         +account_id: str
         -_decoded_payload: Dict
     }
-    
+
     class CognitoAuthenticator {
-        +region: str 
+        +region: str
         +user_pool_id: str
         +client_id: str
         +client: boto3.client
     }
-    
+
     class AuthService {
         +account_id: str
         +token: CognitoToken
         +authenticator: CognitoAuthenticator
     }
-    
+
     class ApiProviderBase {
         +deployment: str
         +auth_service: AuthService
     }
-    
+
     class ResourceProvider {
         +deployment: str
         +auth_service: AuthService
@@ -47,14 +47,14 @@ classDiagram
         +projects_client: ProjectRecordsApi
         +resources_client: ResourcesApi
     }
-    
+
     class Client {
         +email: str
         +deployment: str
         +auth_service: AuthService
         +resources: ResourceProvider
     }
-    
+
     AuthService --* CognitoToken : contains
     AuthService --* CognitoAuthenticator : contains
     ApiProviderBase --* AuthService : contains
@@ -98,14 +98,10 @@ To add new API providers:
 
 ```python
 # Create client
-client = Client(email="user@example.com")
+client = Client()
 
 # Authenticate with credentials
 client.authenticate(
     account_id="123456789",
 )
 ```
-
-
-
-
