@@ -124,6 +124,7 @@ class HttpApiInvoker(ApiInvoker):
                     return
 
                 self._auth_service.refresh()
+                kwargs["headers"] = self._auth_service.get_auth_header()
                 has_refreshed_token = True
                 # Try again with the refreshed token.
                 continue

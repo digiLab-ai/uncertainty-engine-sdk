@@ -8,6 +8,7 @@ on:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
 env:
+  UE_ACCOUNT_ID: ${{ secrets.UE_ACCOUNT_ID }}
   UE_COGNITO_CLIENT_ID: ${{ secrets.UE_COGNITO_CLIENT_ID }}
   UE_CORE_API: ${{ secrets.UE_CORE_API }}
   UE_REGION: ${{ secrets.UE_REGION }}
