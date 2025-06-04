@@ -7,14 +7,6 @@ on:
   schedule:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
-env:
-  UE_ACCOUNT_ID: ${{ secrets.UE_ACCOUNT_ID }}
-  UE_COGNITO_CLIENT_ID: ${{ secrets.UE_COGNITO_CLIENT_ID }}
-  UE_CORE_API: ${{ secrets.UE_CORE_API }}
-  UE_REGION: ${{ secrets.UE_REGION }}
-  UE_RESOURCE_API: ${{ secrets.UE_RESOURCE_API }}
-  UE_USERNAME: ${{ secrets.UE_USER_EMAIL }}
-
 jobs:
   e2e_tests:
     runs-on: ubuntu-latest
@@ -44,4 +36,8 @@ jobs:
         run: poetry install --all-extras
 
       - name: Run tests
+        env:
+          UE_ACCOUNT_ID: ${{ secrets.UE_ACCOUNT_ID }}
+          UE_USERNAME: ${{ secrets.UE_USER_EMAIL }}
+          UE_PASSWORD: ${{ secrets.UE_PASSWORD }}
         run: sh CI/run_tests_e2e.sh

@@ -63,7 +63,7 @@ client = Client(
 )
 ```
 
-### Example
+### Running a node
 
 ```python
 from pprint import pprint
