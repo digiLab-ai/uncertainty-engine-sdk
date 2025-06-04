@@ -74,17 +74,20 @@ class Client:
         Uncertainty Engine environment.
         """
 
-        self.core_api: ApiInvoker = HttpApiInvoker(self.env.core_api)
-        """
-        Core API interaction.
-        """
-
         authenticator = CognitoAuthenticator(
             self.env.region,
             self.env.cognito_user_pool_client_id,
         )
 
         self.auth_service = AuthService(authenticator)
+
+        self.core_api: ApiInvoker = HttpApiInvoker(
+            self.auth_service,
+            self.env.core_api,
+        )
+        """
+        Core API interaction.
+        """
 
         self.resources = ResourceProvider(
             self.auth_service,
