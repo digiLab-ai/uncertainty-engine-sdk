@@ -23,24 +23,14 @@ def e2e_client():
     For the end-to-end tests to run successfully, the following environment
     variables must be set to describe the target environment:
 
-    - `UE_USERNAME`: A user email that has been registered with the Uncertainty
-        Engine service.
-    - `UE_COGNITO_CLIENT_ID`: Cognito User Pool Application Client ID.
-    - `UE_CORE_API`: Core API endpoint. Must start with a protocol (i.e.
-        "https://") and must not end with a slash.
-    - `UE_REGION`: Amazon Web Services region.
-    - `UE_RESOURCE_API`: Resource API endpoint. Must start with a protocol (i.e.
-        "https://") and must not end with a slash.
+    - `UE_ACCOUNT_ID`: The user's Resource Service account ID.
+    - `UE_PASSWORD`: User account password.
+    - `UE_USERNAME`: User account email.
     """
 
-    return Client(
-        env=Environment(
-            cognito_user_pool_client_id=os.environ["UE_COGNITO_CLIENT_ID"],
-            core_api=os.environ["UE_CORE_API"],
-            region=os.environ["UE_REGION"],
-            resource_api=os.environ["UE_RESOURCE_API"],
-        ),
-    )
+    client = Client(env="dev")
+    client.authenticate(os.environ["UE_ACCOUNT_ID"])
+    return client
 
 
 @pytest.fixture(scope="class")

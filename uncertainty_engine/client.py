@@ -64,6 +64,7 @@ class Client:
             ...         resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
             ...     ),
             ... )
+            >>> client.authenticate("<ACCOUNT ID>")
             >>> add_node = Add(lhs=1, rhs=2, label="add")
             >>> client.queue_node(add_node)
             "<job-id>"
@@ -74,13 +75,20 @@ class Client:
         Uncertainty Engine environment.
         """
 
-        self.core_api: ApiInvoker = HttpApiInvoker(self.env.core_api)
+        authenticator = CognitoAuthenticator(
+            self.env.region,
+            self.env.cognito_user_pool_client_id,
+        )
+
+        self.auth_service = AuthService(authenticator)
+
+        self.core_api: ApiInvoker = HttpApiInvoker(
+            self.auth_service,
+            self.env.core_api,
+        )
         """
         Core API interaction.
         """
-
-        authenticator = CognitoAuthenticator()
-        self.auth_service = AuthService(authenticator)
 
         self.resources = ResourceProvider(
             self.auth_service,
