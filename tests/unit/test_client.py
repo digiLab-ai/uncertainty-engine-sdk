@@ -32,7 +32,9 @@ def test_init_with_custom_env() -> None:
     custom_env = Environment(
         cognito_user_pool_client_id="custom_cognito_user_pool_client_id",
         core_api="custom_core_api",
-        region="custom_region",
+        # `region` must be a real region so the Client can instantiate a Cognito
+        # authenticator.
+        region="eu-west-2",
         resource_api="custom_resource_api",
     )
 
