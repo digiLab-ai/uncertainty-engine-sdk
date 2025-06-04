@@ -124,17 +124,17 @@ class HttpApiInvoker(ApiInvoker):
                 # If we've already refreshed the authorisation token then the
                 # problem is probably unrelated, so don't try again.
                 response.raise_for_status()
+                return
 
-            else:
-                # Re-authenticate.
-                self._auth_service.refresh()
+            # Re-authenticate.
+            self._auth_service.refresh()
 
-                # Update the authorisation header.
-                kwargs["headers"] = {
-                    **kwargs["headers"],
-                    **self._auth_service.get_auth_header(),
-                }
+            # Update the authorisation header.
+            kwargs["headers"] = {
+                **kwargs["headers"],
+                **self._auth_service.get_auth_header(),
+            }
 
-                # Remember that we've refreshed the token in case the next
-                # attempt fails too.
-                has_refreshed_token = True
+            # Remember that we've refreshed the token in case the next
+            # attempt fails too.
+            has_refreshed_token = True
