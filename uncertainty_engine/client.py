@@ -79,7 +79,11 @@ class Client:
         Core API interaction.
         """
 
-        authenticator = CognitoAuthenticator()
+        authenticator = CognitoAuthenticator(
+            self.env.region,
+            self.env.cognito_user_pool_client_id,
+        )
+
         self.auth_service = AuthService(authenticator)
 
         self.resources = ResourceProvider(
