@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from uncertainty_engine import Client
+from uncertainty_engine import Client, Environment
 from uncertainty_engine.client import Job
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.basic import Add
@@ -20,15 +20,29 @@ def e2e_client():
     """
     A Client instance for end-to-end testing.
 
-    For the end-to-end tests to run successfully, the following environment
-    variables must be set to describe the target environment:
+    You _must_ set the following environment variables:
 
     - `UE_ACCOUNT_ID`: The user's Resource Service account ID.
     - `UE_PASSWORD`: User account password.
     - `UE_USERNAME`: User account email.
+
+    In addition, you must set _either_ `UE_ENVIRONMENT` to the name of the
+    environment to test or all of the following:
+
+    - `UE_COGNITO_CLIENT_ID`: Cognito User Pool Application Client ID.
+    - `UE_CORE_API`: Core API endpoint.
+    - `UE_REGION`: Region where the environment is deployed.
+    - `UE_RESOURCE_API`: Resource API endpoint.
     """
 
-    client = Client(env="dev")
+    env = os.environ.get("UE_ENVIRONMENT") or Environment(
+        cognito_user_pool_client_id=os.environ["UE_COGNITO_CLIENT_ID"],
+        core_api=os.environ["UE_CORE_API"],
+        region=os.environ["UE_REGION"],
+        resource_api=os.environ["UE_RESOURCE_API"],
+    )
+
+    client = Client(env=env)
     client.authenticate(os.environ["UE_ACCOUNT_ID"])
     return client
 

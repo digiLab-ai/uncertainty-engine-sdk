@@ -8,40 +8,13 @@ on:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
 jobs:
-  e2e_tests:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-
-    steps:
-      - uses: actions/checkout@v4
-        # If a branch triggered this workflow (i.e. a PR was created) then
-        # "actions/checkout" will check out that branch, otherwise (i.e. for
-        # scheduled runs) it'll check out the default (main) branch.
-
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Delete .lock file
-        run: rm -f poetry.lock
-
-      - name: Install dependencies
-        run: poetry install --all-extras
-
-      - name: Run tests
-        env:
-          UE_ACCOUNT_ID: ${{ secrets.UE_ACCOUNT_ID }}
-          UE_COGNITO_CLIENT_ID: ${{ secrets.UE_COGNITO_CLIENT_ID }}
-          UE_CORE_API: ${{ secrets.UE_CORE_API }}
-          UE_PASSWORD: ${{ secrets.UE_LEGACY_PASSWORD }}
-          UE_REGION: ${{ secrets.UE_REGION }}
-          UE_RESOURCE_API: ${{ secrets.UE_RESOURCE_API }}
-          UE_USERNAME: ${{ secrets.UE_LEGACY_USERNAME }}
-        run: sh CI/run_tests_e2e.sh
+  legacy:
+    uses: digiLab-ai/uncertainty-engine-sdk/.github/workflows/e2e-environment.yaml
+    secrets:
+      ue-account-id: ${{ secrets.UE_LEGACY_ACCOUNT_ID }}
+      ue-cognito-client-id: ${{ secrets.UE_COGNITO_CLIENT_ID }}
+      ue-core-api: ${{ secrets.UE_CORE_API }}
+      ue-password: ${{ secrets.UE_LEGACY_PASSWORD }}
+      ue-region: ${{ secrets.UE_REGION }}
+      ue-resource-api: ${{ secrets.UE_RESOURCE_API }}
+      ue-username: ${{ secrets.UE_LEGACY_USERNAME }}
