@@ -1,4 +1,4 @@
-name: End-to-end tests in all environments
+name: End-to-end tests
 
 on:
   pull_request:
