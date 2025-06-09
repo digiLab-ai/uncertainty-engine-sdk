@@ -100,6 +100,14 @@ class CognitoAuthenticator:
                 AuthParameters={"USERNAME": username, "PASSWORD": password},
             )
 
+            # Cognito can issue challenges in a number of situations, including
+            # trying to authenticate with a temporary password that needs to be
+            # replaced. We could handle that challenge in here one day, but for
+            # now we'll print the details and you'll need to respond manually
+            # via the AWS CLI.
+            if response.get("ChallengeName"):
+                raise Exception(f"Authentication was challenged: {response}")
+
             # Extract authentication result
             access_token = response["AuthenticationResult"]["AccessToken"]
             refresh_token = response["AuthenticationResult"]["RefreshToken"]

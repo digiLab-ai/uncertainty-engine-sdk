@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from uncertainty_engine import Client, Environment
+from uncertainty_engine import Client
 from uncertainty_engine.client import Job
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.basic import Add
