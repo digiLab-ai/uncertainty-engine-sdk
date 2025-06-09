@@ -1,0 +1,89 @@
+name: End-to-end tests in a single environment
+
+on:
+  workflow_call:
+    inputs:
+      ue-environment:
+        description:
+          Uncertainty Engine environment. You must provide either this or
+          ue-cognito-client-id, ue-core-api and ue-resource-api.
+        required: false
+        type: string
+
+    secrets:
+      ue-account-id:
+        description: Resource Service account ID.
+        required: true
+
+      ue-cognito-client-id:
+        description:
+          Cognito User Pool Application Client ID. You must provide either this
+          or ue-environment, but not both.
+        required: false
+
+      ue-core-api:
+        description:
+          Core API endpoint. You must provide either this or ue-environment, but
+          not both.
+        required: false
+
+      ue-password:
+        description: Uncertainty Engine user password.
+        required: true
+
+      ue-region:
+        description:
+          Amazon Web Services region where the environment is deployed. You must
+          provide either this or ue-environment, but not both.
+        required: false
+
+      ue-resource-api:
+        description:
+          Resource Service API endpoint. You must provide either this or
+          ue-environment, but not both.
+        required: false
+
+      ue-username:
+        description: Uncertainty Engine user username.
+        required: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+        # If a branch triggered this workflow (i.e. a PR was created) then
+        # "actions/checkout" will check out that branch, otherwise (i.e. for
+        # scheduled runs) it'll check out the default (main) branch.
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Delete .lock file
+        run: rm -f poetry.lock
+
+      - name: Install dependencies
+        run: poetry install --all-extras
+
+      - name: Run tests
+        env:
+          UE_ACCOUNT_ID: ${{ secrets.ue-account-id }}
+          UE_COGNITO_CLIENT_ID: ${{ secrets.ue-cognito-client-id }}
+          UE_CORE_API: ${{ secrets.ue-core-api }}
+          UE_ENVIRONMENT: ${{ inputs.ue-environment }}
+          UE_PASSWORD: ${{ secrets.ue-password }}
+          UE_REGION: ${{ secrets.ue-region }}
+          UE_RESOURCE_API: ${{ secrets.ue-resource-api }}
+          UE_USERNAME: ${{ secrets.ue-username }}
+        run: sh CI/run_tests_e2e.sh

@@ -64,6 +64,7 @@ class Client:
             ...         resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
             ...     ),
             ... )
+            >>> client.authenticate("<ACCOUNT ID>")
             >>> add_node = Add(lhs=1, rhs=2, label="add")
             >>> client.queue_node(add_node)
             "<job-id>"
