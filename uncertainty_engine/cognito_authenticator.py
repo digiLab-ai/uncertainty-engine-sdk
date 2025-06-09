@@ -66,24 +66,12 @@ class CognitoAuthenticator:
     2. Authenticating the user with their username and password
     3. Retrieving and returning the access token (and optionally refresh and ID tokens)
 
-    Attributes:
-        region (str): AWS region where the Cognito user pool is located
-        client_id (str): ID of the client application
-        client (boto3.client): Boto3 client for Cognito Identity Provider
+    Args:
+        region: Amazon Web Services region where the Cognito User Pool resides.
+        client_id: Cognito User Pool Application Client ID.
     """
 
-    def __init__(
-        self,
-        region: str,
-        client_id: str,
-    ):
-        """Initialize the CognitoAuthenticator with AWS Cognito configuration.
-
-        Args:
-            region (str): AWS region where the Cognito user pool is located (e.g., 'us-east-1')
-            client_id (str): The client ID (app client ID) from your Cognito user pool
-
-        """
+    def __init__(self, region: str, client_id: str) -> None:
         self.region = region
         self.client_id = client_id
 
