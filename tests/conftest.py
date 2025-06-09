@@ -33,7 +33,7 @@ def e2e_client():
         "https://") and must not end with a slash.
     """
 
-    return Client(
+    client = Client(
         env=Environment(
             cognito_user_pool_client_id=os.environ["UE_COGNITO_CLIENT_ID"],
             core_api=os.environ["UE_CORE_API"],
@@ -41,6 +41,9 @@ def e2e_client():
             resource_api=os.environ["UE_RESOURCE_API"],
         ),
     )
+
+    client.authenticate(os.environ.get("UE_ACCOUNT_ID", ""))
+    return client
 
 
 @pytest.fixture(scope="class")
