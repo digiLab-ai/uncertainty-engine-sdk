@@ -9,7 +9,7 @@ on:
 
 jobs:
   legacy:
-    uses: digiLab-ai/uncertainty-engine-sdk/.github/workflows/e2e-environment.yaml
+    uses: ./.github/workflows/e2e-environment.yaml
     secrets:
       ue-account-id: ${{ secrets.UE_LEGACY_ACCOUNT_ID }}
       ue-cognito-client-id: ${{ secrets.UE_COGNITO_CLIENT_ID }}
