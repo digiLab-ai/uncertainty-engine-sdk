@@ -18,3 +18,12 @@ jobs:
       ue-region: ${{ secrets.UE_REGION }}
       ue-resource-api: ${{ secrets.UE_RESOURCE_API }}
       ue-username: ${{ secrets.UE_LEGACY_USERNAME }}
+
+  dev:
+    uses: ./.github/workflows/e2e-environment.yaml
+    with:
+      ue-environment: dev
+    secrets:
+      ue-account-id: ${{ secrets.UE_DEV_ACCOUNT_ID }}
+      ue-password: ${{ secrets.UE_DEV_PASSWORD }}
+      ue-username: ${{ secrets.UE_DEV_USERNAME }}

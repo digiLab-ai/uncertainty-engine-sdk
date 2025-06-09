@@ -2,6 +2,14 @@ name: End-to-end tests in a single environment
 
 on:
   workflow_call:
+    inputs:
+      ue-environment:
+        description:
+          Uncertainty Engine environment. You must provide either this or
+          ue-cognito-client-id, ue-core-api and ue-resource-api.
+        required: false
+        type: string
+
     secrets:
       ue-account-id:
         description: Resource Service account ID.
@@ -17,12 +25,6 @@ on:
         description:
           Core API endpoint. You must provide either this or ue-environment, but
           not both.
-        required: false
-
-      ue-environment:
-        description:
-          Uncertainty Engine environment. You must provide either this or
-          ue-cognito-client-id, ue-core-api and ue-resource-api.
         required: false
 
       ue-password:
@@ -79,7 +81,7 @@ jobs:
           UE_ACCOUNT_ID: ${{ secrets.ue-account-id }}
           UE_COGNITO_CLIENT_ID: ${{ secrets.ue-cognito-client-id }}
           UE_CORE_API: ${{ secrets.ue-core-api }}
-          UE_ENVIRONMENT: ${{ secrets.ue-environment }}
+          UE_ENVIRONMENT: ${{ inputs.ue-environment }}
           UE_PASSWORD: ${{ secrets.ue-password }}
           UE_REGION: ${{ secrets.ue-region }}
           UE_RESOURCE_API: ${{ secrets.ue-resource-api }}
