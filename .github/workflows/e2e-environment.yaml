@@ -1,4 +1,4 @@
-name: Runs the tests in a single environment
+name: End-to-end tests in a single environment
 
 on:
   workflow_call:
