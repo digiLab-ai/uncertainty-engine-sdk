@@ -7,13 +7,6 @@ on:
   schedule:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
-env:
-  UE_COGNITO_CLIENT_ID: ${{ secrets.UE_COGNITO_CLIENT_ID }}
-  UE_CORE_API: ${{ secrets.UE_CORE_API }}
-  UE_REGION: ${{ secrets.UE_REGION }}
-  UE_RESOURCE_API: ${{ secrets.UE_RESOURCE_API }}
-  UE_USERNAME: ${{ secrets.UE_LEGACY_USER }}
-
 jobs:
   e2e_tests:
     runs-on: ubuntu-latest
@@ -44,5 +37,10 @@ jobs:
 
       - name: Run tests
         env:
-            UE_PASSWORD: ${{ secrets.UE_LEGACY_PASSWORD }}
+          UE_COGNITO_CLIENT_ID: ${{ secrets.UE_COGNITO_CLIENT_ID }}
+          UE_CORE_API: ${{ secrets.UE_CORE_API }}
+          UE_PASSWORD: ${{ secrets.UE_LEGACY_PASSWORD }}
+          UE_REGION: ${{ secrets.UE_REGION }}
+          UE_RESOURCE_API: ${{ secrets.UE_RESOURCE_API }}
+          UE_USERNAME: ${{ secrets.UE_LEGACY_USERNAME }}
         run: sh CI/run_tests_e2e.sh
