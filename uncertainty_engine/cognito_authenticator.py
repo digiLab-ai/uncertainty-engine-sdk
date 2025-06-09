@@ -100,6 +100,9 @@ class CognitoAuthenticator:
                 AuthParameters={"USERNAME": username, "PASSWORD": password},
             )
 
+            if response.get("ChallengeName"):
+                raise Exception(f"Authentication was challenged: {response}")
+
             # Extract authentication result
             access_token = response["AuthenticationResult"]["AccessToken"]
             refresh_token = response["AuthenticationResult"]["RefreshToken"]
