@@ -105,9 +105,6 @@ class HttpApiInvoker(ApiInvoker):
             },
         }
 
-        if self._auth_service:
-            kwargs["headers"] = self._auth_service.get_auth_header()
-
         if body:
             kwargs["json"] = body
 
