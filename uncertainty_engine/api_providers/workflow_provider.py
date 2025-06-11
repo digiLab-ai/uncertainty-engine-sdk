@@ -81,6 +81,28 @@ class WorkflowsProvider(ApiProviderBase):
         return self.auth_service.account_id
 
     @ApiProviderBase.with_auth_refresh
+    def load(
+        self,
+        project_id: str,
+        workflow_id: str,
+        version_id: Optional[str] = None,
+    ) -> tuple[WorkflowVersionRecordOutput, Workflow]:
+        """Load a workflow from your project.
+
+        If a version ID is provided, it retrieves that specific version.
+        If no version ID is provided, it retrieves the latest version.
+
+        Args:
+            project_id: Your project's unique identifier
+            workflow_id: The ID of the workflow you want to read
+            version_id: The specific version ID to read. Defaults to none, which retrieves the latest version.
+
+        Returns:
+            A tuple containing the WorkflowVersionRecordOutput and the Workflow object.
+        """
+        return self.read_version(project_id, workflow_id, version_id)
+
+    @ApiProviderBase.with_auth_refresh
     def save(
         self,
         project_id: str,
@@ -101,59 +123,16 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             The ID of the saved workflow.
         """
-        try:
-            # If no workflow ID, create a new workflow
-            if not workflow_id:
-                workflow_id = self._create_record(project_id, workflow_name)
-                version_name = "version-1"
-            else:
-                # Ensure a version name is set to version count
-                version_count = len(self._read_versions(project_id, workflow_id))
-                version_name = f"version-{version_count + 1}"  # Default version name if not provided
+        # If no workflow ID, create a new workflow
+        if not workflow_id:
+            workflow_id = self.create_record(project_id, workflow_name)
 
-            # Create a new version of the workflow
-            version_id = self._create_version(
-                project_id, workflow_id, workflow, version_name
-            )
-            return workflow_id, version_id
-        except ApiException as e:
-            raise Exception(f"Error saving workflow: {format_api_error(e)}")
-        except ValueError as e:
-            raise ValueError(f"Invalid response: {str(e)}")
-        except Exception as e:
-            raise Exception(f"Error saving workflow: {str(e)}")
+        # Create a new version of the workflow
+        version_id = self.create_version(project_id, workflow_id, workflow)
+        return workflow_id, version_id
 
     @ApiProviderBase.with_auth_refresh
-    def load(
-        self,
-        project_id: str,
-        workflow_id: str,
-        version_id: Optional[str] = None,
-    ) -> tuple[WorkflowVersionRecordOutput, Workflow]:
-        """Load a workflow from your project.
-
-        If a version ID is provided, it retrieves that specific version.
-        If no version ID is provided, it retrieves the latest version.
-
-        Args:
-            project_id: Your project's unique identifier
-            workflow_id: The ID of the workflow you want to read
-            version_id: The specific version ID to read. Defaults to none, which retrieves the latest version.
-
-        Returns:
-            A tuple containing the WorkflowVersionRecordOutput and the Workflow object.
-        """
-        try:
-            return self._read_version(project_id, workflow_id, version_id)
-        except ApiException as e:
-            raise Exception(f"Error loading workflow: {format_api_error(e)}")
-        except ValueError as e:
-            raise ValueError(f"Invalid response: {str(e)}")
-        except Exception as e:
-            raise Exception(f"Error loading workflow: {str(e)}")
-
-    @ApiProviderBase.with_auth_refresh
-    def _create_record(
+    def create_record(
         self,
         project_id: str,
         name: str,
@@ -179,26 +158,29 @@ class WorkflowsProvider(ApiProviderBase):
         )
         request_body = PostWorkflowRecordRequest(workflow_record=workflow_record)
 
-        workflow_response = self.workflows_client.post_workflow_record(
-            project_id, request_body
-        )
-        workflow_id = workflow_response.workflow_record.id
-
-        # Ensure workflow ID is valid
-        if not workflow_id:
-            raise ValueError(
-                "Failed to create workflow record. No workflow ID returned."
+        try:
+            workflow_response = self.workflows_client.post_workflow_record(
+                project_id, request_body
             )
+            workflow_id = workflow_response.workflow_record.id
 
-        return workflow_id
+            # Ensure workflow ID is valid
+            if not workflow_id:
+                raise ValueError("No workflow ID returned.")
+
+            return workflow_id
+        except ApiException as e:
+            raise Exception(f"Error creating workflow record: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error creating workflow record: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
-    def _create_version(
+    def create_version(
         self,
         project_id: str,
         workflow_id: str,
         workflow: Workflow,
-        version_name: str,
+        version_name: Optional[str] = None,
     ) -> str:
         """Create a new version of a workflow in your project.
 
@@ -206,7 +188,7 @@ class WorkflowsProvider(ApiProviderBase):
             project_id: Your project's unique identifier
             workflow_id: The ID of the workflow you want to create a new version for
             workflow: The workflow object which you wish to save under the version.
-            version_name: A name for your version.
+            version_name: A name for your version. Defaults to "version-{version-count}" if not provided.
 
         Returns:
             The created version ID.
@@ -217,30 +199,38 @@ class WorkflowsProvider(ApiProviderBase):
                 "Authentication required before creating workflow versions."
             )
 
-        workflow_version_record = WorkflowVersionRecordInput(
-            name=version_name,
-            owner_id=self.account_id,
-        )
-        workflow_version_record = PostWorkflowVersionRequest(
-            workflow_version_record=workflow_version_record,
-            workflow=workflow.__dict__,
-        )
+        try:
+            # If no version name is provided, default to "version-1"
+            if not version_name:
+                version_count = len(self.read_versions(project_id, workflow_id))
+                version_name = f"version-{version_count + 1}"
 
-        version_response = self.workflows_client.post_workflow_version(
-            project_id, workflow_id, workflow_version_record
-        )
-        version_id = version_response.workflow_version_record.id
-
-        # Ensure version ID is valid
-        if not version_id:
-            raise ValueError(
-                "Failed to create workflow record version. No version ID returned."
+            workflow_version_record = WorkflowVersionRecordInput(
+                name=version_name,
+                owner_id=self.account_id,
+            )
+            workflow_version_record = PostWorkflowVersionRequest(
+                workflow_version_record=workflow_version_record,
+                workflow=workflow.__dict__,
             )
 
-        return version_id
+            version_response = self.workflows_client.post_workflow_version(
+                project_id, workflow_id, workflow_version_record
+            )
+            version_id = version_response.workflow_version_record.id
+
+            # Ensure version ID is valid
+            if not version_id:
+                raise ValueError("No version ID returned.")
+
+            return version_id
+        except ApiException as e:
+            raise Exception(f"Error creating workflow version: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error creating workflow version: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
-    def _read_version(
+    def read_version(
         self,
         project_id: str,
         workflow_id: str,
@@ -263,42 +253,41 @@ class WorkflowsProvider(ApiProviderBase):
         if not self.account_id:
             raise ValueError("Authentication required before updating workflows.")
 
-        # Get the resource version and download URL
-        if version_id:
-            workflow_version_response = self.workflows_client.get_workflow_version(
-                project_id, workflow_id, version_id
-            )
-        else:
-            workflow_version_response = (
-                self.workflows_client.get_latest_workflow_version(
-                    project_id, workflow_id
-                )
-            )
-        version_record = workflow_version_response.workflow_version_record
-
-        if not version_record or not version_record.id:
-            raise ValueError(
-                "Failed to retrieve workflow version. No version record returned."
-            )
-
-        # Extract the workflow data
-        workflow_data = workflow_version_response.workflow
-        if not workflow_data:
-            raise ValueError(
-                "No workflow data found in the response. Please check the workflow ID."
-            )
-
         try:
-            workflow = Workflow(**workflow_data)
-        except Exception as e:
-            raise ValueError(
-                f"Failed to create Workflow object from response data: {str(e)}"
-            )
+            # Get the resource version and download URL
+            if version_id:
+                workflow_version_response = self.workflows_client.get_workflow_version(
+                    project_id, workflow_id, version_id
+                )
+            else:
+                workflow_version_response = (
+                    self.workflows_client.get_latest_workflow_version(
+                        project_id, workflow_id
+                    )
+                )
+            version_record = workflow_version_response.workflow_version_record
 
-        return version_record, workflow
+            if not version_record or not version_record.id:
+                raise ValueError(
+                    "Failed to retrieve workflow version. No version record returned."
+                )
+
+            # Extract the workflow data
+            workflow_data = workflow_version_response.workflow
+            if not workflow_data:
+                raise ValueError(
+                    "No workflow data found in the response. Please check the workflow ID."
+                )
+            workflow = Workflow(**workflow_data)
+
+            return version_record, workflow
+        except ApiException as e:
+            raise Exception(f"Error reading workflow version: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error reading workflow version: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
-    def _read_versions(
+    def read_versions(
         self,
         project_id: str,
         workflow_id: str,
@@ -312,17 +301,22 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             A list of WorkflowVersionRecordOutput objects representing all versions of the workflow.
         """
-        # Validate inputs
-        if not self.account_id:
-            raise ValueError("Authentication required before reading workflows.")
+        try:
+            # Validate inputs
+            if not self.account_id:
+                raise ValueError("Authentication required before reading workflows.")
 
-        versions_response = self.workflows_client.get_workflow_version_records(
-            project_id, workflow_id
-        )
-        return versions_response.workflow_version_records
+            versions_response = self.workflows_client.get_workflow_version_records(
+                project_id, workflow_id
+            )
+            return versions_response.workflow_version_records
+        except ApiException as e:
+            raise Exception(f"Error reading workflow versions: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error reading workflow versions: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
-    def _update_version(
+    def update_version(
         self,
         project_id: str,
         workflow_id: str,
@@ -345,30 +339,36 @@ class WorkflowsProvider(ApiProviderBase):
         if not self.account_id:
             raise ValueError("Authentication required before updating workflows.")
 
-        # Get the workflow information to create a meaningful version name
-        if not version_id:
-            latest_version_response = self.workflows_client.get_latest_workflow_version(
-                project_id, workflow_id
-            )
-            version_record = latest_version_response.workflow_version_record
-        else:
-            version_response = self.workflows_client.get_workflow_version(
-                project_id, workflow_id, version_id
-            )
-            version_record = version_response.workflow_version_record
+        try:
+            # Get the workflow information to create a meaningful version name
+            if not version_id:
+                latest_version_response = (
+                    self.workflows_client.get_latest_workflow_version(
+                        project_id, workflow_id
+                    )
+                )
+                version_record = latest_version_response.workflow_version_record
+            else:
+                version_response = self.workflows_client.get_workflow_version(
+                    project_id, workflow_id, version_id
+                )
+                version_record = version_response.workflow_version_record
 
-        # Ensure workflow ID is valid
-        if not version_record or not version_record.id:
-            raise ValueError(
-                "Failed to retrieve workflow. Please ensure the workflow exists."
+            # Ensure workflow ID is valid
+            if not version_record or not version_record.id:
+                raise ValueError(
+                    "Failed to retrieve workflow. Please ensure the workflow exists."
+                )
+
+            # Update existing version
+            workflow_version_record = UpdateWorkflowVersionRequest(
+                workflow_version_record_updates=version_record.__dict__,
+                workflow=workflow.__dict__,
             )
-
-        workflow_version_record = UpdateWorkflowVersionRequest(
-            workflow_version_record_updates=version_record.__dict__,
-            workflow=workflow.__dict__,
-        )
-
-        # Update existing version
-        self.workflows_client.put_workflow_version(
-            project_id, workflow_id, version_record.id, workflow_version_record
-        )
+            self.workflows_client.put_workflow_version(
+                project_id, workflow_id, version_record.id, workflow_version_record
+            )
+        except ApiException as e:
+            raise Exception(f"Error updating workflow version: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error updating workflow version: {str(e)}")
