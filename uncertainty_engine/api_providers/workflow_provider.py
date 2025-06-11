@@ -81,6 +81,78 @@ class WorkflowsProvider(ApiProviderBase):
         return self.auth_service.account_id
 
     @ApiProviderBase.with_auth_refresh
+    def save(
+        self,
+        project_id: str,
+        workflow_name: str,
+        workflow: Workflow,
+        workflow_id: Optional[str] = None,
+    ) -> tuple[str, str]:
+        """Save a workflow to your project as a new version.
+
+        If a workflow ID is provided, it updates that specific workflow.
+        If no workflow ID is provided, it creates a new workflow.
+
+        Args:
+            project_id: Your project's unique identifier
+            workflow: The workflow object which you wish to save.
+            workflow_id: The ID of the workflow you want to update. Defaults to none, which creates a new workflow.
+
+        Returns:
+            The ID of the saved workflow.
+        """
+        try:
+            # If no workflow ID, create a new workflow
+            if not workflow_id:
+                workflow_id = self._create_record(project_id, workflow_name)
+                version_name = "version-1"
+            else:
+                # Ensure a version name is set to version count
+                version_count = len(self._read_versions(project_id, workflow_id))
+                version_name = f"version-{version_count + 1}"  # Default version name if not provided
+
+            # Create a new version of the workflow
+            version_id = self._create_version(
+                project_id, workflow_id, workflow, version_name
+            )
+            return workflow_id, version_id
+        except ApiException as e:
+            raise Exception(f"Error saving workflow: {format_api_error(e)}")
+        except ValueError as e:
+            raise ValueError(f"Invalid response: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Error saving workflow: {str(e)}")
+
+    @ApiProviderBase.with_auth_refresh
+    def load(
+        self,
+        project_id: str,
+        workflow_id: str,
+        version_id: Optional[str] = None,
+    ) -> tuple[WorkflowVersionRecordOutput, Workflow]:
+        """Load a workflow from your project.
+
+        If a version ID is provided, it retrieves that specific version.
+        If no version ID is provided, it retrieves the latest version.
+
+        Args:
+            project_id: Your project's unique identifier
+            workflow_id: The ID of the workflow you want to read
+            version_id: The specific version ID to read. Defaults to none, which retrieves the latest version.
+
+        Returns:
+            A tuple containing the WorkflowVersionRecordOutput and the Workflow object.
+        """
+        try:
+            return self._read_version(project_id, workflow_id, version_id)
+        except ApiException as e:
+            raise Exception(f"Error loading workflow: {format_api_error(e)}")
+        except ValueError as e:
+            raise ValueError(f"Invalid response: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Error loading workflow: {str(e)}")
+
+    @ApiProviderBase.with_auth_refresh
     def _create_record(
         self,
         project_id: str,
@@ -300,75 +372,3 @@ class WorkflowsProvider(ApiProviderBase):
         self.workflows_client.put_workflow_version(
             project_id, workflow_id, version_record.id, workflow_version_record
         )
-
-    @ApiProviderBase.with_auth_refresh
-    def save(
-        self,
-        project_id: str,
-        workflow_name: str,
-        workflow: Workflow,
-        workflow_id: Optional[str] = None,
-    ) -> tuple[str, str]:
-        """Save a workflow to your project as a new version.
-
-        If a workflow ID is provided, it updates that specific workflow.
-        If no workflow ID is provided, it creates a new workflow.
-
-        Args:
-            project_id: Your project's unique identifier
-            workflow: The workflow object which you wish to save.
-            workflow_id: The ID of the workflow you want to update. Defaults to none, which creates a new workflow.
-
-        Returns:
-            The ID of the saved workflow.
-        """
-        try:
-            # If no workflow ID, create a new workflow
-            if not workflow_id:
-                workflow_id = self._create_record(project_id, workflow_name)
-                version_name = "version-1"
-            else:
-                # Ensure a version name is set to version count
-                version_count = len(self._read_versions(project_id, workflow_id))
-                version_name = f"version-{version_count + 1}"  # Default version name if not provided
-
-            # Create a new version of the workflow
-            version_id = self._create_version(
-                project_id, workflow_id, workflow, version_name
-            )
-            return workflow_id, version_id
-        except ApiException as e:
-            raise Exception(f"Error saving workflow: {format_api_error(e)}")
-        except ValueError as e:
-            raise ValueError(f"Invalid response: {str(e)}")
-        except Exception as e:
-            raise Exception(f"Error saving workflow: {str(e)}")
-
-    @ApiProviderBase.with_auth_refresh
-    def load(
-        self,
-        project_id: str,
-        workflow_id: str,
-        version_id: Optional[str] = None,
-    ) -> tuple[WorkflowVersionRecordOutput, Workflow]:
-        """Load a workflow from your project.
-
-        If a version ID is provided, it retrieves that specific version.
-        If no version ID is provided, it retrieves the latest version.
-
-        Args:
-            project_id: Your project's unique identifier
-            workflow_id: The ID of the workflow you want to read
-            version_id: The specific version ID to read. Defaults to none, which retrieves the latest version.
-
-        Returns:
-            A tuple containing the WorkflowVersionRecordOutput and the Workflow object.
-        """
-        try:
-            return self._read_version(project_id, workflow_id, version_id)
-        except ApiException as e:
-            raise Exception(f"Error loading workflow: {format_api_error(e)}")
-        except ValueError as e:
-            raise ValueError(f"Invalid response: {str(e)}")
-        except Exception as e:
-            raise Exception(f"Error loading workflow: {str(e)}")
