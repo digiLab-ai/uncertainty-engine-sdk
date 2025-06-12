@@ -1,4 +1,5 @@
 from uncertainty_engine.api_providers.api_provider import ApiProviderBase
 from uncertainty_engine.api_providers.resource_provider import ResourceProvider
+from uncertainty_engine.api_providers.workflow_provider import WorkflowsProvider
 
-__all__ = ["ApiProviderBase", "ResourceProvider"]
+__all__ = ["ApiProviderBase", "ResourceProvider", "WorkflowsProvider"]
