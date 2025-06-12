@@ -196,28 +196,6 @@ class Client:
         job_id = self.queue_node(node, input)
         return self._wait_for_job(job_id)
 
-    def save_workflow(self, project_id: str, workflow: Workflow | Node) -> None:
-        """
-        Save a workflow to the Uncertainty Engine.
-
-        Args:
-            workflow: The workflow to save.
-        """
-        self.workflows.save(project_id, workflow)
-
-    def load_workflow(self, project_id: str, workflow_id: str) -> Workflow:
-        """
-        Load a workflow from the Uncertainty Engine.
-
-        Args:
-            workflow_id: The ID of the workflow to load.
-
-        Returns:
-            The loaded workflow.
-        """
-        _, workflow = self.workflows.load(project_id, workflow_id)
-        return workflow
-
     def job_status(self, job: Job) -> dict:
         """
         Check the status of a job.

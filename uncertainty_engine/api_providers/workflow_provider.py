@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, WorkflowsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
@@ -9,6 +9,7 @@ from uncertainty_engine_resource_client.models import (
     PostWorkflowVersionRequest,
     UpdateWorkflowVersionRequest,
     WorkflowRecordInput,
+    WorkflowRecordOutput,
     WorkflowVersionRecordInput,
     WorkflowVersionRecordOutput,
 )
@@ -18,6 +19,7 @@ from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
 
+DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
 DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
@@ -55,7 +57,7 @@ class WorkflowsProvider(ApiProviderBase):
         # Update auth headers of the API client (only if authenticated)
         self.update_api_authentication()
 
-    def update_api_authentication(self):
+    def update_api_authentication(self) -> None:
         """Update API client with current auth headers"""
         if self.auth_service.is_authenticated:
 
@@ -66,9 +68,6 @@ class WorkflowsProvider(ApiProviderBase):
             # Update the API instances with the new header
             self.projects_client.api_client.default_headers.update(auth_header)
             self.workflows_client.api_client.default_headers.update(auth_header)
-
-        # Explicitly raise an exception to match the NoReturn type
-        raise RuntimeError("update_api_authentication should not return normally.")
 
     @property
     def account_id(self) -> Optional[str]:
@@ -81,12 +80,39 @@ class WorkflowsProvider(ApiProviderBase):
         return self.auth_service.account_id
 
     @ApiProviderBase.with_auth_refresh
+    def list_workflows(
+        self,
+        project_id: str,
+    ) -> list[dict[str, Any]]:
+        """List all workflows in your project.
+
+        Args:
+            project_id: Your project's unique identifier
+
+        Returns:
+            A list of WorkflowRecordOutput objects representing all workflows in the project.
+        """
+        return [
+            {
+                "id": record.id,
+                "name": record.name,
+                "created_at": (
+                    record.created_at.strftime(DATETIME_STRING_FORMAT)
+                    if record.created_at
+                    else None
+                ),
+                "versions": record.versions,
+            }
+            for record in self.read_records(project_id)
+        ]
+
+    @ApiProviderBase.with_auth_refresh
     def load(
         self,
         project_id: str,
         workflow_id: str,
         version_id: Optional[str] = None,
-    ) -> tuple[WorkflowVersionRecordOutput, Workflow]:
+    ) -> Workflow:
         """Load a workflow from your project.
 
         If a version ID is provided, it retrieves that specific version.
@@ -117,6 +143,7 @@ class WorkflowsProvider(ApiProviderBase):
 
         Args:
             project_id: Your project's unique identifier
+            workflow_name: A friendly name for your workflow.
             workflow: The workflow object which you wish to save.
             workflow_id: The ID of the workflow you want to update. Defaults to none, which creates a new workflow.
 
@@ -230,12 +257,39 @@ class WorkflowsProvider(ApiProviderBase):
             raise Exception(f"Error creating workflow version: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
+    def read_records(
+        self,
+        project_id: str,
+    ) -> list[WorkflowRecordOutput]:
+        """Read all workflow records in your project.
+
+        Args:
+            project_id: Your project's unique identifier
+
+        Returns:
+            A list of WorkflowVersionRecordOutput objects representing all workflows in the project.
+        """
+        try:
+            # Validate inputs
+            if not self.account_id:
+                raise ValueError("Authentication required before reading workflows.")
+
+            records_response = self.workflows_client.get_project_workflow_records(
+                project_id
+            )
+            return records_response.workflow_records
+        except ApiException as e:
+            raise Exception(f"Error reading workflow records: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error reading workflow records: {str(e)}")
+
+    @ApiProviderBase.with_auth_refresh
     def read_version(
         self,
         project_id: str,
         workflow_id: str,
         version_id: Optional[str] = None,
-    ) -> tuple[WorkflowVersionRecordOutput, Workflow]:
+    ) -> Workflow:
         """Read a workflow version from your project.
 
         If a version ID is provided, it retrieves that specific version.
@@ -265,24 +319,29 @@ class WorkflowsProvider(ApiProviderBase):
                         project_id, workflow_id
                     )
                 )
-            version_record = workflow_version_response.workflow_version_record
-
-            if not version_record or not version_record.id:
-                raise ValueError(
-                    "Failed to retrieve workflow version. No version record returned."
-                )
-
             # Extract the workflow data
             workflow_data = workflow_version_response.workflow
             if not workflow_data:
                 raise ValueError(
                     "No workflow data found in the response. Please check the workflow ID."
                 )
-            workflow = Workflow(**workflow_data)
 
-            return version_record, workflow
+            # Convert the workflow data to a Workflow object
+            # typeerror should be raised if the data is not compatible (old version of the workflow)
+            workflow = Workflow(
+                graph=workflow_data["graph"],
+                input=workflow_data["inputs"],
+                requested_output=workflow_data["requested_output"],
+                external_input_id=workflow_data["external_input_id"],
+            )
+
+            return workflow
         except ApiException as e:
             raise Exception(f"Error reading workflow version: {format_api_error(e)}")
+        except TypeError as e:
+            raise TypeError(
+                f"Error converting workflow data to Workflow object. This is likely because this is a now unsupported version of the workflow: {str(e)}"
+            )
         except Exception as e:
             raise Exception(f"Error reading workflow version: {str(e)}")
 
@@ -301,11 +360,11 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             A list of WorkflowVersionRecordOutput objects representing all versions of the workflow.
         """
-        try:
-            # Validate inputs
-            if not self.account_id:
-                raise ValueError("Authentication required before reading workflows.")
+        # Validate inputs
+        if not self.account_id:
+            raise ValueError("Authentication required before reading workflows.")
 
+        try:
             versions_response = self.workflows_client.get_workflow_version_records(
                 project_id, workflow_id
             )
