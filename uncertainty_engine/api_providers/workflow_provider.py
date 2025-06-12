@@ -79,6 +79,8 @@ class WorkflowsProvider(ApiProviderBase):
         """
         return self.auth_service.account_id
 
+    # ========== HIGH-LEVEL CONVENIENCE METHODS ==========
+
     @ApiProviderBase.with_auth_refresh
     def list_workflows(
         self,
@@ -135,7 +137,7 @@ class WorkflowsProvider(ApiProviderBase):
         workflow_name: str,
         workflow: Workflow,
         workflow_id: Optional[str] = None,
-    ) -> tuple[str, str]:
+    ) -> str:
         """Save a workflow to your project as a new version.
 
         If a workflow ID is provided, it updates that specific workflow.
@@ -143,7 +145,7 @@ class WorkflowsProvider(ApiProviderBase):
 
         Args:
             project_id: Your project's unique identifier
-            workflow_name: A friendly name for your workflow.
+            workflow_name: A friendly name for your workflow. This needs to be unique within the project.
             workflow: The workflow object which you wish to save.
             workflow_id: The ID of the workflow you want to update. Defaults to none, which creates a new workflow.
 
@@ -155,20 +157,22 @@ class WorkflowsProvider(ApiProviderBase):
             workflow_id = self.create_record(project_id, workflow_name)
 
         # Create a new version of the workflow
-        version_id = self.create_version(project_id, workflow_id, workflow)
-        return workflow_id, version_id
+        self.create_version(project_id, workflow_id, workflow)
+        return workflow_id
+
+    # ========== LOW-LEVEL RECORD MANAGEMENT ==========
 
     @ApiProviderBase.with_auth_refresh
     def create_record(
         self,
         project_id: str,
-        name: str,
+        workflow_name: str,
     ) -> str:
         """Create a new workflow in your project.
 
         Args:
             project_id: Your project's unique identifier
-            name: A friendly name for your workflow. This is used to identify the workflow in your project.
+            workflow_name: A friendly name for your workflow. This must be unique within your project.
 
         Returns:
             The created workflow ID.
@@ -180,7 +184,7 @@ class WorkflowsProvider(ApiProviderBase):
 
         # Create the resource record
         workflow_record = WorkflowRecordInput(
-            name=name,
+            name=workflow_name,
             owner_id=self.account_id,
         )
         request_body = PostWorkflowRecordRequest(workflow_record=workflow_record)
@@ -200,6 +204,35 @@ class WorkflowsProvider(ApiProviderBase):
             raise Exception(f"Error creating workflow record: {format_api_error(e)}")
         except Exception as e:
             raise Exception(f"Error creating workflow record: {str(e)}")
+
+    @ApiProviderBase.with_auth_refresh
+    def read_records(
+        self,
+        project_id: str,
+    ) -> list[WorkflowRecordOutput]:
+        """Read all workflow records in your project.
+
+        Args:
+            project_id: Your project's unique identifier
+
+        Returns:
+            A list of WorkflowVersionRecordOutput objects representing all workflows in the project.
+        """
+        try:
+            # Validate inputs
+            if not self.account_id:
+                raise ValueError("Authentication required before reading workflows.")
+
+            records_response = self.workflows_client.get_project_workflow_records(
+                project_id
+            )
+            return records_response.workflow_records
+        except ApiException as e:
+            raise Exception(f"Error reading workflow records: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error reading workflow records: {str(e)}")
+
+    # ========== LOW-LEVEL VERSION MANAGEMENT ==========
 
     @ApiProviderBase.with_auth_refresh
     def create_version(
@@ -255,33 +288,6 @@ class WorkflowsProvider(ApiProviderBase):
             raise Exception(f"Error creating workflow version: {format_api_error(e)}")
         except Exception as e:
             raise Exception(f"Error creating workflow version: {str(e)}")
-
-    @ApiProviderBase.with_auth_refresh
-    def read_records(
-        self,
-        project_id: str,
-    ) -> list[WorkflowRecordOutput]:
-        """Read all workflow records in your project.
-
-        Args:
-            project_id: Your project's unique identifier
-
-        Returns:
-            A list of WorkflowVersionRecordOutput objects representing all workflows in the project.
-        """
-        try:
-            # Validate inputs
-            if not self.account_id:
-                raise ValueError("Authentication required before reading workflows.")
-
-            records_response = self.workflows_client.get_project_workflow_records(
-                project_id
-            )
-            return records_response.workflow_records
-        except ApiException as e:
-            raise Exception(f"Error reading workflow records: {format_api_error(e)}")
-        except Exception as e:
-            raise Exception(f"Error reading workflow records: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
     def read_version(
