@@ -96,6 +96,10 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             A list of WorkflowRecordOutput objects representing all workflows in the project.
         """
+        # Check if account ID is set
+        if not self.account_id:
+            raise ValueError("Authentication required before listing workflows.")
+
         return [
             {
                 "id": record.id,
@@ -127,6 +131,10 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             A tuple containing the WorkflowVersionRecordOutput and the Workflow object.
         """
+        # Check if account ID is set
+        if not self.account_id:
+            raise ValueError("Authentication required before loading workflows.")
+
         return self._version_manager.read_version(project_id, workflow_id, version_id)
 
     @ApiProviderBase.with_auth_refresh
@@ -148,6 +156,10 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             The ID of the saved workflow.
         """
+        # Check if account ID is set
+        if not self.account_id:
+            raise ValueError("Authentication required before saving workflows.")
+
         # If no workflow ID, create a new workflow
         if not workflow_id:
             workflow_id = self._record_manager.create_record(project_id, workflow_name)
@@ -187,11 +199,6 @@ class RecordManager:
         Returns:
             The created workflow ID.
         """
-
-        # Ensure the user has called .auth and the account id is set
-        if not self.auth_service.account_id:
-            raise ValueError("Authentication required before reading workflows.")
-
         # Create the resource record
         workflow_record = WorkflowRecordInput(
             name=workflow_name,
@@ -228,10 +235,6 @@ class RecordManager:
             A list of WorkflowVersionRecordOutput objects representing all workflows in the project.
         """
         try:
-            # Validate inputs
-            if not self.auth_service.account_id:
-                raise ValueError("Authentication required before reading workflows.")
-
             records_response = self.workflows_client.get_project_workflow_records(
                 project_id
             )
@@ -276,12 +279,6 @@ class VersionManager:
         Returns:
             The created version ID.
         """
-        # Ensure the user has called .auth and the account id is set
-        if not self.auth_service.account_id:
-            raise ValueError(
-                "Authentication required before creating workflow versions."
-            )
-
         try:
             # If no version name is provided, default to "version-1"
             if not version_name:
@@ -328,10 +325,6 @@ class VersionManager:
         Returns:
             Workflow: The workflow object containing the details of the workflow.
         """
-        # Validate inputs
-        if not self.auth_service.account_id:
-            raise ValueError("Authentication required before updating workflows.")
-
         try:
             # Get the resource version and download URL
             if version_id:
@@ -384,10 +377,6 @@ class VersionManager:
         Returns:
             A list of WorkflowVersionRecordOutput objects representing all versions of the workflow.
         """
-        # Validate inputs
-        if not self.auth_service.account_id:
-            raise ValueError("Authentication required before reading workflows.")
-
         try:
             versions_response = self.workflows_client.get_workflow_version_records(
                 project_id, workflow_id
