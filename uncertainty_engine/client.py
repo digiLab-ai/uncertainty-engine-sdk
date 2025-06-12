@@ -7,12 +7,13 @@ from pydantic import BaseModel
 from typeguard import typechecked
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
-from uncertainty_engine.api_providers import ResourceProvider
+from uncertainty_engine.api_providers import ResourceProvider, WorkflowsProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.environments import Environment
 from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.nodes.workflow import Workflow
 
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
@@ -91,6 +92,10 @@ class Client:
         """
 
         self.resources = ResourceProvider(
+            self.auth_service,
+            self.env.resource_api,
+        )
+        self.workflows = WorkflowsProvider(
             self.auth_service,
             self.env.resource_api,
         )
@@ -190,6 +195,28 @@ class Client:
         """
         job_id = self.queue_node(node, input)
         return self._wait_for_job(job_id)
+
+    def save_workflow(self, project_id: str, workflow: Workflow | Node) -> None:
+        """
+        Save a workflow to the Uncertainty Engine.
+
+        Args:
+            workflow: The workflow to save.
+        """
+        self.workflows.save(project_id, workflow)
+
+    def load_workflow(self, project_id: str, workflow_id: str) -> Workflow:
+        """
+        Load a workflow from the Uncertainty Engine.
+
+        Args:
+            workflow_id: The ID of the workflow to load.
+
+        Returns:
+            The loaded workflow.
+        """
+        _, workflow = self.workflows.load(project_id, workflow_id)
+        return workflow
 
     def job_status(self, job: Job) -> dict:
         """
