@@ -61,7 +61,7 @@ class WorkflowsProvider(ApiProviderBase):
         # Update auth headers of the API client (only if authenticated)
         self.update_api_authentication()
 
-    def update_api_authentication(self) -> None:
+    def update_api_authentication(self) -> None:  # type: ignore
         """Update API client with current auth headers"""
         if self.auth_service.is_authenticated:
 
@@ -345,7 +345,7 @@ class VersionManager:
                 )
 
             # Convert the workflow data to a Workflow object
-            # typeerror should be raised if the data is not compatible (old version of the workflow)
+            # KeyError will be raised if the data is not compatible (old version of the workflow)
             workflow = Workflow(
                 graph=workflow_data["graph"],
                 input=workflow_data["inputs"],
@@ -356,10 +356,10 @@ class VersionManager:
             return workflow
         except ApiException as e:
             raise Exception(f"Error reading workflow version: {format_api_error(e)}")
-        except TypeError as e:
-            raise TypeError(
-                f"Error converting workflow data to Workflow object. This is likely because this is a now unsupported version of the workflow: {str(e)}"
-            )
+        except KeyError as e:
+            raise KeyError(
+                f"Invalid Workflow object. Keys don't match: {str(e)}"
+            )  # Note that this will be raised if a frontend representation of the workflow is loaded
         except Exception as e:
             raise Exception(f"Error reading workflow version: {str(e)}")
 
