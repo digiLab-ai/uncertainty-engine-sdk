@@ -129,7 +129,7 @@ class WorkflowsProvider(ApiProviderBase):
             version_id: The specific version ID to read. Defaults to none, which retrieves the latest version.
 
         Returns:
-            A tuple containing the WorkflowVersionRecordOutput and the Workflow object.
+            The loaded Workflow object.
         """
         # Check if account ID is set
         if not self.account_id:
@@ -340,9 +340,7 @@ class VersionManager:
             # Extract the workflow data
             workflow_data = workflow_version_response.workflow
             if not workflow_data:
-                raise ValueError(
-                    "No workflow data found in the response. Please check the workflow ID."
-                )
+                raise ValueError("No workflow data found in the response.")
 
             # Convert the workflow data to a Workflow object
             # KeyError will be raised if the data is not compatible (old version of the workflow)

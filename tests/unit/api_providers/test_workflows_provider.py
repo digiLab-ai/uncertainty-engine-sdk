@@ -168,18 +168,6 @@ def test_list_workflows_success(workflows_provider: WorkflowsProvider):
     )
 
 
-def test_list_workflows_no_auth(
-    workflows_provider: WorkflowsProvider, mock_auth_service: AuthService
-):
-    """Test list_workflows raises error when not authenticated."""
-    mock_auth_service.account_id = None
-
-    with pytest.raises(
-        ValueError, match="Authentication required before listing workflows"
-    ):
-        workflows_provider.list_workflows("project-123")
-
-
 def test_load_workflow_success(
     workflows_provider: WorkflowsProvider, mock_workflow: Workflow
 ):
@@ -192,18 +180,6 @@ def test_load_workflow_success(
     workflows_provider._version_manager.read_version.assert_called_once_with(
         "project-123", "workflow-123", "version-456"
     )
-
-
-def test_load_workflow_no_auth(
-    workflows_provider: WorkflowsProvider, mock_auth_service: AuthService
-):
-    """Test load raises error when not authenticated."""
-    mock_auth_service.account_id = None
-
-    with pytest.raises(
-        ValueError, match="Authentication required before loading workflows"
-    ):
-        workflows_provider.load("project-123", "workflow-123")
 
 
 def test_save_workflow_new(
@@ -245,18 +221,35 @@ def test_save_workflow_existing(
     )
 
 
-def test_save_workflow_no_auth(
+@pytest.mark.parametrize(
+    "method_name,args",
+    [
+        ("list_workflows", ("project-123",)),
+        ("load", ("project-123", "workflow-123")),
+        ("save", ("project-123", "Test Workflow", "mock_workflow")),
+    ],
+    ids=[
+        "list_workflows",
+        "load",
+        "save",
+    ],
+)
+def test_methods_no_auth(
     workflows_provider: WorkflowsProvider,
     mock_auth_service: AuthService,
     mock_workflow: Workflow,
+    method_name: str,
+    args: tuple[str, ...],
 ):
-    """Test save raises error when not authenticated."""
+    """Test that all methods throw ValueError when no authentication is provided."""
     mock_auth_service.account_id = None
 
-    with pytest.raises(
-        ValueError, match="Authentication required before saving workflows"
-    ):
-        workflows_provider.save("project-123", "Test", mock_workflow)
+    # Replace "mock_workflow" string with the actual mock object
+    processed_args = [mock_workflow if arg == "mock_workflow" else arg for arg in args]
+    method = getattr(workflows_provider, method_name)
+
+    with pytest.raises(ValueError, match="Authentication required"):
+        method(*processed_args)
 
 
 # RecordManager Tests
@@ -388,7 +381,7 @@ def test_create_version_custom_name(
 
     assert result == "version-456"
 
-    # Verify custom name was used
+    # Verify custom version name was used
     call_args = mock_workflows_client.post_workflow_version.call_args
     request_body = call_args[0][2]
     assert request_body.workflow_version_record.name == "custom-version"
@@ -408,64 +401,49 @@ def test_create_version_no_id_returned(
         version_manager.create_version("project-123", "workflow-123", mock_workflow)
 
 
-def test_read_version_specific(
+@pytest.mark.parametrize(
+    "version_id,expected_api_method,expected_api_args",
+    [
+        (None, "get_latest_workflow_version", ("project-123", "workflow-123")),
+        (
+            "version-456",
+            "get_workflow_version",
+            ("project-123", "workflow-123", "version-456"),
+        ),
+    ],
+    ids=["latest_version", "specific_version"],
+)
+def test_read_version_success(
     version_manager: VersionManager,
+    mock_workflow: Workflow,
     mock_workflows_client: WorkflowsApi,
     monkeypatch: MonkeyPatch,
+    version_id: str | None,
+    expected_api_method: str,
+    expected_api_args: tuple[str, ...],
 ):
-    """Test reading a specific version."""
-    # Mock API response
+    """Test reading workflow versions (latest and specific)."""
     mock_response = Mock()
-    mock_response.workflow = {
-        "graph": {"nodes": [], "edges": []},
-        "inputs": {"input1": "value1"},
-        "requested_output": "output1",
-        "external_input_id": "external-123",
-    }
-    mock_workflows_client.get_workflow_version = Mock(return_value=mock_response)
+    mock_response.workflow = mock_workflow.__dict__
+
+    api_method = getattr(mock_workflows_client, expected_api_method)
+    api_method.return_value = mock_response
 
     mock_workflow_instance = Mock()
     MockWorkflow = Mock(return_value=mock_workflow_instance)
     monkeypatch.setattr(
-        "uncertainty_engine.api_providers.workflows_provider.Workflow", MockWorkflow
+        "uncertainty_engine.api_providers.workflows_provider.Workflow",
+        MockWorkflow,
     )
-
-    result = version_manager.read_version("project-123", "workflow-123", "version-456")
+    result = version_manager.read_version("project-123", "workflow-123", version_id)
 
     assert result == mock_workflow_instance
-    mock_workflows_client.get_workflow_version.assert_called_once_with(
-        "project-123", "workflow-123", "version-456"
-    )
+    api_method.assert_called_once_with(*expected_api_args)
     MockWorkflow.assert_called_once_with(
         graph={"nodes": [], "edges": []},
         input={"input1": "value1"},
         requested_output="output1",
         external_input_id="external-123",
-    )
-
-
-def test_read_version_latest(
-    version_manager: VersionManager,
-    mock_workflows_client: WorkflowsApi,
-    monkeypatch: MonkeyPatch,
-):
-    """Test reading the latest version."""
-    mock_response = Mock()
-    mock_response.workflow = {
-        "graph": {"nodes": [], "edges": []},
-        "inputs": {"input1": "value1"},
-        "requested_output": "output1",
-        "external_input_id": "external-123",
-    }
-    mock_workflows_client.get_latest_workflow_version = Mock(return_value=mock_response)
-
-    monkeypatch.setattr(
-        "uncertainty_engine.api_providers.workflows_provider.Workflow", Mock
-    )
-    version_manager.read_version("project-123", "workflow-123")
-
-    mock_workflows_client.get_latest_workflow_version.assert_called_once_with(
-        "project-123", "workflow-123"
     )
 
 
@@ -477,7 +455,10 @@ def test_read_version_no_data(
     mock_response.workflow = None
     mock_workflows_client.get_workflow_version = Mock(return_value=mock_response)
 
-    with pytest.raises(Exception, match="Error reading workflow version"):
+    with pytest.raises(
+        Exception,
+        match="Error reading workflow version: No workflow data found in the response.",
+    ):
         version_manager.read_version("project-123", "workflow-123", "version-456")
 
 
@@ -502,6 +483,18 @@ def test_read_version_invalid_data(
         KeyError,
         match="Invalid Workflow object. Keys don't match: 'graph'",
     ):
+        version_manager.read_version("project-123", "workflow-123", "version-456")
+
+
+def test_read_version_api_exception(
+    version_manager: VersionManager, mock_workflows_client: WorkflowsApi
+):
+    """Test handling of API exceptions during version reading."""
+    mock_workflows_client.get_workflow_version = Mock(
+        side_effect=ApiException(status=404, reason="Not Found")
+    )
+
+    with pytest.raises(Exception, match="Error reading workflow version"):
         version_manager.read_version("project-123", "workflow-123", "version-456")
 
 
