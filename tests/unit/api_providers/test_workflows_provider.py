@@ -13,7 +13,6 @@ from uncertainty_engine_resource_client.models import (
     WorkflowVersionRecordOutput,
 )
 
-# Import your classes (adjust import paths as needed)
 from uncertainty_engine.api_providers.workflows_provider import (
     RecordManager,
     VersionManager,
@@ -526,4 +525,6 @@ def test_list_versions_api_exception(
     )
 
     with pytest.raises(Exception, match="Error reading workflow versions"):
+        version_manager.list_versions("project-123", "workflow-123")
+        version_manager.list_versions("project-123", "workflow-123")
         version_manager.list_versions("project-123", "workflow-123")
