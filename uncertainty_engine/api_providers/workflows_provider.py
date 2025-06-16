@@ -141,16 +141,18 @@ class WorkflowsProvider(ApiProviderBase):
     def save(
         self,
         project_id: str,
-        workflow_name: str,
         workflow: Workflow,
         workflow_id: Optional[str] = None,
+        workflow_name: Optional[str] = None,
     ) -> str:
         """Save a workflow to your project as a new version.
 
         Args:
             project_id: Your project's unique identifier
-            workflow_name: A friendly name for your workflow. This needs to be unique within the project.
             workflow: The workflow object which you wish to save.
+            workflow_name: A friendly name for your workflow. This needs to be unique within the project.
+                           Defaults to none, however must be provided when creating a new workflow.
+                           Note that it will be ignored if provided when updating an existing workflow.
             workflow_id: The ID of the workflow you want to update. Defaults to none, which creates a new workflow.
 
         Returns:
@@ -162,6 +164,10 @@ class WorkflowsProvider(ApiProviderBase):
 
         # If no workflow ID, create a new workflow
         if not workflow_id:
+            if not workflow_name:
+                raise ValueError(
+                    "workflow_name must be provided to create a new workflow."
+                )
             workflow_id = self._record_manager.create_record(project_id, workflow_name)
 
         # Create a new version of the workflow

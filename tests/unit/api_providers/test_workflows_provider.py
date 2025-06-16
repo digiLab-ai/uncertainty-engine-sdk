@@ -59,12 +59,10 @@ def mock_workflow():
 @pytest.fixture
 def mock_api_clients(monkeypatch: MonkeyPatch):
     """Mock API client classes properly."""
-    # Create specific mock instances
     mock_api_client_instance = Mock()
     mock_projects_client_instance = Mock()
     mock_workflows_client_instance = Mock()
 
-    # Mock the classes to return specific instances when called
     monkeypatch.setattr(
         "uncertainty_engine.api_providers.workflows_provider.ApiClient",
         Mock(return_value=mock_api_client_instance),
@@ -78,7 +76,6 @@ def mock_api_clients(monkeypatch: MonkeyPatch):
         Mock(return_value=mock_workflows_client_instance),
     )
 
-    # Return the instances so tests can configure them
     return {
         "api_client": mock_api_client_instance,
         "projects_client": mock_projects_client_instance,
@@ -189,7 +186,9 @@ def test_save_workflow_new(
     workflows_provider._version_manager.create_version = Mock(
         return_value="version-456"
     )
-    result = workflows_provider.save("project-123", "New Workflow", mock_workflow)
+    result = workflows_provider.save(
+        "project-123", mock_workflow, workflow_name="New Workflow"
+    )
 
     assert result == "workflow-123"
     workflows_provider._record_manager.create_record.assert_called_once_with(
@@ -210,7 +209,7 @@ def test_save_workflow_existing(
     workflows_provider._record_manager.create_record = Mock()  # Mock explicitly
 
     result = workflows_provider.save(
-        "project-123", "Updated Workflow", mock_workflow, workflow_id="workflow-123"
+        "project-123", mock_workflow, workflow_id="workflow-123"
     )
 
     assert result == "workflow-123"
@@ -218,6 +217,16 @@ def test_save_workflow_existing(
     workflows_provider._version_manager.create_version.assert_called_once_with(
         "project-123", "workflow-123", mock_workflow
     )
+
+
+def test_save_workflow_new_no_name(
+    workflows_provider: WorkflowsProvider, mock_workflow: Workflow
+):
+    """Test saving a new workflow without a name."""
+    with pytest.raises(
+        ValueError, match="workflow_name must be provided to create a new workflow."
+    ):
+        workflows_provider.save("project-123", mock_workflow)
 
 
 @pytest.mark.parametrize(
