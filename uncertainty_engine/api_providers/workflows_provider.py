@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, WorkflowsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
@@ -18,6 +18,7 @@ from uncertainty_engine.api_providers.constants import (
     DEFAULT_RESOURCE_DEPLOYMENT,
     DATETIME_STRING_FORMAT,
 )
+from uncertainty_engine.api_providers.models import WorkflowRecord
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
@@ -88,7 +89,7 @@ class WorkflowsProvider(ApiProviderBase):
     def list_workflows(
         self,
         project_id: str,
-    ) -> list[dict[str, Any]]:
+    ) -> list[WorkflowRecord]:
         """
         List all workflows in your project.
 
@@ -107,16 +108,17 @@ class WorkflowsProvider(ApiProviderBase):
             raise ValueError("Authentication required before listing workflows.")
 
         return [
-            {
-                "id": record.id,
-                "name": record.name,
-                "created_at": (
+            WorkflowRecord(
+                id=record.id,
+                name=record.name,
+                owner_id=record.owner_id,
+                created_at=(
                     record.created_at.strftime(DATETIME_STRING_FORMAT)
                     if record.created_at
                     else None
                 ),
-                "versions": record.versions,
-            }
+                versions=record.versions if record.versions else [],
+            )
             for record in self._record_manager.list_records(project_id)
         ]
 
