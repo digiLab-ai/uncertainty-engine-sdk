@@ -89,7 +89,8 @@ class WorkflowsProvider(ApiProviderBase):
         self,
         project_id: str,
     ) -> list[dict[str, Any]]:
-        """List all workflows in your project.
+        """
+        List all workflows in your project.
 
         Args:
             project_id: Your project's unique identifier
@@ -122,7 +123,8 @@ class WorkflowsProvider(ApiProviderBase):
         workflow_id: str,
         version_id: Optional[str] = None,
     ) -> Workflow:
-        """Load a workflow from your project.
+        """
+        Load a workflow from your project.
 
         Args:
             project_id: Your project's unique identifier
@@ -146,7 +148,8 @@ class WorkflowsProvider(ApiProviderBase):
         workflow_id: Optional[str] = None,
         workflow_name: Optional[str] = None,
     ) -> str:
-        """Save a workflow to your project as a new version.
+        """
+        Save a workflow to your project as a new version.
 
         Args:
             project_id: Your project's unique identifier
@@ -197,7 +200,8 @@ class RecordManager:
         project_id: str,
         workflow_name: str,
     ) -> str:
-        """Create a new workflow in your project.
+        """
+        Create a new workflow in your project.
 
         Args:
             project_id: Your project's unique identifier
@@ -233,7 +237,8 @@ class RecordManager:
         self,
         project_id: str,
     ) -> list[WorkflowRecordOutput]:
-        """Read all workflow records in your project.
+        """
+        Read all workflow records in your project.
 
         Args:
             project_id: Your project's unique identifier
@@ -260,7 +265,8 @@ class VersionManager:
     """
 
     def __init__(self, workflows_client: WorkflowsApi, auth_service: AuthService):
-        """Initialize the VersionManager with a WorkflowsProvider instance.
+        """
+        Initialize the VersionManager with a WorkflowsProvider instance.
 
         Args:
             workflows_provider: An instance of WorkflowsProvider to manage workflow versions.
@@ -275,7 +281,8 @@ class VersionManager:
         workflow: Workflow,
         version_name: Optional[str] = None,
     ) -> str:
-        """Create a new version of a workflow in your project.
+        """
+        Create a new version of a workflow in your project.
 
         Args:
             project_id: Your project's unique identifier
@@ -322,7 +329,8 @@ class VersionManager:
         workflow_id: str,
         version_id: Optional[str] = None,
     ) -> Workflow:
-        """Read a workflow version from your project.
+        """
+        Read a workflow version from your project.
 
         Args:
             project_id: Your project's unique identifier
@@ -373,7 +381,8 @@ class VersionManager:
         project_id: str,
         workflow_id: str,
     ) -> list[WorkflowVersionRecordOutput]:
-        """Read all versions of a workflow in your project.
+        """
+        Read all versions of a workflow in your project.
 
         Args:
             project_id: Your project's unique identifier
