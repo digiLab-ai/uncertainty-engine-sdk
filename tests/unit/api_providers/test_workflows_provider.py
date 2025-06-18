@@ -164,6 +164,37 @@ def test_list_workflows_success(workflows_provider: WorkflowsProvider):
     )
 
 
+def test_list_workflow_versions(
+    workflows_provider: WorkflowsProvider, mock_workflow: Workflow
+):
+    """Test listing workflow versions."""
+    mock_version = Mock(spec=WorkflowVersionRecordOutput)
+    mock_version.id = "version-123"
+    mock_version.name = "version"
+    mock_version.owner_id = "test-account-123"
+    mock_version.created_at = datetime(2024, 1, 1, 12, 0, 0)
+
+    workflows_provider._version_manager.list_versions = Mock(
+        return_value=[mock_version]
+    )
+
+    result = workflows_provider.list_workflow_versions("project-123", "workflow-123")
+
+    expected = [
+        {
+            "id": "version-123",
+            "name": "version",
+            "created_at": "12:00:00 2024-01-01",
+            "owner_id": "test-account-123",
+        }
+    ]
+
+    assert result == expected
+    workflows_provider._version_manager.list_versions.assert_called_once_with(
+        "project-123", "workflow-123"
+    )
+
+
 def test_load_workflow_success(
     workflows_provider: WorkflowsProvider, mock_workflow: Workflow
 ):
@@ -233,11 +264,13 @@ def test_save_workflow_new_no_name(
     "method_name,args",
     [
         ("list_workflows", ("project-123",)),
+        ("list_workflow_versions", ("project-123", "workflow-123")),
         ("load", ("project-123", "workflow-123")),
         ("save", ("project-123", "Test Workflow", "mock_workflow")),
     ],
     ids=[
         "list_workflows",
+        "list_workflow_versions",
         "load",
         "save",
     ],
