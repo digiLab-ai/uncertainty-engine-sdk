@@ -96,7 +96,11 @@ class WorkflowsProvider(ApiProviderBase):
             project_id: Your project's unique identifier
 
         Returns:
-            A list of WorkflowRecordOutput objects representing all workflows in the project.
+            A list of dictionaries containing workflow details, each with:
+                - id: The unique identifier of the workflow
+                - name: The friendly name of the workflow
+                - created_at: The creation date of the workflow in ISO 8601 format
+                - versions: A list of version IDs associated with the workflow
         """
         # Check if account ID is set
         if not self.account_id:
