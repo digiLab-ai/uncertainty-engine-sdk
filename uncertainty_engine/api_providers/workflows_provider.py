@@ -116,6 +116,7 @@ class WorkflowsProvider(ApiProviderBase):
             for record in self._record_manager.list_records(project_id)
         ]
 
+    @ApiProviderBase.with_auth_refresh
     def list_workflow_versions(
         self,
         project_id: str,
@@ -141,6 +142,7 @@ class WorkflowsProvider(ApiProviderBase):
             {
                 "id": version.id,
                 "name": version.name,
+                "owner_id": version.owner_id,
                 "created_at": (
                     version.created_at.strftime(DATETIME_STRING_FORMAT)
                     if version.created_at
