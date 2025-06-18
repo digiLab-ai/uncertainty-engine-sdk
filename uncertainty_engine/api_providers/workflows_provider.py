@@ -130,7 +130,11 @@ class WorkflowsProvider(ApiProviderBase):
             workflow_id: The ID of the workflow you want to read versions for
 
         Returns:
-            A list of WorkflowVersionRecordOutput objects representing all versions of the workflow.
+            A list of dictionaries containing workflow version details, each with:
+                - id: The version ID
+                - name: The version name
+                - owner_id: The ID of the owner of the version (who created it)
+                - created_at: The creation date of the version in ISO format
         """
         # Check if account ID is set
         if not self.account_id:
