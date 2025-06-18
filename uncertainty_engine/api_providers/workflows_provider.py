@@ -116,6 +116,40 @@ class WorkflowsProvider(ApiProviderBase):
             for record in self._record_manager.list_records(project_id)
         ]
 
+    def list_workflow_versions(
+        self,
+        project_id: str,
+        workflow_id: str,
+    ) -> list[dict[str, Any]]:
+        """
+        List all versions of a workflow in your project.
+
+        Args:
+            project_id: Your project's unique identifier
+            workflow_id: The ID of the workflow you want to read versions for
+
+        Returns:
+            A list of WorkflowVersionRecordOutput objects representing all versions of the workflow.
+        """
+        # Check if account ID is set
+        if not self.account_id:
+            raise ValueError(
+                "Authentication required before listing workflow versions."
+            )
+
+        return [
+            {
+                "id": version.id,
+                "name": version.name,
+                "created_at": (
+                    version.created_at.strftime(DATETIME_STRING_FORMAT)
+                    if version.created_at
+                    else None
+                ),
+            }
+            for version in self._version_manager.list_versions(project_id, workflow_id)
+        ]
+
     @ApiProviderBase.with_auth_refresh
     def load(
         self,
