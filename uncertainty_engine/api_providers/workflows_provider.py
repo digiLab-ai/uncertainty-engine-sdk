@@ -14,12 +14,13 @@ from uncertainty_engine_resource_client.models import (
 )
 
 from uncertainty_engine.api_providers import ApiProviderBase
+from uncertainty_engine.api_providers.constants import (
+    DEFAULT_RESOURCE_DEPLOYMENT,
+    DATETIME_STRING_FORMAT,
+)
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
-
-DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
-DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
 class WorkflowsProvider(ApiProviderBase):
