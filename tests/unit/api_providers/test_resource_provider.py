@@ -12,10 +12,8 @@ from uncertainty_engine_resource_client.models import (
     ResourceVersionRecordInput,
 )
 
-from uncertainty_engine.api_providers.resource_provider import (
-    DATETIME_STRING_FORMAT,
-    ResourceProvider,
-)
+from uncertainty_engine.api_providers import ResourceProvider
+from uncertainty_engine.api_providers.constants import DATETIME_STRING_FORMAT
 from uncertainty_engine.auth_service import AuthService
 
 

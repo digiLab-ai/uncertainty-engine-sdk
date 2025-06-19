@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from typeguard import typechecked
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
-from uncertainty_engine.api_providers import ResourceProvider
+from uncertainty_engine.api_providers import ResourceProvider, WorkflowsProvider
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.environments import Environment
@@ -91,6 +91,10 @@ class Client:
         """
 
         self.resources = ResourceProvider(
+            self.auth_service,
+            self.env.resource_api,
+        )
+        self.workflows = WorkflowsProvider(
             self.auth_service,
             self.env.resource_api,
         )

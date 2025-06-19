@@ -14,11 +14,12 @@ from uncertainty_engine_resource_client.models import (
 )
 
 from uncertainty_engine.api_providers import ApiProviderBase
+from uncertainty_engine.api_providers.constants import (
+    DATETIME_STRING_FORMAT,
+    DEFAULT_RESOURCE_DEPLOYMENT,
+)
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
-
-DATETIME_STRING_FORMAT = "%H:%M:%S %Y-%m-%d"
-DEFAULT_RESOURCE_DEPLOYMENT = "http://localhost:8001/api"
 
 
 class ResourceProvider(ApiProviderBase):
@@ -43,9 +44,9 @@ class ResourceProvider(ApiProviderBase):
         Create an instance of a ResourceProvider
 
         Args:
+            auth_service: Handles your authentication.
             deployment: The URL of the resource service. You typically won't need
                         to change this unless instructed by support.
-            auth_service: Handles your authentication.
         """
         super().__init__(deployment, auth_service)
 
