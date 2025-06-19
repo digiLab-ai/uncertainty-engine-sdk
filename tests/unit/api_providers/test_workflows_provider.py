@@ -17,7 +17,7 @@ from uncertainty_engine.api_providers.workflows_provider import (
     VersionManager,
     WorkflowsProvider,
 )
-from uncertainty_engine.api_providers.models import WorkflowRecord
+from uncertainty_engine.api_providers.models import WorkflowRecord, WorkflowVersion
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 
@@ -137,7 +137,7 @@ def test_list_workflow_versions(
     mock_version = Mock(spec=WorkflowVersionRecordOutput)
     mock_version.id = "version-123"
     mock_version.name = "version"
-    mock_version.owner_id = "test-account-123"
+    mock_version.owner_id = "mock_account_id"
     mock_version.created_at = datetime(2024, 1, 1, 12, 0, 0)
 
     workflows_provider._version_manager.list_versions = Mock(
@@ -147,12 +147,12 @@ def test_list_workflow_versions(
     result = workflows_provider.list_workflow_versions("project-123", "workflow-123")
 
     expected = [
-        {
-            "id": "version-123",
-            "name": "version",
-            "created_at": "12:00:00 2024-01-01",
-            "owner_id": "test-account-123",
-        }
+        WorkflowVersion(
+            id="version-123",
+            name="version",
+            created_at="12:00:00 2024-01-01",
+            owner_id="mock_account_id",
+        )
     ]
 
     assert result == expected
