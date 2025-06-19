@@ -138,6 +138,7 @@ class WorkflowsProvider(ApiProviderBase):
         Returns:
             A list of dictionaries containing workflow version details, each with:
                 - id: The version ID
+                - workflow_id: The ID of the workflow this version belongs to
                 - name: The version name
                 - owner_id: The ID of the owner of the version (who created it)
                 - created_at: The creation date of the version in ISO format
