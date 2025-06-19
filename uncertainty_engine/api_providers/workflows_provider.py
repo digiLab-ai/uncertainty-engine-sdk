@@ -18,7 +18,7 @@ from uncertainty_engine.api_providers.constants import (
     DEFAULT_RESOURCE_DEPLOYMENT,
     DATETIME_STRING_FORMAT,
 )
-from uncertainty_engine.api_providers.models import WorkflowRecord
+from uncertainty_engine.api_providers.models import WorkflowRecord, WorkflowVersion
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
@@ -127,7 +127,7 @@ class WorkflowsProvider(ApiProviderBase):
         self,
         project_id: str,
         workflow_id: str,
-    ) -> list[dict[str, Any]]:
+    ) -> list[WorkflowVersion]:
         """
         List all versions of a workflow in your project.
 
@@ -149,16 +149,16 @@ class WorkflowsProvider(ApiProviderBase):
             )
 
         return [
-            {
-                "id": version.id,
-                "name": version.name,
-                "owner_id": version.owner_id,
-                "created_at": (
+            WorkflowVersion(
+                id=version.id,
+                name=version.name,
+                owner_id=version.owner_id,
+                created_at=(
                     version.created_at.strftime(DATETIME_STRING_FORMAT)
                     if version.created_at
                     else None
                 ),
-            }
+            )
             for version in self._version_manager.list_versions(project_id, workflow_id)
         ]
 
