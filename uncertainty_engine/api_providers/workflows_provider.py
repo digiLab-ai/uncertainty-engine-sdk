@@ -100,6 +100,7 @@ class WorkflowsProvider(ApiProviderBase):
             A list of dictionaries containing workflow details, each with:
                 - id: The unique identifier of the workflow
                 - name: The friendly name of the workflow
+                - owner_id: The ID of the user who owns the workflow
                 - created_at: The creation date of the workflow in ISO 8601 format
                 - versions: A list of version IDs associated with the workflow
         """
