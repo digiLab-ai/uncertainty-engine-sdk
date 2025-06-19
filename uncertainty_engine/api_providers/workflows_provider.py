@@ -15,8 +15,8 @@ from uncertainty_engine_resource_client.models import (
 
 from uncertainty_engine.api_providers import ApiProviderBase
 from uncertainty_engine.api_providers.constants import (
-    DEFAULT_RESOURCE_DEPLOYMENT,
     DATETIME_STRING_FORMAT,
+    DEFAULT_RESOURCE_DEPLOYMENT,
 )
 from uncertainty_engine.api_providers.models import WorkflowRecord
 from uncertainty_engine.auth_service import AuthService
@@ -100,6 +100,7 @@ class WorkflowsProvider(ApiProviderBase):
             A list of dictionaries containing workflow details, each with:
                 - id: The unique identifier of the workflow
                 - name: The friendly name of the workflow
+                - owner_id: The ID of the user who owns the workflow
                 - created_at: The creation date of the workflow in ISO 8601 format
                 - versions: A list of version IDs associated with the workflow
         """
