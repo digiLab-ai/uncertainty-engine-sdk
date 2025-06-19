@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from typing import Any, Iterator
 
+from pytest import MonkeyPatch
+
 from uncertainty_engine.api_invoker import ApiInvoker
 from uncertainty_engine.client import Client
 
@@ -137,7 +139,10 @@ def mock_core_api(client: Client) -> Iterator[MockApiInvoker]:
     mock_invoker = MockApiInvoker()
     client.core_api = mock_invoker
 
-    try:
-        yield mock_invoker
-    finally:
-        client.core_api = original_invoker
+    with MonkeyPatch.context() as mp:
+        mp.setenv("UE_USERNAME", "user@uncertaintyengine.ai")
+
+        try:
+            yield mock_invoker
+        finally:
+            client.core_api = original_invoker
