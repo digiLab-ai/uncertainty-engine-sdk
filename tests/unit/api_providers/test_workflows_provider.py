@@ -25,16 +25,6 @@ from uncertainty_engine.nodes.workflow import Workflow
 
 # Fixtures
 @pytest.fixture
-def mock_auth_service():
-    """Mock authentication service."""
-    auth_service = Mock(spec=AuthService)
-    auth_service.is_authenticated = True
-    auth_service.account_id = "test-account-123"
-    auth_service.get_auth_header.return_value = {"Authorization": "Bearer token123"}
-    return auth_service
-
-
-@pytest.fixture
 def unauthenticated_auth_service():
     """Mock unauthenticated service."""
     auth_service = Mock(spec=AuthService)
@@ -58,42 +48,14 @@ def mock_workflow():
 
 
 @pytest.fixture
-def mock_api_clients(monkeypatch: MonkeyPatch):
-    """Mock API client classes properly."""
-    mock_api_client_instance = Mock()
-    mock_projects_client_instance = Mock()
-    mock_workflows_client_instance = Mock()
-
-    monkeypatch.setattr(
-        "uncertainty_engine.api_providers.workflows_provider.ApiClient",
-        Mock(return_value=mock_api_client_instance),
-    )
-    monkeypatch.setattr(
-        "uncertainty_engine.api_providers.workflows_provider.ProjectRecordsApi",
-        Mock(return_value=mock_projects_client_instance),
-    )
-    monkeypatch.setattr(
-        "uncertainty_engine.api_providers.workflows_provider.WorkflowsApi",
-        Mock(return_value=mock_workflows_client_instance),
-    )
-
-    return {
-        "api_client": mock_api_client_instance,
-        "projects_client": mock_projects_client_instance,
-        "workflows_client": mock_workflows_client_instance,
-    }
-
-
-@pytest.fixture
 def workflows_provider(
-    mock_auth_service: AuthService, mock_api_clients: dict[str, Any]
+    mock_auth_service: AuthService, mocked_api_clients: None, mock_deployment: str
 ):
-    """Create WorkflowsProvider instance with mocked dependencies."""
-    provider = WorkflowsProvider(mock_auth_service)
-    provider.client = mock_api_clients["api_client"]
-    provider.workflows_client = mock_api_clients["workflows_client"]
-    provider.projects_client = mock_api_clients["projects_client"]
-    return provider
+    """Creates a WorkflowsProvider with mocked dependencies."""
+    from uncertainty_engine.api_providers.workflows_provider import WorkflowsProvider
+
+    workflows_provider = WorkflowsProvider(mock_auth_service, mock_deployment)
+    return workflows_provider
 
 
 @pytest.fixture
@@ -117,7 +79,9 @@ def version_manager(
 
 
 # WorkflowsProvider Init Tests
-def test_init_creates_managers(mock_auth_service: AuthService, mock_api_clients: None):
+def test_init_creates_managers(
+    mock_auth_service: AuthService, mocked_api_clients: None
+):
     """Test that initialization creates record and version managers."""
     provider = WorkflowsProvider(mock_auth_service)
 
@@ -131,7 +95,7 @@ def test_account_id_property(
     workflows_provider: WorkflowsProvider, mock_auth_service: AuthService
 ):
     """Test account_id property returns auth service account_id."""
-    assert workflows_provider.account_id == "test-account-123"
+    assert workflows_provider.account_id == "mock_account_id"
 
     mock_auth_service.account_id = None
     assert workflows_provider.account_id is None
@@ -143,7 +107,7 @@ def test_list_workflows_success(workflows_provider: WorkflowsProvider):
     mock_record = Mock(spec=WorkflowRecordOutput)
     mock_record.id = "workflow-123"
     mock_record.name = "Test Workflow"
-    mock_record.owner_id = "test-account-123"
+    mock_record.owner_id = "mock_account_id"
     mock_record.created_at = datetime(2024, 1, 1, 12, 0, 0)
     mock_record.versions = ["version-1", "version-2", "version-3"]
 
@@ -155,7 +119,7 @@ def test_list_workflows_success(workflows_provider: WorkflowsProvider):
         WorkflowRecord(
             id="workflow-123",
             name="Test Workflow",
-            owner_id="test-account-123",
+            owner_id="mock_account_id",
             created_at="12:00:00 2024-01-01",
             versions=["version-1", "version-2", "version-3"],
         )
@@ -285,7 +249,7 @@ def test_create_record_success(
     assert project_id == "project-123"
     assert isinstance(request_body, PostWorkflowRecordRequest)
     assert request_body.workflow_record.name == "Test Workflow"
-    assert request_body.workflow_record.owner_id == "test-account-123"
+    assert request_body.workflow_record.owner_id == "mock_account_id"
 
 
 def test_create_record_no_id_returned(
