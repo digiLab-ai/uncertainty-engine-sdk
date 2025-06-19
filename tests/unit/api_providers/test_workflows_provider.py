@@ -136,6 +136,7 @@ def test_list_workflow_versions(
     """Test listing workflow versions."""
     mock_version = Mock(spec=WorkflowVersionRecordOutput)
     mock_version.id = "version-123"
+    mock_version.workflow_id = "workflow-123"
     mock_version.name = "version"
     mock_version.owner_id = "mock_account_id"
     mock_version.created_at = datetime(2024, 1, 1, 12, 0, 0)
@@ -149,6 +150,7 @@ def test_list_workflow_versions(
     expected = [
         WorkflowVersion(
             id="version-123",
+            workflow_id="workflow-123",
             name="version",
             created_at="12:00:00 2024-01-01",
             owner_id="mock_account_id",

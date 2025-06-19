@@ -13,6 +13,7 @@ class WorkflowRecord(BaseModel):
 
 class WorkflowVersion(BaseModel):
     id: Optional[str] = None
+    workflow_id: Optional[str] = str
     name: str
     owner_id: str
     created_at: Optional[str] = None

@@ -15,8 +15,8 @@ from uncertainty_engine_resource_client.models import (
 
 from uncertainty_engine.api_providers import ApiProviderBase
 from uncertainty_engine.api_providers.constants import (
-    DEFAULT_RESOURCE_DEPLOYMENT,
     DATETIME_STRING_FORMAT,
+    DEFAULT_RESOURCE_DEPLOYMENT,
 )
 from uncertainty_engine.api_providers.models import WorkflowRecord, WorkflowVersion
 from uncertainty_engine.auth_service import AuthService
@@ -151,6 +151,7 @@ class WorkflowsProvider(ApiProviderBase):
         return [
             WorkflowVersion(
                 id=version.id,
+                workflow_id=version.workflow_id,
                 name=version.name,
                 owner_id=version.owner_id,
                 created_at=(
