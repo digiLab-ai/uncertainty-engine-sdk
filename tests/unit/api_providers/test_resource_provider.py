@@ -672,14 +672,15 @@ def test_list_resources_empty(resource_provider: ResourceProvider):
 
 
 def test_delete_resource_success(
-    resource_provider: ResourceProvider, capsys: pytest.CaptureFixture[str]
+    resource_provider: ResourceProvider, caplog: pytest.LogCaptureFixture
 ):
     """Test deleting a resource successfully."""
     # Setup mock response
     resource_provider.resources_client.delete_resource_record = MagicMock()
 
-    # Call the method
-    resource_provider.delete_resource("test-project", "dataset", "test-resource-id")
+    with caplog.at_level("INFO"):
+        # Call the method
+        resource_provider.delete_resource("test-project", "dataset", "test-resource-id")
 
     # Verify method calls
     resource_provider.resources_client.delete_resource_record.assert_called_once_with(
@@ -687,10 +688,11 @@ def test_delete_resource_success(
     )
 
     # Verify output
-    captured = capsys.readouterr()
-    assert (
-        "Resource test-resource-id deleted successfully from project test-project."
-        in captured.out
+    assert any(
+        record.levelname == "INFO"
+        and record.getMessage()
+        == "Resource test-resource-id deleted successfully from project test-project."
+        for record in caplog.records
     )
 
 

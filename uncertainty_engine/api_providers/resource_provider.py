@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any, Optional
 
@@ -20,6 +21,9 @@ from uncertainty_engine.api_providers.constants import (
 )
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 class ResourceProvider(ApiProviderBase):
@@ -402,7 +406,7 @@ class ResourceProvider(ApiProviderBase):
             ...     resource_type="model",
             ...     resource_id="resource-456"
             ... )
-            "Resource resource-456 deleted successfully from project your-project-123."
+            # Will add INFO level log -- "Resource resource-456 deleted successfully from project your-project-123."
         """
         try:
             self.resources_client.delete_resource_record(
@@ -413,4 +417,6 @@ class ResourceProvider(ApiProviderBase):
         except Exception as e:
             raise Exception(f"Error deleting resource: {str(e)}")
 
-        print(f"Resource {resource_id} deleted successfully from project {project_id}.")
+        logger.info(
+            f"Resource {resource_id} deleted successfully from project {project_id}."
+        )
