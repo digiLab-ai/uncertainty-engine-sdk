@@ -380,3 +380,37 @@ class ResourceProvider(ApiProviderBase):
             }
             for record in resource_records
         ]
+
+    @ApiProviderBase.with_auth_refresh
+    def delete_resource(
+        self, project_id: str, resource_type: str, resource_id: str
+    ) -> None:
+        """
+        Delete a resource from your project.
+
+        Use this method when you want to permanently remove a resource from your project.
+        Be cautious, as this action cannot be undone.
+
+        Args:
+            project_id: Your project's unique identifier
+            resource_type: The category of the file (e.g., "dataset", "model", "document")
+            resource_id: The ID of the resource you want to delete
+
+        Example:
+            >>> client.delete_resource(
+            ...     project_id="your-project-123",
+            ...     resource_type="model",
+            ...     resource_id="resource-456"
+            ... )
+            "Resource resource-456 deleted successfully from project your-project-123."
+        """
+        try:
+            self.resources_client.delete_resource_record(
+                project_id, resource_type, resource_id
+            )
+        except ApiException as e:
+            raise Exception(f"Error deleting resource: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error deleting resource: {str(e)}")
+
+        print(f"Resource {resource_id} deleted successfully from project {project_id}.")
