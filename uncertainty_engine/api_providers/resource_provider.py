@@ -397,7 +397,7 @@ class ResourceProvider(ApiProviderBase):
             resource_id: The ID of the resource you want to delete
 
         Example:
-            >>> client.delete_resource(
+            >>> client.resources.delete_resource(
             ...     project_id="your-project-123",
             ...     resource_type="model",
             ...     resource_id="resource-456"
