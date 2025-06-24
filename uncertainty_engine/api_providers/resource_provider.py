@@ -344,7 +344,9 @@ class ResourceProvider(ApiProviderBase):
             raise Exception(f"Error finalizing upload: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
-    def list_resources(self, project_id: str, resource_type: str) -> list[dict[str, Any]]:
+    def list_resources(
+        self, project_id: str, resource_type: str
+    ) -> list[dict[str, Any]]:
         """
         Get a list of all resources of a specific type in your project.
 
