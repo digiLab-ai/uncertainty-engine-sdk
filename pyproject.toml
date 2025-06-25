@@ -1,6 +1,6 @@
 [project]
 name = "uncertainty-engine"
-version = "0.4.0"
+version = "0.5.0"
 description = "SDK for the Uncertainty Engine"
 authors = [
     { name = "digiLab Solutions Ltd.", email = "info@digilab.ai" },
