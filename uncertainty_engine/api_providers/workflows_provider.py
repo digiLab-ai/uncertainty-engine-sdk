@@ -18,7 +18,7 @@ from uncertainty_engine.api_providers.constants import (
     DATETIME_STRING_FORMAT,
     DEFAULT_RESOURCE_DEPLOYMENT,
 )
-from uncertainty_engine.api_providers.models import WorkflowRecord
+from uncertainty_engine.api_providers.models import WorkflowRecord, WorkflowVersion
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
@@ -121,6 +121,48 @@ class WorkflowsProvider(ApiProviderBase):
                 versions=record.versions if record.versions else [],
             )
             for record in self._record_manager.list_records(project_id)
+        ]
+
+    @ApiProviderBase.with_auth_refresh
+    def list_workflow_versions(
+        self,
+        project_id: str,
+        workflow_id: str,
+    ) -> list[WorkflowVersion]:
+        """
+        List all versions of a workflow in your project.
+
+        Args:
+            project_id: Your project's unique identifier
+            workflow_id: The ID of the workflow you want to read versions for
+
+        Returns:
+            A list of dictionaries containing workflow version details, each with:
+                - id: The version ID
+                - workflow_id: The ID of the workflow this version belongs to
+                - name: The version name
+                - owner_id: The ID of the owner of the version (who created it)
+                - created_at: The creation date of the version in ISO format
+        """
+        # Check if account ID is set
+        if not self.account_id:
+            raise ValueError(
+                "Authentication required before listing workflow versions."
+            )
+
+        return [
+            WorkflowVersion(
+                id=version.id,
+                workflow_id=version.workflow_id,
+                name=version.name,
+                owner_id=version.owner_id,
+                created_at=(
+                    version.created_at.strftime(DATETIME_STRING_FORMAT)
+                    if version.created_at
+                    else None
+                ),
+            )
+            for version in self._version_manager.list_versions(project_id, workflow_id)
         ]
 
     @ApiProviderBase.with_auth_refresh
