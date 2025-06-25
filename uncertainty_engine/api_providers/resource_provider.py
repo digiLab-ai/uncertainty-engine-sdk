@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any, Optional
 
@@ -20,6 +21,9 @@ from uncertainty_engine.api_providers.constants import (
 )
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 class ResourceProvider(ApiProviderBase):
@@ -344,7 +348,9 @@ class ResourceProvider(ApiProviderBase):
             raise Exception(f"Error finalizing upload: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
-    def list_resources(self, project_id, resource_type: str) -> list:
+    def list_resources(
+        self, project_id: str, resource_type: str
+    ) -> list[dict[str, Any]]:
         """
         Get a list of all resources of a specific type in your project.
 
@@ -378,3 +384,39 @@ class ResourceProvider(ApiProviderBase):
             }
             for record in resource_records
         ]
+
+    @ApiProviderBase.with_auth_refresh
+    def delete_resource(
+        self, project_id: str, resource_type: str, resource_id: str
+    ) -> None:
+        """
+        Delete a resource from your project.
+
+        Use this method when you want to permanently remove a resource from your project.
+        Be cautious, as this action cannot be undone.
+
+        Args:
+            project_id: Your project's unique identifier
+            resource_type: The category of the file (e.g., "dataset", "model", "document")
+            resource_id: The ID of the resource you want to delete
+
+        Example:
+            >>> client.resources.delete_resource(
+            ...     project_id="your-project-123",
+            ...     resource_type="model",
+            ...     resource_id="resource-456"
+            ... )
+            # Will add INFO level log -- "Resource resource-456 deleted successfully from project your-project-123."
+        """
+        try:
+            self.resources_client.delete_resource_record(
+                project_id, resource_type, resource_id
+            )
+        except ApiException as e:
+            raise Exception(f"Error deleting resource: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error deleting resource: {str(e)}")
+
+        logger.info(
+            f"Resource {resource_id} deleted successfully from project {project_id}."
+        )

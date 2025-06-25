@@ -669,3 +669,58 @@ def test_list_resources_empty(resource_provider: ResourceProvider):
     resource_provider.resources_client.get_project_resource_records.assert_called_once_with(
         "test-project", "dataset"
     )
+
+
+def test_delete_resource_success(
+    resource_provider: ResourceProvider, caplog: pytest.LogCaptureFixture
+):
+    """Test deleting a resource successfully."""
+    # Setup mock response
+    resource_provider.resources_client.delete_resource_record = MagicMock()
+
+    with caplog.at_level("INFO"):
+        # Call the method
+        resource_provider.delete_resource("test-project", "dataset", "test-resource-id")
+
+    # Verify method calls
+    resource_provider.resources_client.delete_resource_record.assert_called_once_with(
+        "test-project", "dataset", "test-resource-id"
+    )
+
+    # Verify output
+    assert any(
+        record.levelname == "INFO"
+        and record.getMessage()
+        == "Resource test-resource-id deleted successfully from project test-project."
+        for record in caplog.records
+    )
+
+
+def test_delete_generic_exception(resource_provider: ResourceProvider):
+    """Test handling of generic exception during resource deletion."""
+    # Setup exception
+    resource_provider.resources_client.delete_resource_record = MagicMock(
+        side_effect=ValueError("Random error")
+    )
+
+    # Call and verify exception
+    with pytest.raises(Exception) as exc_info:
+        resource_provider.delete_resource("test-project", "dataset", "test-resource-id")
+
+    # Verify output
+    assert str(exc_info.value) == "Error deleting resource: Random error"
+
+
+def test_delete_api_exception(resource_provider: ResourceProvider):
+    """Test handling of ApiException during resource deletion."""
+    # Setup exception
+    api_exception = ApiException(status=404, reason="Not Found")
+    resource_provider.resources_client.delete_resource_record = MagicMock(
+        side_effect=api_exception
+    )
+
+    # Call and verify exception
+    with pytest.raises(
+        Exception, match="Error deleting resource: API Error: Not Found"
+    ):
+        resource_provider.delete_resource("test-project", "dataset", "test-resource-id")
