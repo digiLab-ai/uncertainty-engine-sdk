@@ -4,6 +4,7 @@ from typing import Any
 from requests import request
 
 from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.uri import join_uri
 
 
 class ApiInvoker(ABC):
@@ -71,8 +72,7 @@ class HttpApiInvoker(ApiInvoker):
 
     Args:
         auth_service: Authorisation service.
-        endpoint: API endpoint. Must start with a protocol (i.e. "https://") and
-            must not end with a slash.
+        endpoint: API endpoint. Must start with a protocol (i.e. "https://").
     """
 
     def __init__(self, auth_service: AuthService, endpoint: str) -> None:
@@ -97,7 +97,7 @@ class HttpApiInvoker(ApiInvoker):
             API response.
         """
 
-        url = self._endpoint + path
+        url = join_uri(self._endpoint, path)
 
         kwargs = {
             "headers": {
