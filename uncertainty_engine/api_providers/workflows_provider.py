@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, WorkflowsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
@@ -223,8 +223,15 @@ class WorkflowsProvider(ApiProviderBase):
                 )
             workflow_id = self._record_manager.create_record(project_id, workflow_name)
 
+        executable_workflow = {  # Workflow must be wrapped by this to be executable
+            "node_id": "Workflow",
+            "inputs": workflow.__dict__,
+        }
+
         # Create a new version of the workflow
-        self._version_manager.create_version(project_id, workflow_id, workflow)
+        self._version_manager.create_version(
+            project_id, workflow_id, executable_workflow
+        )
         return workflow_id
 
 
@@ -327,7 +334,7 @@ class VersionManager:
         self,
         project_id: str,
         workflow_id: str,
-        workflow: Workflow,
+        workflow: dict[str, Any],
         version_name: Optional[str] = None,
     ) -> str:
         """
