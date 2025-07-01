@@ -14,7 +14,7 @@ def join_uri(*parts: str) -> str:
 
     uri = parts[0].rstrip("/")
 
-    for index in range(1, len(parts)):
-        uri = uri.rstrip("/") + "/" + parts[index].lstrip("/")
+    for part in parts[1:]:
+        uri = uri.rstrip("/") + "/" + part.lstrip("/")
 
     return uri
