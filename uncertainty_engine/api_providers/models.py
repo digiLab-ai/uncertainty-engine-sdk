@@ -11,7 +11,7 @@ HandleRef = dict[str, Handle]
 
 class WorkflowInputs(BaseModel):
     graph: dict[str, Graph]
-    inputs: dict[str, ValueRef]
+    inputs: ValueRef
     requested_output: dict[str, HandleRef]
     external_input_id: str = Field(default="_")
 

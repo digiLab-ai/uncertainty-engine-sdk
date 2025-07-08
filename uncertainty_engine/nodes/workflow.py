@@ -1,7 +1,5 @@
 from typeguard import typechecked
 
-from uncertainty_engine.api_providers.models import ValueRef, HandleRef
-from uncertainty_engine_types import Graph
 from uncertainty_engine.nodes.base import Node
 
 
@@ -33,9 +31,9 @@ class Workflow(Node):
 
     def __init__(
         self,
-        graph: dict[str, Graph],
-        input: dict[str, ValueRef],
-        requested_output: dict[str, HandleRef],
+        graph: dict,
+        input: dict,
+        requested_output: dict,
         external_input_id: str = "_",
     ):
         super().__init__(
