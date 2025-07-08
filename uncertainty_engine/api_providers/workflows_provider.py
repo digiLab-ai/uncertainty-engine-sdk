@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, WorkflowsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
@@ -18,7 +18,11 @@ from uncertainty_engine.api_providers.constants import (
     DATETIME_STRING_FORMAT,
     DEFAULT_RESOURCE_DEPLOYMENT,
 )
-from uncertainty_engine.api_providers.models import WorkflowRecord, WorkflowVersion
+from uncertainty_engine.api_providers.models import (
+    WorkflowRecord,
+    WorkflowVersion,
+    WorkflowExecutable,
+)
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
@@ -334,7 +338,7 @@ class VersionManager:
         self,
         project_id: str,
         workflow_id: str,
-        workflow: dict[str, Any],
+        workflow: WorkflowExecutable,
         version_name: Optional[str] = None,
     ) -> str:
         """
