@@ -1,25 +1,11 @@
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
-from uncertainty_engine_types import Graph, Handle
-from uncertainty_engine.nodes.workflow import Workflow
-
-# TODO: Have workflow unified in types library
-
-ValueRef = dict[str, Any]
-HandleRef = dict[str, Handle]
-
-
-class WorkflowInputs(BaseModel):
-    graph: dict[str, Graph]
-    inputs: ValueRef
-    requested_output: dict[str, HandleRef]
-    external_input_id: str = Field(default="_")
+from pydantic import BaseModel
 
 
 class WorkflowExecutable(BaseModel):
     node_id: Literal["Workflow"]
-    inputs: dict[str, Any]  # TODO: change this to Workflow or WorkflowInputs
+    inputs: dict[str, Any]
 
 
 class WorkflowRecord(BaseModel):
