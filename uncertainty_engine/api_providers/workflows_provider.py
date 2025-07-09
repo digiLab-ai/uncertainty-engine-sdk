@@ -19,9 +19,9 @@ from uncertainty_engine.api_providers.constants import (
     DEFAULT_RESOURCE_DEPLOYMENT,
 )
 from uncertainty_engine.api_providers.models import (
+    WorkflowExecutable,
     WorkflowRecord,
     WorkflowVersion,
-    WorkflowExecutable,
 )
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
@@ -191,7 +191,17 @@ class WorkflowsProvider(ApiProviderBase):
         if not self.account_id:
             raise ValueError("Authentication required before loading workflows.")
 
-        return self._version_manager.read_version(project_id, workflow_id, version_id)
+        executable_workflow = self._version_manager.read_version(
+            project_id, workflow_id, version_id
+        )
+        workflow = executable_workflow.inputs
+
+        return Workflow(
+            graph=workflow["graph"],
+            input=workflow["inputs"],
+            requested_output=workflow["requested_output"],
+            external_input_id=workflow["external_input_id"],
+        )
 
     @ApiProviderBase.with_auth_refresh
     def save(
@@ -227,10 +237,12 @@ class WorkflowsProvider(ApiProviderBase):
                 )
             workflow_id = self._record_manager.create_record(project_id, workflow_name)
 
-        executable_workflow = {  # Workflow must be wrapped by this to be executable
-            "node_id": "Workflow",
-            "inputs": workflow.__dict__,
-        }
+        executable_workflow = (
+            WorkflowExecutable(  # Workflow must be wrapped by this to be executable
+                node_id="Workflow",
+                inputs=workflow.__dict__,
+            )
+        )
 
         # Create a new version of the workflow
         self._version_manager.create_version(
@@ -365,7 +377,7 @@ class VersionManager:
             )
             workflow_version_record = PostWorkflowVersionRequest(
                 workflow_version_record=workflow_version_record,
-                workflow=workflow.__dict__,
+                workflow=workflow.model_dump(),
             )
 
             version_response = self.workflows_client.post_workflow_version(
@@ -388,7 +400,7 @@ class VersionManager:
         project_id: str,
         workflow_id: str,
         version_id: Optional[str] = None,
-    ) -> Workflow:
+    ) -> WorkflowExecutable:
         """
         Read a workflow version from your project.
 
@@ -417,14 +429,9 @@ class VersionManager:
             if not workflow_data:
                 raise ValueError("No workflow data found in the response.")
 
-            # Convert the workflow data to a Workflow object
+            # Convert the workflow data to a ExecutableWorkflow object
             # KeyError will be raised if the data is not compatible (old version of the workflow)
-            workflow = Workflow(
-                graph=workflow_data["graph"],
-                input=workflow_data["inputs"],
-                requested_output=workflow_data["requested_output"],
-                external_input_id=workflow_data["external_input_id"],
-            )
+            workflow = WorkflowExecutable(**workflow_data)
 
             return workflow
         except ApiException as e:
