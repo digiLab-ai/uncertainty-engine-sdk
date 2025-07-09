@@ -26,6 +26,7 @@ from uncertainty_engine.api_providers.models import (
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
+from pydantic import ValidationError
 
 
 class WorkflowsProvider(ApiProviderBase):
@@ -436,10 +437,8 @@ class VersionManager:
             return workflow
         except ApiException as e:
             raise Exception(f"Error reading workflow version: {format_api_error(e)}")
-        except KeyError as e:
-            raise KeyError(
-                f"Invalid Workflow object. Keys don't match: {str(e)}"
-            )  # Note that this will be raised if a frontend representation of the workflow is loaded
+        except (KeyError, ValidationError) as e:
+            raise KeyError(f"Invalid Workflow object structure: {e}")
         except Exception as e:
             raise Exception(f"Error reading workflow version: {str(e)}")
 

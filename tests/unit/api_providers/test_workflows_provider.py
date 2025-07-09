@@ -12,12 +12,16 @@ from uncertainty_engine_resource_client.models import (
     WorkflowVersionRecordOutput,
 )
 
+from uncertainty_engine.api_providers.models import (
+    WorkflowExecutable,
+    WorkflowRecord,
+    WorkflowVersion,
+)
 from uncertainty_engine.api_providers.workflows_provider import (
     RecordManager,
     VersionManager,
     WorkflowsProvider,
 )
-from uncertainty_engine.api_providers.models import WorkflowRecord, WorkflowVersion
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 
@@ -34,16 +38,31 @@ def unauthenticated_auth_service():
 
 
 @pytest.fixture
-def mock_workflow():
-    """Mock workflow object."""
-    workflow = Mock(spec=Workflow)
-    workflow.__dict__ = {
+def mock_workflow_dict():
+    """Create workflow test data."""
+    return {
         "graph": {"nodes": [], "edges": []},
         "inputs": {"input1": "value1"},
-        "requested_output": "output1",
-        "external_input_id": "external-123",
+        "requested_output": {"Add": {"node_handle": "ans", "node_name": "Add"}},
+        "external_input_id": "_",
     }
-    return workflow
+
+
+@pytest.fixture
+def mock_workflow(mock_workflow_dict: dict):
+    """Create actual Workflow instance."""
+    return Workflow(
+        graph=mock_workflow_dict["graph"],
+        input=mock_workflow_dict["inputs"],
+        requested_output=mock_workflow_dict["requested_output"],
+        external_input_id=mock_workflow_dict["external_input_id"],
+    )
+
+
+@pytest.fixture
+def mock_executable_workflow(mock_workflow_dict: dict):
+    """Create actual WorkflowExecutable instance."""
+    return WorkflowExecutable(node_id="Workflow", inputs=mock_workflow_dict)
 
 
 @pytest.fixture
@@ -164,10 +183,14 @@ def test_list_workflow_versions(
 
 
 def test_load_workflow_success(
-    workflows_provider: WorkflowsProvider, mock_workflow: Workflow
+    workflows_provider: WorkflowsProvider,
+    mock_workflow: Workflow,
+    mock_executable_workflow: Workflow,
 ):
     """Test successful workflow loading."""
-    workflows_provider._version_manager.read_version = Mock(return_value=mock_workflow)
+    workflows_provider._version_manager.read_version = Mock(
+        return_value=mock_executable_workflow
+    )
 
     result = workflows_provider.load("project-123", "workflow-123", "version-456")
 
@@ -178,7 +201,9 @@ def test_load_workflow_success(
 
 
 def test_save_workflow_new(
-    workflows_provider: WorkflowsProvider, mock_workflow: Workflow
+    workflows_provider: WorkflowsProvider,
+    mock_workflow: Workflow,
+    mock_executable_workflow: WorkflowExecutable,
 ):
     """Test saving a new workflow (no workflow_id provided)."""
     workflows_provider._record_manager.create_record = Mock(return_value="workflow-123")
@@ -194,12 +219,14 @@ def test_save_workflow_new(
         "project-123", "New Workflow"
     )
     workflows_provider._version_manager.create_version.assert_called_once_with(
-        "project-123", "workflow-123", mock_workflow
+        "project-123", "workflow-123", mock_executable_workflow
     )
 
 
 def test_save_workflow_existing(
-    workflows_provider: WorkflowsProvider, mock_workflow: Workflow
+    workflows_provider: WorkflowsProvider,
+    mock_workflow: Workflow,
+    mock_executable_workflow: WorkflowExecutable,
 ):
     """Test saving to existing workflow (workflow_id provided)."""
     workflows_provider._version_manager.create_version = Mock(
@@ -214,7 +241,7 @@ def test_save_workflow_existing(
     assert result == "workflow-123"
     workflows_provider._record_manager.create_record.assert_not_called()
     workflows_provider._version_manager.create_version.assert_called_once_with(
-        "project-123", "workflow-123", mock_workflow
+        "project-123", "workflow-123", mock_executable_workflow
     )
 
 
@@ -345,7 +372,7 @@ def test_list_records_api_exception(
 def test_create_version_success(
     version_manager: VersionManager,
     mock_workflows_client: WorkflowsApi,
-    mock_workflow: Workflow,
+    mock_executable_workflow: WorkflowExecutable,
 ):
     """Test successful version creation."""
     # Mock list_versions to return empty list (first version)
@@ -357,7 +384,7 @@ def test_create_version_success(
     mock_workflows_client.post_workflow_version = Mock(return_value=mock_response)
 
     result = version_manager.create_version(
-        "project-123", "workflow-123", mock_workflow
+        "project-123", "workflow-123", mock_executable_workflow
     )
 
     assert result == "version-456"
@@ -377,7 +404,7 @@ def test_create_version_success(
 def test_create_version_custom_name(
     version_manager: VersionManager,
     mock_workflows_client: WorkflowsApi,
-    mock_workflow: Workflow,
+    mock_executable_workflow: WorkflowExecutable,
 ):
     """Test version creation with custom name."""
     mock_response = Mock()
@@ -385,7 +412,10 @@ def test_create_version_custom_name(
     mock_workflows_client.post_workflow_version = Mock(return_value=mock_response)
 
     result = version_manager.create_version(
-        "project-123", "workflow-123", mock_workflow, version_name="custom-version"
+        "project-123",
+        "workflow-123",
+        mock_executable_workflow,
+        version_name="custom-version",
     )
 
     assert result == "version-456"
@@ -399,7 +429,7 @@ def test_create_version_custom_name(
 def test_create_version_no_id_returned(
     version_manager: VersionManager,
     mock_workflows_client: WorkflowsApi,
-    mock_workflow: Workflow,
+    mock_executable_workflow: WorkflowExecutable,
 ):
     """Test error when no version ID is returned."""
     mock_response = Mock()
@@ -407,7 +437,9 @@ def test_create_version_no_id_returned(
     mock_workflows_client.post_workflow_version = Mock(return_value=mock_response)
 
     with pytest.raises(Exception, match="Error creating workflow version"):
-        version_manager.create_version("project-123", "workflow-123", mock_workflow)
+        version_manager.create_version(
+            "project-123", "workflow-123", mock_executable_workflow
+        )
 
 
 @pytest.mark.parametrize(
@@ -424,7 +456,7 @@ def test_create_version_no_id_returned(
 )
 def test_read_version_success(
     version_manager: VersionManager,
-    mock_workflow: Workflow,
+    mock_executable_workflow: WorkflowExecutable,
     mock_workflows_client: WorkflowsApi,
     monkeypatch: MonkeyPatch,
     version_id: str | None,
@@ -433,7 +465,7 @@ def test_read_version_success(
 ):
     """Test reading workflow versions (latest and specific)."""
     mock_response = Mock()
-    mock_response.workflow = mock_workflow.__dict__
+    mock_response.workflow = mock_executable_workflow.__dict__
 
     api_method = getattr(mock_workflows_client, expected_api_method)
     api_method.return_value = mock_response
@@ -447,6 +479,7 @@ def test_read_version_success(
     result = version_manager.read_version("project-123", "workflow-123", version_id)
 
     assert result == mock_workflow_instance
+
     api_method.assert_called_once_with(*expected_api_args)
     MockWorkflow.assert_called_once_with(
         graph={"nodes": [], "edges": []},
@@ -490,7 +523,7 @@ def test_read_version_invalid_data(
 
     with pytest.raises(
         KeyError,
-        match="Invalid Workflow object. Keys don't match: 'graph'",
+        match="Invalid Workflow object structure",
     ):
         version_manager.read_version("project-123", "workflow-123", "version-456")
 
