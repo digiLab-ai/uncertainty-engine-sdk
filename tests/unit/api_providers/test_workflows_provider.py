@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Any
-from unittest.mock import Mock, create_autospec
+from unittest.mock import Mock
 
 import pytest
 from pytest import MonkeyPatch
@@ -58,7 +58,7 @@ def mock_executable_dict(mock_workflow_dict: dict[str, Any]) -> dict[str, Any]:
 @pytest.fixture
 def mock_workflow(mock_workflow_dict: dict[str, Any]):
     """Create mock workflow object."""
-    workflow = create_autospec(Workflow, instance=True)
+    workflow = Mock(spec=Workflow)
     workflow.inputs = mock_workflow_dict["inputs"]
     workflow.graph = mock_workflow_dict["graph"]
     workflow.requested_output = mock_workflow_dict["requested_output"]
@@ -73,7 +73,7 @@ def mock_executable_workflow(
     mock_executable_dict: dict[str, Any],
 ):
     """Create mock executable workflow object."""
-    executable = create_autospec(WorkflowExecutable, instance=True)
+    executable = Mock(spec=WorkflowExecutable)
     executable.node_id = "Workflow"
     executable.inputs = {
         "graph": mock_workflow.graph,
