@@ -63,7 +63,6 @@ def mock_workflow(mock_workflow_dict: dict[str, Any]):
     workflow.graph = mock_workflow_dict["graph"]
     workflow.requested_output = mock_workflow_dict["requested_output"]
     workflow.external_input_id = mock_workflow_dict["external_input_id"]
-    workflow.__dict__.update(mock_workflow_dict)
     return workflow
 
 
@@ -233,18 +232,15 @@ def test_save_workflow_new(
     mock_workflow_dict: dict[str, Any],
 ):
     """Test saving a new workflow (no workflow_id provided)."""
-    # Setup mocks
     workflows_provider._record_manager.create_record = Mock(return_value="workflow-123")
     workflows_provider._version_manager.create_version = Mock(
         return_value="version-456"
     )
 
-    # Execute test
     result = workflows_provider.save(
         "project-123", mock_workflow, workflow_name="New Workflow"
     )
 
-    # Verify basic results
     assert result == "workflow-123"
     workflows_provider._record_manager.create_record.assert_called_once_with(
         "project-123", "New Workflow"
@@ -489,7 +485,7 @@ def test_read_version_success(
     expected_api_method: str,
     expected_api_args: tuple[str, ...],
 ):
-    """Test reading workflow versions."""
+    """Test reading workflow versions (latest and specific)."""
     mock_response = Mock()
     mock_response.workflow = {"node_id": "Workflow", "inputs": mock_workflow_dict}
 
