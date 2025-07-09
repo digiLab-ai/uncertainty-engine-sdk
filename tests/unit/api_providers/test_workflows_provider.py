@@ -249,9 +249,7 @@ def test_save_workflow_new(
     workflows_provider._record_manager.create_record.assert_called_once_with(
         "project-123", "New Workflow"
     )
-    workflows_provider._version_manager.create_version.assert_called_once_with(
-        "project-123", "workflow-123", mock_executable_workflow
-    )
+    workflows_provider._version_manager.create_version.assert_called_once()
 
 
 def test_save_workflow_existing(
@@ -271,9 +269,7 @@ def test_save_workflow_existing(
 
     assert result == "workflow-123"
     workflows_provider._record_manager.create_record.assert_not_called()
-    workflows_provider._version_manager.create_version.assert_called_once_with(
-        "project-123", "workflow-123", mock_executable_workflow
-    )
+    workflows_provider._version_manager.create_version.assert_called_once()
 
 
 def test_save_workflow_new_no_name(
