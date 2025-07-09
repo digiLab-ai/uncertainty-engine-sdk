@@ -91,3 +91,8 @@ def test_update_api_authentication_not_implemented():
 
     with pytest.raises(NotImplementedError):
         base_provider.update_api_authentication()
+
+
+def test_strips_endpoint(mock_auth_service: AuthService) -> None:
+    base_provider = ApiProviderBase("test-deployment/", mock_auth_service)
+    assert base_provider.deployment == "test-deployment"
