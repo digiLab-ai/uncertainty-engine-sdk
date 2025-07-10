@@ -1,6 +1,11 @@
-from typing import Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel
+
+
+class WorkflowExecutable(BaseModel):
+    node_id: Literal["Workflow"]
+    inputs: dict[str, Any]
 
 
 class WorkflowRecord(BaseModel):
