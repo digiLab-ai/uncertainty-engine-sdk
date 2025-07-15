@@ -35,6 +35,7 @@ class ProjectRecord(ProjectRecordOutput):
     )
 
     @field_validator("created_at", "updated_at", mode="after")
+    @classmethod
     def parse_datetime(cls, value: datetime | None) -> str | None:
         """Convert datetime object to ISO string."""
         if not value:
