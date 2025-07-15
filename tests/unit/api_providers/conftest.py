@@ -27,9 +27,9 @@ def mock_api_client(mock_api_configuration: Configuration):
 
 @pytest.fixture
 def mock_account_records_api(mock_api_client: ApiClient):
-    accounts_api = MagicMock()
-    accounts_api.api_client = mock_api_client
-    return accounts_api
+    account_records_api = MagicMock(spec=AccountRecordsApi)
+    account_records_api.api_client = mock_api_client
+    return account_records_api
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def mock_project_records_api(mock_api_client: ApiClient):
 
 @pytest.fixture
 def mock_resources_api(mock_api_client: ApiClient):
-    resources_api = MagicMock(spec=AccountRecordsApi)
+    resources_api = MagicMock()
     resources_api.api_client = mock_api_client
     return resources_api
 
