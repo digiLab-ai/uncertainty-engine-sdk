@@ -1,5 +1,4 @@
 from typing import Any, Iterator
-from unittest.mock import MagicMock
 
 import pytest
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
