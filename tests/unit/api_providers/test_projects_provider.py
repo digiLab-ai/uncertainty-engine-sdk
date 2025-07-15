@@ -1,10 +1,14 @@
+from datetime import datetime
 from typing import Any, Iterator
+from unittest.mock import MagicMock
 
 import pytest
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
+from uncertainty_engine_resource_client.models import ProjectRecordOutput
 
 from uncertainty_engine.api_providers import ProjectsProvider
+from uncertainty_engine.api_providers.constants import DATETIME_STRING_FORMAT
 from uncertainty_engine.auth_service import AuthService
 
 
@@ -19,6 +23,21 @@ def projects_provider(
 
     projects_provider = ProjectsProvider(mock_auth_service, mock_deployment)
     return projects_provider
+
+
+@pytest.fixture
+def mock_project_record() -> ProjectRecordOutput:
+    mock_record = MagicMock(spec=ProjectRecordOutput)
+    mock_record.id = "project-123"
+    mock_record.name = "Test Project"
+    mock_record.owner_id = "owner-123"
+    mock_record.created_at = datetime.now
+    return mock_record
+
+
+@pytest.fixture
+def mock_accounts_provider(mocked_api_clients: Iterator[Any]):
+    return
 
 
 # ProjectsProvider Init Tests
@@ -61,3 +80,31 @@ def test_update_api_authentication(
     mock_auth_service.is_authenticated = False
     projects_provider.update_api_authentication()
     mock_auth_service.get_auth_header.assert_not_called()
+
+
+# ProjectsProvider list_projects tests
+def test_list_projects(
+    projects_provider: ProjectsProvider,
+    mock_project_record: ProjectRecordOutput,
+    mock_account_records_api: AccountRecordsApi,
+):
+    mock_response = MagicMock()
+    mock_response.project_records = [mock_project_record]
+    mock_account_records_api.get_account_record_projects = MagicMock(
+        return_value=mock_response
+    )
+
+    result = projects_provider.list_projects()
+
+    # Verify the result
+    assert len(result) == 1
+    assert result[0].id == mock_project_record.id
+    assert result[0].name == mock_project_record.name
+    assert result[0].owner_id == mock_project_record.owner_id
+    assert result[0].created_at == mock_project_record.created_at.strftime(
+        DATETIME_STRING_FORMAT
+    )
+
+    mock_account_records_api.get_account_record_projects.assert_called_once_with(
+        projects_provider.account_id
+    )
