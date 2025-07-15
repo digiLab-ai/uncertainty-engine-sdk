@@ -1,15 +1,18 @@
-from typing import Optional
+from typing import Any, Optional
 
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
 from uncertainty_engine_resource_client.configuration import Configuration
+from uncertainty_engine_resource_client.exceptions import ApiException
+from uncertainty_engine_resource_client.models import GetAccountRecordProjectsResponse
 
 from uncertainty_engine.api_providers import ApiProviderBase
 from uncertainty_engine.api_providers.constants import (
+    DATETIME_STRING_FORMAT,
     DEFAULT_RESOURCE_DEPLOYMENT,
 )
-
 from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.utils import format_api_error
 
 
 class ProjectsProvider(ApiProviderBase):
@@ -61,3 +64,32 @@ class ProjectsProvider(ApiProviderBase):
             The account ID if authenticated, otherwise None.
         """
         return self.auth_service.account_id
+
+    @ApiProviderBase.with_auth_refresh
+    def list_projects(
+        self,
+    ) -> GetAccountRecordProjectsResponse:
+        """
+        List all projects in your account.
+
+        Args:
+            account_id: Your account's unique identifier
+
+        Returns:
+            A list of project records, each with: # TODO: replace the below
+                - id: The unique identifier of the workflow
+                - name: The friendly name of the workflow
+                - owner_id: The ID of the user who owns the workflow
+                - created_at: The creation date of the workflow in ISO 8601 format
+                - versions: A list of version IDs associated with the workflow
+        """
+        # Check if account ID is set
+        if not self.account_id:
+            raise ValueError("Authentication required before listing projects.")
+
+        try:
+            return self.accounts_client.get_account_record_projects(self.account_id)
+        except ApiException as e:
+            raise Exception(f"Error reading project records: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error reading project records: {str(e)}")
