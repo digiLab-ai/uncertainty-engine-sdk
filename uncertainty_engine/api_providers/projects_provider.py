@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
