@@ -4,13 +4,10 @@ from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRec
 from uncertainty_engine_resource_client.api_client import ApiClient
 from uncertainty_engine_resource_client.configuration import Configuration
 from uncertainty_engine_resource_client.exceptions import ApiException
-from uncertainty_engine_resource_client.models import GetAccountRecordProjectsResponse
 
 from uncertainty_engine.api_providers import ApiProviderBase
-from uncertainty_engine.api_providers.constants import (
-    DATETIME_STRING_FORMAT,
-    DEFAULT_RESOURCE_DEPLOYMENT,
-)
+from uncertainty_engine.api_providers.constants import DEFAULT_RESOURCE_DEPLOYMENT
+from uncertainty_engine.api_providers.models import ProjectRecord
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
 
@@ -68,7 +65,7 @@ class ProjectsProvider(ApiProviderBase):
     @ApiProviderBase.with_auth_refresh
     def list_projects(
         self,
-    ) -> GetAccountRecordProjectsResponse:
+    ) -> list[ProjectRecord]:
         """
         List all projects in your account.
 
@@ -76,19 +73,25 @@ class ProjectsProvider(ApiProviderBase):
             account_id: Your account's unique identifier
 
         Returns:
-            A list of project records, each with: # TODO: replace the below
-                - id: The unique identifier of the workflow
-                - name: The friendly name of the workflow
-                - owner_id: The ID of the user who owns the workflow
-                - created_at: The creation date of the workflow in ISO 8601 format
-                - versions: A list of version IDs associated with the workflow
+            A list of project records, each with:
+                - id: The unique identifier of the project
+                - name: The friendly name of the project
+                - owner_id: The account ID of the user who owns the project
+                - description: Description of the project
+                - members: Dictionary containing members of the project and their access level
+                           (will be empty if the owner is the only member)
+                - created_at: The creation date of the project (ISO 8601 format)
+                - updated_at: The date of the last update to the project (ISO 8601 format)
         """
         # Check if account ID is set
         if not self.account_id:
             raise ValueError("Authentication required before listing projects.")
 
         try:
-            return self.accounts_client.get_account_record_projects(self.account_id)
+            response = self.accounts_client.get_account_record_projects(
+                self.account_id
+            ).project_records
+            return [ProjectRecord.model_validate(record) for record in response]
         except ApiException as e:
             raise Exception(f"Error reading project records: {format_api_error(e)}")
         except Exception as e:
