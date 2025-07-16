@@ -1,4 +1,5 @@
 from typing import Optional
+from pydantic import ValidationError
 
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
@@ -93,6 +94,6 @@ class ProjectsProvider(ApiProviderBase):
             ).project_records
             return [ProjectRecord.model_validate(record) for record in response]
         except ApiException as e:
-            raise Exception(f"Error reading project records: {format_api_error(e)}")
-        except Exception as e:
-            raise Exception(f"Error reading project records: {str(e)}")
+            raise Exception(f"Failed to fetch project records: {format_api_error(e)}")
+        except (ValidationError, Exception) as e:
+            raise Exception(f"Error listing project records: {str(e)}")

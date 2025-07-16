@@ -3,8 +3,10 @@ from typing import Any, Iterator
 from unittest.mock import MagicMock
 
 import pytest
+from pydantic import ValidationError
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
+from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_resource_client.models import ProjectRecordOutput
 
 from uncertainty_engine.api_providers import ProjectsProvider
@@ -78,10 +80,11 @@ def test_update_api_authentication(
 
 
 # ProjectsProvider list_projects tests
-def test_list_projects(
+def test_list_projects_success(
     projects_provider: ProjectsProvider,
     mock_project_record: ProjectRecordOutput,
 ):
+    """Test successful projects listing."""
     mock_response = MagicMock()
     mock_response.project_records = [mock_project_record]
     projects_provider.accounts_client.get_account_record_projects = MagicMock(
@@ -102,3 +105,26 @@ def test_list_projects(
     projects_provider.accounts_client.get_account_record_projects.assert_called_once_with(
         projects_provider.account_id
     )
+
+
+def test_list_projects_api_exception(projects_provider: ProjectsProvider):
+    """Test handling of API exceptions during listing."""
+    projects_provider.accounts_client.get_account_record_projects = MagicMock(
+        side_effect=ApiException(status=404, reason="Not Found")
+    )
+
+    with pytest.raises(Exception, match="Failed to fetch project records"):
+        projects_provider.list_projects()
+
+
+def test_list_projects_validation_error(projects_provider: ProjectsProvider):
+    """Tests handling of validation errors during listing"""
+    mock_response = MagicMock()
+    mock_response.project_records = [{"invalid": "data"}]
+
+    projects_provider.accounts_client.get_account_record_projects = MagicMock(
+        return_value=mock_response
+    )
+
+    with pytest.raises(Exception, match="Error listing project records"):
+        projects_provider.list_projects()
