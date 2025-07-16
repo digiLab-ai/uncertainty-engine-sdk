@@ -70,9 +70,6 @@ class ProjectsProvider(ApiProviderBase):
         """
         List all projects in your account.
 
-        Args:
-            account_id: Your account's unique identifier
-
         Returns:
             A list of project records, each with:
                 - id: The unique identifier of the project
