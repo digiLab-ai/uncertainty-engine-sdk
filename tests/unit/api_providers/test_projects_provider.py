@@ -31,13 +31,8 @@ def mock_project_record() -> ProjectRecordOutput:
     mock_record.id = "project-123"
     mock_record.name = "Test Project"
     mock_record.owner_id = "owner-123"
-    mock_record.created_at = datetime.now
+    mock_record.created_at = datetime(2024, 1, 1, 12, 0, 0)
     return mock_record
-
-
-@pytest.fixture
-def mock_accounts_provider(mocked_api_clients: Iterator[Any]):
-    return
 
 
 # ProjectsProvider Init Tests
@@ -86,11 +81,10 @@ def test_update_api_authentication(
 def test_list_projects(
     projects_provider: ProjectsProvider,
     mock_project_record: ProjectRecordOutput,
-    mock_account_records_api: AccountRecordsApi,
 ):
     mock_response = MagicMock()
     mock_response.project_records = [mock_project_record]
-    mock_account_records_api.get_account_record_projects = MagicMock(
+    projects_provider.accounts_client.get_account_record_projects = MagicMock(
         return_value=mock_response
     )
 
@@ -105,6 +99,6 @@ def test_list_projects(
         DATETIME_STRING_FORMAT
     )
 
-    mock_account_records_api.get_account_record_projects.assert_called_once_with(
+    projects_provider.accounts_client.get_account_record_projects.assert_called_once_with(
         projects_provider.account_id
     )
