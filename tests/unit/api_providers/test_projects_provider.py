@@ -3,7 +3,6 @@ from typing import Any, Iterator
 from unittest.mock import MagicMock
 
 import pytest
-from pydantic import ValidationError
 from uncertainty_engine_resource_client.api import AccountRecordsApi, ProjectRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
 from uncertainty_engine_resource_client.exceptions import ApiException
