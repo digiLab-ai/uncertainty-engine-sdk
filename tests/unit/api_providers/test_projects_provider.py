@@ -9,7 +9,6 @@ from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_resource_client.models import ProjectRecordOutput
 
 from uncertainty_engine.api_providers import ProjectsProvider
-from uncertainty_engine.api_providers.constants import DATETIME_STRING_FORMAT
 from uncertainty_engine.auth_service import AuthService
 
 
