@@ -96,9 +96,7 @@ def test_list_projects_success(
     assert len(result) == 1
     assert result[0].id == mock_project_record.id
     assert result[0].name == mock_project_record.name
-    assert result[0].created_at == mock_project_record.created_at.strftime(
-        DATETIME_STRING_FORMAT
-    )
+    assert result[0].created_at == mock_project_record.created_at
 
     projects_provider.accounts_client.get_account_record_projects.assert_called_once_with(
         projects_provider.account_id
