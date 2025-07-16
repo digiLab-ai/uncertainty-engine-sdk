@@ -126,7 +126,7 @@ class Client:
         """
         self.auth_service.authenticate(account_id)
 
-        # This allows the
+        # Propagate new authentication state to all providers
         self._update_all_providers()
 
     @property
