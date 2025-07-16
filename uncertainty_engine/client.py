@@ -107,6 +107,13 @@ class Client:
             self.env.resource_api,
         )
 
+        self._providers = [self.projects, self.resources, self.workflows]
+
+    def _update_all_providers(self) -> None:
+        """Update authentication for all API providers."""
+        for provider in self._providers:
+            provider.update_api_authentication()
+
     def authenticate(
         self,
         account_id: str,
@@ -119,7 +126,8 @@ class Client:
         """
         self.auth_service.authenticate(account_id)
 
-        self.resources.update_api_authentication()
+        # This allows the
+        self._update_all_providers()
 
     @property
     def email(self) -> str:
