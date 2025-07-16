@@ -8,6 +8,7 @@ from typeguard import typechecked
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
+    ApiProviderBase,
     ProjectsProvider,
     ResourceProvider,
     WorkflowsProvider,
@@ -107,6 +108,17 @@ class Client:
             self.env.resource_api,
         )
 
+        self._providers: list[ApiProviderBase] = [
+            self.projects,
+            self.resources,
+            self.workflows,
+        ]
+
+    def _update_all_providers(self) -> None:
+        """Update authentication for all API providers."""
+        for provider in self._providers:
+            provider.update_api_authentication()
+
     def authenticate(
         self,
         account_id: str,
@@ -119,7 +131,8 @@ class Client:
         """
         self.auth_service.authenticate(account_id)
 
-        self.resources.update_api_authentication()
+        # Propagate new authentication state to all providers
+        self._update_all_providers()
 
     @property
     def email(self) -> str:
