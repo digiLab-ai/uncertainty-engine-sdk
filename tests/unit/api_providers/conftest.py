@@ -4,7 +4,6 @@ import pytest
 from uncertainty_engine_resource_client.api.account_records_api import AccountRecordsApi
 from uncertainty_engine_resource_client.api.project_records_api import ProjectRecordsApi
 from uncertainty_engine_resource_client.api.resources_api import ResourcesApi
-from uncertainty_engine_resource_client.api.account_records_api import AccountRecordsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
 from uncertainty_engine_resource_client.configuration import Configuration
 
@@ -74,9 +73,9 @@ def mocked_api_clients(
 
     with (
         api_client_patch,
-        account_records_api_patch,
         project_records_api_patch,
         resources_api_patch,
+        account_records_api_patch,
     ):
         yield
 
