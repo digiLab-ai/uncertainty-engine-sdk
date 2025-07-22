@@ -72,7 +72,6 @@ client = Client(
 )
 ```
 
-
 ### Running a node
 
 ```python
