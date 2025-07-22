@@ -23,6 +23,15 @@ pip install "uncertainty_engine[vis,notebook,data]"
 
 ## Usage
 
+### Setting your username and password
+
+To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
+
+```bash
+export UE_USERNAME="your_username"
+export UE_PASSWORD="your_password"
+```
+
 ### Creating a client
 
 All interactions with the Uncertainty Engine API are performed via a `Client`.
@@ -61,15 +70,6 @@ client = Client(
         resource_api="https://hmqdnx48x6.execute-api.eu-west-2.amazonaws.com",
    ),
 )
-```
-
-### Setting your username and password
-
-To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
-
-```bash
-export UE_USERNAME="your_username"
-export UE_PASSWORD="your_password"
 ```
 
 
