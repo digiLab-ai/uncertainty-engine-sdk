@@ -93,7 +93,7 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
     )
     ```
 
-2. **Create Your First Node**
+1. **Create Your First Node**
 
    There are two ways to create nodes:
 
@@ -124,7 +124,7 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    result = client.run_node(add_node)
    ```
 
-3. **Run Your First Node**
+1. **Run Your First Node**
 
    Run your node and view your results.
 
@@ -135,5 +135,5 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    pprint(result)
    ```
 
-4. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
-5. Progress to more complex examples as needed
+1. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
+1. Progress to more complex examples as needed
