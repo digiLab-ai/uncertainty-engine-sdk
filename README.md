@@ -63,23 +63,21 @@ client = Client(
 )
 ```
 
+### Setting up your environment variables
+
+To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
+
+```bash
+export UE_USERNAME="your_username"
+export UE_PASSWORD="your_password"
+```
+
+
 ### Running a node
 
 ```python
 from pprint import pprint
-
-from uncertainty_engine import Client, Environment
 from uncertainty_engine.nodes.demo import Add
-
-# Set up the client
-client = Client(
-   env=Environment(
-        cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
-        core_api="<UNCERTAINTY ENGINE CORE API URL>",
-        region="<REGION>",
-        resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
-   ),
-)
 
 # Create a node
 add = Add(lhs=1, rhs=2)
