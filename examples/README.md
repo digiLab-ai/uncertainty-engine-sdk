@@ -84,7 +84,7 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
     )
     ```
 
-1. **Set Up Your Environment Variables**
+1. **Setting Your Username and Password**
 
    To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
 

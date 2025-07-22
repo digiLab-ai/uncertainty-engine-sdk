@@ -63,7 +63,7 @@ client = Client(
 )
 ```
 
-### Setting up your environment variables
+### Setting your username and password
 
 To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
 
