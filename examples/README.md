@@ -84,7 +84,16 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
     )
     ```
 
-2. **Create Your First Node**
+2. **Set Up Your Environment Variables**
+
+   To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
+
+    ```bash
+    export UE_USERNAME="your_username"
+    export UE_PASSWORD="your_password"
+    ```
+
+3. **Create Your First Node**
 
    There are two ways to create nodes:
 
@@ -115,7 +124,7 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    result = client.run_node(add_node)
    ```
 
-3. **Run Your First Node**
+4. **Run Your First Node**
 
    Run your node and view your results.
 
@@ -126,5 +135,5 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    pprint(result)
    ```
 
-4. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
-5. Progress to more complex examples as needed
+5. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
+6. Progress to more complex examples as needed
