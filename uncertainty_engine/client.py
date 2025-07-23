@@ -58,7 +58,7 @@ class Client:
 
         Args:
             env: Environment configuration or name of a deployed environment.
-                Defaults to the production environment.
+                Defaults to the main Uncertainty Engine environment.
 
         Example:
             >>> client = Client(
