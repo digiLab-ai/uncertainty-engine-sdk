@@ -11,14 +11,12 @@ from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
     PostResourceVersionRequest,
     ResourceRecordInput,
+    ResourceRecordOutput,
     ResourceVersionRecordInput,
 )
 
 from uncertainty_engine.api_providers import ApiProviderBase
-from uncertainty_engine.api_providers.constants import (
-    DATETIME_STRING_FORMAT,
-    DEFAULT_RESOURCE_DEPLOYMENT,
-)
+from uncertainty_engine.api_providers.constants import DEFAULT_RESOURCE_DEPLOYMENT
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
 
@@ -363,6 +361,18 @@ class ResourceProvider(ApiProviderBase):
 
         Returns:
             A list of all matching resources with their details
+            Example output:
+                [
+                    ResourceRecordOutput(
+                        id='687679a67153b39fb4f74c07',
+                        name='FooBarChat',
+                        project_id='i-am-a-project-id',
+                        owner_id='i-am-an-owner-id',
+                        versions=['687679a67153b39fb4f74c09'],
+                        created_at=datetime.datetime(2025, 7, 15, 15, 54, 14, 224000),
+                        is_locked=False
+                        )
+                ]
 
         Example:
             >>> models = client.list(
@@ -377,12 +387,7 @@ class ResourceProvider(ApiProviderBase):
         ).resource_records
 
         return [
-            {
-                "id": record.id,
-                "name": record.name,
-                "created_at": record.created_at.strftime(DATETIME_STRING_FORMAT),
-            }
-            for record in resource_records
+            ResourceRecordOutput.model_validate(record) for record in resource_records
         ]
 
     @ApiProviderBase.with_auth_refresh
