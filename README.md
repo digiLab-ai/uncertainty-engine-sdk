@@ -97,7 +97,7 @@ add = Add(lhs=1, rhs=2)
 response = client.run_node(add)
 
 # Get the result
-result = response["outputs"]
+result = response.outputs
 
 pprint(result)
 ```
