@@ -130,7 +130,7 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
 
    ```python
    response = client.run_node(add)
-   result = response["output"]
+   result = response.outputs
 
    pprint(result)
    ```

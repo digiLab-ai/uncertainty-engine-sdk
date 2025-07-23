@@ -58,7 +58,7 @@ class TestClientMethods:
         status = ValidStatus.PENDING.value
         while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
             response = e2e_client.job_status(job_id)
-            status = response["status"]
+            status = response.status.value
             time.sleep(5)
 
         assert status == ValidStatus.SUCCESS.value

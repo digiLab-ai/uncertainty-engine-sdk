@@ -84,7 +84,7 @@ client = Client(
 from pprint import pprint
 
 from uncertainty_engine import Client, Environment
-from uncertainty_engine.nodes.demo import Add
+from uncertainty_engine.nodes.basic import Add
 
 # Set up the client
 client = Client(
@@ -103,7 +103,7 @@ add = Add(lhs=1, rhs=2)
 response = client.run_node(add)
 
 # Get the result
-result = response["output"]
+result = response.outputs
 
 pprint(result)
 ```
