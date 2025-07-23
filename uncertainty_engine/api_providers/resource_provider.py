@@ -361,34 +361,29 @@ class ResourceProvider(ApiProviderBase):
 
         Returns:
             A list of all matching resources with their details
-            Example output:
-                [
-                    ResourceRecordOutput(
-                        id='687679a67153b39fb4f74c07',
-                        name='FooBarChat',
-                        project_id='i-am-a-project-id',
-                        owner_id='i-am-an-owner-id',
-                        versions=['687679a67153b39fb4f74c09'],
-                        created_at=datetime.datetime(2025, 7, 15, 15, 54, 14, 224000),
-                        is_locked=False
-                        )
-                ]
 
         Example:
-            >>> models = client.list_resources(
+            >>> models = client.resources.list_resources(
             ...     project_id="your-project-123",
             ...     resource_type="model"
             ... )
             >>> print(f"Found {len(models)} models")
             >>> print(models)
         """
-        resource_records = self.resources_client.get_project_resource_records(
-            project_id, resource_type
-        ).resource_records
 
-        return [
-            ResourceRecordOutput.model_validate(record) for record in resource_records
-        ]
+        try:
+
+            resource_records = self.resources_client.get_project_resource_records(
+                project_id, resource_type
+            ).resource_records
+            return [
+                ResourceRecordOutput.model_validate(record)
+                for record in resource_records
+            ]
+        except ApiException as e:
+            raise Exception(f"Error listing project resources: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error listing project resources: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
     def delete_resource(

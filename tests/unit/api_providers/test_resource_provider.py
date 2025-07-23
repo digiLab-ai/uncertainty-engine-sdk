@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -608,29 +607,14 @@ def test_update_finalize_error(
                 )
 
 
-def test_list_resources_success(resource_provider: ResourceProvider):
+def test_list_resources_success(
+    resource_provider: ResourceProvider, mock_resource_record: ResourceRecordOutput
+):
     """Test listing resources successfully."""
-    # Setup mock response
-    created_time = datetime.now()
-
-    # Create mock resource records
-    record1 = ResourceRecordOutput(
-        id="resource-1",
-        name="Resource 1",
-        created_at=created_time,
-        owner_id=resource_provider.account_id,
-    )
-
-    record2 = ResourceRecordOutput(
-        id="resource-2",
-        name="Resource 2",
-        created_at=created_time,
-        owner_id=resource_provider.account_id,
-    )
-
-    # Create response with list of resource records
+    record = mock_resource_record.resource_record
     response = MagicMock()
-    response.resource_records = [record1, record2]
+    response.resource_records = [record]
+
     resource_provider.resources_client.get_project_resource_records = MagicMock(
         return_value=response
     )
@@ -639,8 +623,21 @@ def test_list_resources_success(resource_provider: ResourceProvider):
     result = resource_provider.list_resources("test-project", "dataset")
 
     # Verify result
-    expected_result = [record1, record2]
+    expected_result = [mock_resource_record.resource_record]
     assert result == expected_result
+
+
+def test_list_resources_validation_error(resource_provider: ResourceProvider):
+    """Tests handling of validation errors during listing"""
+    mock_response = MagicMock()
+    mock_response.resource_records = [{"invalid": "data"}]
+
+    resource_provider.resources_client.get_project_resource_records = MagicMock(
+        return_value=mock_response
+    )
+
+    with pytest.raises(Exception, match="Error listing project resources"):
+        resource_provider.list_resources("test-project", "dataset")
 
 
 def test_list_resources_empty(resource_provider: ResourceProvider):
