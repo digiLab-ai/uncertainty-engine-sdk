@@ -2,12 +2,12 @@ from unittest.mock import patch
 
 import pytest
 
+from uncertainty_engine_types import JobInfo, JobStatus
+
 from tests.mock_api_invoker import mock_core_api
 from uncertainty_engine import Client, Environment
-from uncertainty_engine.client import Job, ValidStatus
+from uncertainty_engine.client import Job
 from uncertainty_engine.nodes.base import Node
-
-# __init__
 
 
 def test_init_default() -> None:
@@ -118,24 +118,33 @@ class TestClientMethods:
 
     def test_job_status(self, client: Client, mock_job: Job):
         """
-        Verify that the job_status method pokes the correct endpoint with the user defined job_id.
+        Verify that the job_status method pokes the correct endpoint with the user-defined job_id.
 
         Args:
             client: A Client instance.
             mock_job: A Job instance.
         """
 
+        mock_job_info = JobInfo(
+            status=JobStatus.RUNNING,
+            message="Job is running",
+            inputs={"lhs": 1, "rhs": 2},
+            outputs=None,
+        )
+
         with mock_core_api(client) as api:
             api.expect_get(
                 f"/nodes/status/{mock_job.node_id}/{mock_job.job_id}",
-                {
-                    "status": "running",
-                },
+                mock_job_info.model_dump(),
             )
 
             response = client.job_status(mock_job)
 
-            assert response == {"status": "running"}
+            assert isinstance(response, JobInfo)
+            assert response.status == JobStatus.RUNNING
+            assert response.message == "Job is running"
+            assert response.inputs == {"lhs": 1, "rhs": 2}
+            assert response.outputs is None
 
     def test_queue_node_node_input(self, client: Client, mock_job: Job):
         """
@@ -192,16 +201,38 @@ class TestClientMethods:
             "uncertainty_engine.client.STATUS_WAIT_TIME",
             0.1,  # Reduce wait time for testing
         ):
+
+            pending = JobInfo(
+                status=JobStatus.PENDING,
+                message="Job is pending",
+                inputs={},
+                outputs=None,
+            )
+            running = JobInfo(
+                status=JobStatus.RUNNING,
+                message="Job is running",
+                inputs={},
+                outputs=None,
+            )
+            completed = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Job completed",
+                inputs={},
+                outputs={"result": 42},
+            )
+
             api.expect_get(
                 f"/nodes/status/{mock_job.node_id}/{mock_job.job_id}",
-                {"status": ValidStatus.PENDING.value},
-                {"status": ValidStatus.STARTED.value},
-                {"status": ValidStatus.SUCCESS.value},
+                pending.model_dump(),
+                running.model_dump(),
+                completed.model_dump(),
             )
 
             response = client._wait_for_job(mock_job)
 
-            assert response == {"status": ValidStatus.SUCCESS.value}
+            assert isinstance(response, JobInfo)
+            assert response.status == JobStatus.COMPLETED
+            assert response.outputs == {"result": 42}
 
     def test_wait_for_job_invalid_status(self, client: Client, mock_job: Job):
         """
@@ -235,7 +266,12 @@ class TestClientMethods:
             "uncertainty_engine.client.Client._wait_for_job"
         ) as mock_wait_for_job:
             mock_queue_node.return_value = mock_job
-            mock_wait_for_job.return_value = {"status": ValidStatus.SUCCESS.value}
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Job completed",
+                inputs={"key": "value"},
+                outputs={"result": 42},
+            )
 
             client.run_node(node="node_a", input={"key": "value"})
 
