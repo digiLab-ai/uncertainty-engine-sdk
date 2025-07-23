@@ -141,10 +141,7 @@ class TestClientMethods:
             response = client.job_status(mock_job)
 
             assert isinstance(response, JobInfo)
-            assert response.status == JobStatus.RUNNING
-            assert response.message == "Job is running"
-            assert response.inputs == {"lhs": 1, "rhs": 2}
-            assert response.outputs is None
+            assert response == mock_job_info
 
     def test_queue_node_node_input(self, client: Client, mock_job: Job):
         """
