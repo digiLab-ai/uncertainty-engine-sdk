@@ -375,7 +375,7 @@ class ResourceProvider(ApiProviderBase):
                 ]
 
         Example:
-            >>> models = client.list(
+            >>> models = client.list_resources(
             ...     project_id="your-project-123",
             ...     resource_type="model"
             ... )
