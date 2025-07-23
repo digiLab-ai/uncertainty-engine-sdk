@@ -34,9 +34,15 @@ export UE_PASSWORD="your_password"
 
 ### Creating a client
 
-All interactions with the Uncertainty Engine API are performed via a `Client`. The client will default to using the production environment. If you with to use a different environment you can do so by following the steps below.
+All interactions with the Uncertainty Engine API are performed via a `Client`. The client will use the production environment by default:
 
-To create a `Client` for a named environment:
+```python
+from uncertainty_engine import Client
+
+client = Client()
+```
+
+If you with to use a different environment you can create a `Client` for a named environment:
 
 ```python
 from uncertainty_engine import Client
