@@ -9,11 +9,11 @@ from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
     PostResourceVersionRequest,
     ResourceRecordInput,
+    ResourceRecordOutput,
     ResourceVersionRecordInput,
 )
 
 from uncertainty_engine.api_providers import ResourceProvider
-from uncertainty_engine.api_providers.constants import DATETIME_STRING_FORMAT
 from uncertainty_engine.auth_service import AuthService
 
 
@@ -614,15 +614,19 @@ def test_list_resources_success(resource_provider: ResourceProvider):
     created_time = datetime.now()
 
     # Create mock resource records
-    record1 = MagicMock()
-    record1.id = "resource-1"
-    record1.name = "Resource 1"
-    record1.created_at = created_time
+    record1 = ResourceRecordOutput(
+        id="resource-1",
+        name="Resource 1",
+        created_at=created_time,
+        owner_id=resource_provider.account_id,
+    )
 
-    record2 = MagicMock()
-    record2.id = "resource-2"
-    record2.name = "Resource 2"
-    record2.created_at = created_time
+    record2 = ResourceRecordOutput(
+        id="resource-2",
+        name="Resource 2",
+        created_at=created_time,
+        owner_id=resource_provider.account_id,
+    )
 
     # Create response with list of resource records
     response = MagicMock()
@@ -635,18 +639,7 @@ def test_list_resources_success(resource_provider: ResourceProvider):
     result = resource_provider.list_resources("test-project", "dataset")
 
     # Verify result
-    expected_result = [
-        {
-            "id": "resource-1",
-            "name": "Resource 1",
-            "created_at": created_time.strftime(DATETIME_STRING_FORMAT),
-        },
-        {
-            "id": "resource-2",
-            "name": "Resource 2",
-            "created_at": created_time.strftime(DATETIME_STRING_FORMAT),
-        },
-    ]
+    expected_result = [record1, record2]
     assert result == expected_result
 
 
