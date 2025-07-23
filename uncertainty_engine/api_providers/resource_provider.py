@@ -348,7 +348,7 @@ class ResourceProvider(ApiProviderBase):
     @ApiProviderBase.with_auth_refresh
     def list_resources(
         self, project_id: str, resource_type: str
-    ) -> list[dict[str, Any]]:
+    ) -> list[ResourceRecordOutput]:
         """
         Get a list of all resources of a specific type in your project.
 
