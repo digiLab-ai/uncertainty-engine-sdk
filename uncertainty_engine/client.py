@@ -51,14 +51,14 @@ class Job(BaseModel):
 class Client:
     def __init__(
         self,
-        env: Environment | str = "local",
+        env: Environment | str = "prod",
     ):
         """
         A client for interacting with the Uncertainty Engine.
 
         Args:
             env: Environment configuration or name of a deployed environment.
-                Defaults to a local development environment.
+                Defaults to the production environment.
 
         Example:
             >>> client = Client(
