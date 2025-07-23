@@ -1,0 +1,6 @@
+{
+    "cognito_user_pool_client_id": "3vj5pe253j4v070euqjdk38a24",
+    "core_api": "https://de1v75vvk6.execute-api.eu-west-2.amazonaws.com",
+    "region": "eu-west-2",
+    "resource_api": "https://m90q55iux6.execute-api.eu-west-2.amazonaws.com"
+}
