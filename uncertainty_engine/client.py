@@ -5,6 +5,7 @@ from typing import Optional, Union
 
 from pydantic import BaseModel
 from typeguard import typechecked
+from uncertainty_engine_types import JobInfo
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
@@ -201,7 +202,7 @@ class Client:
 
         return Job(node_id=node, job_id=job_id)
 
-    def run_node(self, node: Union[str, Node], input: Optional[dict] = None) -> dict:
+    def run_node(self, node: Union[str, Node], input: Optional[dict] = None) -> JobInfo:
         """
         Run a node synchronously.
 
@@ -211,12 +212,12 @@ class Client:
                 this is required. Defaults to ``None``.
 
         Returns:
-            The output of the node.
+            A JobInfo object containing the response data of the job.
         """
         job_id = self.queue_node(node, input)
         return self._wait_for_job(job_id)
 
-    def job_status(self, job: Job) -> dict:
+    def job_status(self, job: Job) -> JobInfo:
         """
         Check the status of a job.
 
@@ -224,10 +225,17 @@ class Client:
             job: The job to check.
 
         Returns:
-            A dictionary containing the status of the job.
+            A JobInfo object containing the response data of the job.
+            Example:
+                JobInfo(
+                status=<JobStatus.COMPLETED: 'completed'>,
+                message='Job completed at 2025-07-23 09:10:59.146669',
+                inputs={'lhs': 1, 'rhs': 2},
+                outputs={'ans': 3.0}
+                )
         """
-
-        return self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
+        response_data = self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
+        return JobInfo(**response_data)
 
     def view_tokens(self) -> Optional[int]:
         """
@@ -245,7 +253,7 @@ class Client:
 
         return tokens
 
-    def _wait_for_job(self, job: Job) -> dict:
+    def _wait_for_job(self, job: Job) -> JobInfo:
         """
         Wait for a job to complete.
 
@@ -253,13 +261,13 @@ class Client:
             job: The job to wait for.
 
         Returns:
-            The completed status of the job.
+            A JobInfo object containing the response data of the job.
         """
         response = self.job_status(job)
-        status = ValidStatus(response["status"])
+        status = ValidStatus(response.status.value)
         while not status.is_terminal():
             sleep(STATUS_WAIT_TIME)
             response = self.job_status(job)
-            status = ValidStatus(response["status"])
+            status = ValidStatus(response.status.value)
 
         return response
