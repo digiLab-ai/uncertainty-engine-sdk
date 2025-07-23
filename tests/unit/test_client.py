@@ -16,7 +16,7 @@ def test_init_default() -> None:
     """
 
     client = Client()
-    assert client.env == Environment.get("local")
+    assert client.env == Environment.get("prod")
 
 
 def test_init_with_named_env() -> None:
