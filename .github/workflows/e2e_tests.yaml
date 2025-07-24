@@ -27,3 +27,12 @@ jobs:
       ue-account-id: ${{ secrets.UE_DEV_ACCOUNT_ID }}
       ue-password: ${{ secrets.UE_DEV_PASSWORD }}
       ue-username: ${{ secrets.UE_DEV_USERNAME }}
+
+  prod:
+    uses: ./.github/workflows/e2e-environment.yaml
+    with:
+      ue-environment: prod
+    secrets:
+      ue-account-id: ${{ secrets.UE_PROD_ACCOUNT_ID }}
+      ue-password: ${{ secrets.UE_PROD_PASSWORD }}
+      ue-username: ${{ secrets.UE_PROD_USERNAME }}
