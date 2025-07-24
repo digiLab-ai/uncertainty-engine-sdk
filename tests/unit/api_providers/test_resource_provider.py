@@ -636,7 +636,7 @@ def test_list_resources_validation_error(resource_provider: ResourceProvider):
         return_value=mock_response
     )
 
-    with pytest.raises(Exception, match="Error listing project resources"):
+    with pytest.raises(Exception, match="Error listing resource records"):
         resource_provider.list_resources("test-project", "dataset")
 
 

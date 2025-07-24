@@ -381,9 +381,9 @@ class ResourceProvider(ApiProviderBase):
                 for record in resource_records
             ]
         except ApiException as e:
-            raise Exception(f"Error listing project resources: {format_api_error(e)}")
+            raise Exception(f"Error listing resource records: {format_api_error(e)}")
         except Exception as e:
-            raise Exception(f"Error listing project resources: {str(e)}")
+            raise Exception(f"Error listing resource records: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
     def delete_resource(
