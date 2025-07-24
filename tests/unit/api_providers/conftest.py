@@ -6,6 +6,7 @@ from uncertainty_engine_resource_client.api.project_records_api import ProjectRe
 from uncertainty_engine_resource_client.api.resources_api import ResourcesApi
 from uncertainty_engine_resource_client.api_client import ApiClient
 from uncertainty_engine_resource_client.configuration import Configuration
+from uncertainty_engine_resource_client.models import ResourceRecordOutput
 
 from uncertainty_engine.auth_service import AuthService
 
@@ -95,7 +96,7 @@ def resource_provider(
 def mock_resource_record():
     """Creates a mock resource record."""
 
-    record = MagicMock()
+    record = MagicMock(spec=ResourceRecordOutput)
     record.id = "test-resource-id"
     record.name = "Test Resource"
     record.versions = ["v1"]
