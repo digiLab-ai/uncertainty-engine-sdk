@@ -11,14 +11,12 @@ from uncertainty_engine_resource_client.models import (
     PostResourceRecordRequest,
     PostResourceVersionRequest,
     ResourceRecordInput,
+    ResourceRecordOutput,
     ResourceVersionRecordInput,
 )
 
 from uncertainty_engine.api_providers import ApiProviderBase
-from uncertainty_engine.api_providers.constants import (
-    DATETIME_STRING_FORMAT,
-    DEFAULT_RESOURCE_DEPLOYMENT,
-)
+from uncertainty_engine.api_providers.constants import DEFAULT_RESOURCE_DEPLOYMENT
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.utils import format_api_error
 
@@ -350,7 +348,7 @@ class ResourceProvider(ApiProviderBase):
     @ApiProviderBase.with_auth_refresh
     def list_resources(
         self, project_id: str, resource_type: str
-    ) -> list[dict[str, Any]]:
+    ) -> list[ResourceRecordOutput]:
         """
         Get a list of all resources of a specific type in your project.
 
@@ -365,25 +363,27 @@ class ResourceProvider(ApiProviderBase):
             A list of all matching resources with their details
 
         Example:
-            >>> models = client.list(
+            >>> models = client.resources.list_resources(
             ...     project_id="your-project-123",
             ...     resource_type="model"
             ... )
             >>> print(f"Found {len(models)} models")
             >>> print(models)
         """
-        resource_records = self.resources_client.get_project_resource_records(
-            project_id, resource_type
-        ).resource_records
 
-        return [
-            {
-                "id": record.id,
-                "name": record.name,
-                "created_at": record.created_at.strftime(DATETIME_STRING_FORMAT),
-            }
-            for record in resource_records
-        ]
+        try:
+
+            resource_records = self.resources_client.get_project_resource_records(
+                project_id, resource_type
+            ).resource_records
+            return [
+                ResourceRecordOutput.model_validate(record)
+                for record in resource_records
+            ]
+        except ApiException as e:
+            raise Exception(f"Error listing resource records: {format_api_error(e)}")
+        except Exception as e:
+            raise Exception(f"Error listing resource records: {str(e)}")
 
     @ApiProviderBase.with_auth_refresh
     def delete_resource(
