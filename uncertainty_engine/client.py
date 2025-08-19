@@ -1,11 +1,10 @@
-from enum import Enum
 from os import environ
 from time import sleep
 from typing import Optional, Union
 
 from pydantic import BaseModel
 from typeguard import typechecked
-from uncertainty_engine_types import JobInfo
+from uncertainty_engine_types import JobInfo, JobStatus
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
@@ -21,21 +20,6 @@ from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
 
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
-
-
-# TDOO: Use the Enum class from the uncertainty_engine_types package.
-class ValidStatus(Enum):
-    """
-    Represents the possible statuses fort a job in the Uncertainty Engine.
-    """
-
-    STARTED = "running"
-    PENDING = "pending"
-    SUCCESS = "completed"
-    FAILURE = "failed"
-
-    def is_terminal(self) -> bool:
-        return self in [ValidStatus.SUCCESS, ValidStatus.FAILURE]
 
 
 # TODO: Move this to the uncertainty_engine_types package.
@@ -264,10 +248,10 @@ class Client:
             A JobInfo object containing the response data of the job.
         """
         response = self.job_status(job)
-        status = ValidStatus(response.status.value)
+        status = JobStatus(response.status.value)
         while not status.is_terminal():
             sleep(STATUS_WAIT_TIME)
             response = self.job_status(job)
-            status = ValidStatus(response.status.value)
+            status = JobStatus(response.status.value)
 
         return response
