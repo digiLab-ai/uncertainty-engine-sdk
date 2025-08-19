@@ -3387,4 +3387,4 @@ vis = ["matplotlib", "networkx"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.13"
-content-hash = "d06e793bf5f9972e170e2a6c5c1fcd8e1f95bc01426fec15089e6469bb8e0fe0"
+content-hash = "ce3693caadfbc57ec6c81b7590578b103a17448d95eff1a6a938b26821fd0cd2"
