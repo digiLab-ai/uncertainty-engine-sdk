@@ -1,6 +1,8 @@
 import time
 
-from uncertainty_engine.client import Client, ValidStatus
+from uncertainty_engine_types import JobStatus
+
+from uncertainty_engine.client import Client
 
 
 class TestClientMethods:
@@ -55,10 +57,10 @@ class TestClientMethods:
         job_id = TestClientMethods.job_id
         response = e2e_client.job_status(job_id)
 
-        status = ValidStatus.PENDING.value
-        while status not in [ValidStatus.SUCCESS.value, ValidStatus.FAILURE.value]:
+        status = JobStatus.PENDING.value
+        while status not in [JobStatus.COMPLETED.value, JobStatus.FAILED.value]:
             response = e2e_client.job_status(job_id)
             status = response.status.value
             time.sleep(5)
 
-        assert status == ValidStatus.SUCCESS.value
+        assert status == JobStatus.COMPLETED.value
