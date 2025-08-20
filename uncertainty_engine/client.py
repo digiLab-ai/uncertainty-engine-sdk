@@ -156,21 +156,21 @@ class Client:
 
         return node_list
 
-    def queue_node(self, node: Union[str, Node], input: Optional[dict] = None) -> Job:
+    def queue_node(self, node: Union[str, Node], inputs: Optional[dict] = None) -> Job:
         """
         Queue a node for execution.
 
         Args:
             node: The name of the node to execute or the node object itself.
-            input: The input data for the node. If the node is defined by its name,
+            inputs: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
 
         Returns:
             A Job object representing the queued job.
         """
         if isinstance(node, Node):
-            node, input = node()
-        elif isinstance(node, str) and input is None:
+            node, inputs = node()
+        elif isinstance(node, str) and inputs is None:
             raise ValueError(
                 "Input data/parameters are required when specifying a node by name."
             )
@@ -180,25 +180,27 @@ class Client:
             {
                 "email": self.email,
                 "node_id": node,
-                "inputs": input,
+                "inputs": inputs,
             },
         )
 
         return Job(node_id=node, job_id=job_id)
 
-    def run_node(self, node: Union[str, Node], input: Optional[dict] = None) -> JobInfo:
+    def run_node(
+        self, node: Union[str, Node], inputs: Optional[dict] = None
+    ) -> JobInfo:
         """
         Run a node synchronously.
 
         Args:
             node: The name of the node to execute or the node object itself.
-            input: The input data for the node. If the node is defined by its name,
+            inputs: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
 
         Returns:
             A JobInfo object containing the response data of the job.
         """
-        job_id = self.queue_node(node, input)
+        job_id = self.queue_node(node, inputs)
         return self._wait_for_job(job_id)
 
     def job_status(self, job: Job) -> JobInfo:
