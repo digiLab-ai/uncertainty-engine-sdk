@@ -187,7 +187,9 @@ class Client:
         return Job(node_id=node, job_id=job_id)
 
     def run_node(
-        self, node: Union[str, Node], inputs: Optional[dict] = None
+        self,
+        node: Union[str, Node],
+        inputs: Optional[dict] = None,
     ) -> JobInfo:
         """
         Run a node synchronously.
