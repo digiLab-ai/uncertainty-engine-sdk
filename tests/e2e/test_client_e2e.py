@@ -42,7 +42,7 @@ class TestClientMethods:
             "rhs": 2,
         }  # Inputs are left hand side and right hand side of equation
 
-        job_id = e2e_client.queue_node(node=node_name, input=inputs)
+        job_id = e2e_client.queue_node(node=node_name, inputs=inputs)
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestClientMethods.job_id = job_id

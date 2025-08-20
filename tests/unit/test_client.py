@@ -111,7 +111,7 @@ class TestClientMethods:
 
             response = client.queue_node(
                 node=mock_job.node_id,
-                input={"key": "value"},
+                inputs={"key": "value"},
             )
 
         assert response == mock_job
@@ -270,7 +270,7 @@ class TestClientMethods:
                 outputs={"result": 42},
             )
 
-            client.run_node(node="node_a", input={"key": "value"})
+            client.run_node(node="node_a", inputs={"key": "value"})
 
             mock_queue_node.assert_called_once_with("node_a", {"key": "value"})
             mock_wait_for_job.assert_called_once_with(mock_job)
