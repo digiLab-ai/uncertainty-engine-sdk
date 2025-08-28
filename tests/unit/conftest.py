@@ -100,12 +100,16 @@ def mock_auth_service(mock_access_token: str, mock_account_id: str):
 
 @pytest.fixture
 def mock_auth_file_data(
-    mock_account_id: str, mock_access_token: str, mock_refresh_token: str
-):
+    mock_account_id: str,
+    mock_access_token: str,
+    mock_id_token: str,
+    mock_refresh_token: str,
+) -> dict[str, str]:
     """Default mock data for auth file"""
     return {
         "account_id": mock_account_id,
         "access_token": mock_access_token,
+        "id_token": mock_id_token,
         "refresh_token": mock_refresh_token,
     }
 

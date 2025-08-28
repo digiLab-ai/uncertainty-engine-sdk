@@ -159,8 +159,11 @@ def test_refresh_successful(
 
     # Setup new token values
     new_access_token = "new_access_token"
+    new_id_token = "new_id_token"
+
     mock_cognito_authenticator.refresh_tokens.return_value = {
-        "access_token": new_access_token
+        "access_token": new_access_token,
+        "id_token": new_id_token,
     }
 
     # Mock _save_to_file
@@ -170,8 +173,10 @@ def test_refresh_successful(
     result = auth_service.refresh()
 
     # Verify token was refreshed
+    assert auth_service.token
     assert result is auth_service.token
     assert auth_service.token.access_token == new_access_token
+    assert auth_service.token.id_token == new_id_token
 
     # Verify authenticator was called with refresh token
     mock_cognito_authenticator.refresh_tokens.assert_called_once_with(

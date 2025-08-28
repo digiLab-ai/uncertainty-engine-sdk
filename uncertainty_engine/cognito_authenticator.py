@@ -8,28 +8,34 @@ from botocore.exceptions import ClientError
 
 class CognitoToken:
     """
-    Wrapper around authentication tokens with decoding capabilities
+    A set of Cognito tokens.
 
-    Attributes:
-        access_token (str): The access token for the user
-        refresh_token (str): The refresh token for the user
-        _decoded_payload (dict): The decoded payload of the JWT token
-
+    Args:
+        access_token: Access token.
+        refresh_token: Refresh token.
+        id_token: ID token.
     """
 
-    def __init__(self, access_token: str, refresh_token: str):
+    def __init__(
+        self,
+        access_token: str,
+        refresh_token: str,
+        id_token: str,
+    ) -> None:
         self.access_token = access_token
+        self.id_token = id_token
         self.refresh_token = refresh_token
 
     def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, CognitoToken)
             and other.access_token == self.access_token
+            and other.id_token == self.id_token
             and other.refresh_token == self.refresh_token
         )
 
     def __hash__(self) -> int:
-        return hash((self.access_token, self.refresh_token))
+        return hash((self.access_token, self.id_token, self.refresh_token))
 
     @property
     def decoded_payload(self) -> Dict:
@@ -143,6 +149,7 @@ class CognitoAuthenticator:
             return CognitoToken(
                 self._get_cognito_response_value(result, "AccessToken"),
                 self._get_cognito_response_value(result, "RefreshToken"),
+                self._get_cognito_response_value(result, "IdToken"),
             )
 
         except self.client.exceptions.NotAuthorizedException:
