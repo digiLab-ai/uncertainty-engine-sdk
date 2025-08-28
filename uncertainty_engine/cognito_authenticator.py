@@ -21,6 +21,13 @@ class CognitoToken:
         self.access_token = access_token
         self.refresh_token = refresh_token
 
+    def __eq__(self, other: object) -> bool:
+        return (
+            isinstance(other, CognitoToken)
+            and other.access_token == self.access_token
+            and other.refresh_token == self.refresh_token
+        )
+
     @property
     def decoded_payload(self) -> Dict:
         """Decode and cache the JWT token payload"""
