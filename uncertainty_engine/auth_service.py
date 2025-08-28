@@ -36,12 +36,7 @@ class AuthService:
                 "Username and password must be provided or set in environment variables UE_USERNAME and UE_PASSWORD"
             )
 
-        auth_details = self.authenticator.authenticate(username, password)
-
-        self.token = CognitoToken(
-            access_token=auth_details["access_token"],
-            refresh_token=auth_details["refresh_token"],
-        )
+        self.token = self.authenticator.authenticate(username, password)
         self.account_id = account_id
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
