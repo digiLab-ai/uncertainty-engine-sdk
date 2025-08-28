@@ -5,7 +5,7 @@ from botocore.stub import Stubber
 from mypy_boto3_cognito_idp.client import CognitoIdentityProviderClient
 from pytest import FixtureRequest, raises
 
-from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
 
 @pytest.fixture
@@ -92,6 +92,7 @@ def test_init(
             "response": {
                 "AuthenticationResult": {
                     "AccessToken": "mock_access_token",
+                    "IdToken": "mock_id_token",
                     "RefreshToken": "mock_refresh_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
@@ -110,6 +111,7 @@ def test_authenticate(
     cognito_client_stub,
     authenticator_args: dict[str, str],
     mock_access_token: str,
+    mock_id_token: str,
     mock_refresh_token: str,
 ):
     """Test the authenticate method of CognitoAuthenticator."""
@@ -120,10 +122,13 @@ def test_authenticate(
     authenticator = CognitoAuthenticator(**authenticator_args)
     token = authenticator.authenticate(username, password)
 
-    assert token == {
-        "access_token": mock_access_token,
-        "refresh_token": mock_refresh_token,
-    }
+    expected_token = CognitoToken(
+        mock_access_token,
+        mock_refresh_token,
+        mock_id_token,
+    )
+
+    assert token == expected_token
 
 
 @pytest.mark.parametrize(
