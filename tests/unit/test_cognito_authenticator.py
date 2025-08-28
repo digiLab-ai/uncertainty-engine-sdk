@@ -198,39 +198,6 @@ def test_authenticate_exception(
             "response": {
                 "AuthenticationResult": {
                     "AccessToken": "mock_access_token",
-                    "RefreshToken": "mock_refresh_token",
-                    "ExpiresIn": 3600,
-                    "TokenType": "Bearer",
-                }
-            },
-            "method_args": {
-                "AuthFlow": "USER_PASSWORD_AUTH",
-                "ClientId": "1234567890abcdef",
-                "AuthParameters": {"USERNAME": "testuser", "PASSWORD": "testpassword"},
-            },
-        }
-    ],
-    indirect=True,
-)
-def test_get_access_token(
-    cognito_client_stub, authenticator_args: dict[str, str], mock_access_token: str
-):
-    """Test the authenticate method of CognitoAuthenticator."""
-
-    authenticator = CognitoAuthenticator(**authenticator_args)
-    token = authenticator.get_access_token("testuser", "testpassword")
-
-    assert token == mock_access_token
-
-
-@pytest.mark.parametrize(
-    "cognito_client_stub",
-    [
-        {
-            "method": "initiate_auth",
-            "response": {
-                "AuthenticationResult": {
-                    "AccessToken": "mock_access_token",
                     "IdToken": "mock_id_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",

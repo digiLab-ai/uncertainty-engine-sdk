@@ -127,20 +127,6 @@ class CognitoAuthenticator:
         except Exception:
             raise
 
-    def get_access_token(self, username: str, password: str) -> str:
-        """Get only the access token from Cognito.
-
-        A convenience method to get just the access token.
-
-        Returns:
-            str: The access token
-
-        Raises:
-            Exception: If authentication fails
-        """
-        auth_result = self.authenticate(username, password)
-        return auth_result.get("access_token")
-
     def refresh_tokens(self, refresh_token: str) -> Dict:
         """Refresh tokens using a refresh token.
 
