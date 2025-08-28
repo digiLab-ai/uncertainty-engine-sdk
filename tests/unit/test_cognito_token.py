@@ -6,6 +6,101 @@ import pytest
 from uncertainty_engine.cognito_authenticator import CognitoToken
 
 
+def test_eq() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    assert a == b
+
+
+def test_eq_different_type() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = "not a token"
+
+    assert a != b
+
+
+def test_eq_different_access() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = CognitoToken(
+        "different_access",
+        "refresh",
+    )
+
+    assert a != b
+
+
+def test_eq_different_refresh() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = CognitoToken(
+        "access",
+        "different_refresh",
+    )
+
+    assert a != b
+
+
+def test_hash() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    assert hash(a) == hash(b)
+
+
+def test_hash_different_access() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = CognitoToken(
+        "different_access",
+        "refresh",
+    )
+
+    assert hash(a) != hash(b)
+
+
+def test_hash_different_refresh() -> None:
+    a = CognitoToken(
+        "access",
+        "refresh",
+    )
+
+    b = CognitoToken(
+        "access",
+        "different_refresh",
+    )
+
+    assert hash(a) != hash(b)
+
+
 def test_init(mock_access_token: str, mock_refresh_token: str):
     token = CognitoToken(mock_access_token, mock_refresh_token)
     assert token.access_token == mock_access_token
