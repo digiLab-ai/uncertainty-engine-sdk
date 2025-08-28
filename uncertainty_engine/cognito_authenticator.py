@@ -28,6 +28,9 @@ class CognitoToken:
             and other.refresh_token == self.refresh_token
         )
 
+    def __hash__(self) -> int:
+        return hash((self.access_token, self.refresh_token))
+
     @property
     def decoded_payload(self) -> Dict:
         """Decode and cache the JWT token payload"""
