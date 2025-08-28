@@ -78,7 +78,7 @@ def mock_cognito_authenticator(
         "access_token": mock_access_token,
         "refresh_token": mock_refresh_token,
     }
-    mock_authenticator.get_access_token.return_value = mock_access_token
+
     mock_authenticator.refresh_tokens.return_value = {
         "access_token": mock_access_token,
         "id_token": mock_id_token,
