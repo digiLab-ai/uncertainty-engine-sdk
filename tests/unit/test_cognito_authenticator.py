@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from botocore.stub import Stubber
 from mypy_boto3_cognito_idp.client import CognitoIdentityProviderClient
-from pytest import FixtureRequest
+from pytest import FixtureRequest, raises
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
@@ -190,6 +190,19 @@ def test_authenticate_exception(
     with pytest.raises(KeyError):
         authenticator = CognitoAuthenticator(**authenticator_args)
         authenticator.authenticate("testuser", "testpassword")
+
+
+def test_get_cognito_response_value() -> None:
+    response = {"foo": "bar"}
+    value = CognitoAuthenticator.get_cognito_response_value(response, "foo")
+    assert value == "bar"
+
+
+def test_get_cognito_response_value_not_provided() -> None:
+    response = {"foo": "bar"}
+
+    with raises(KeyError, match="Cognito did not provide woo"):
+        CognitoAuthenticator.get_cognito_response_value(response, "woo")
 
 
 @pytest.mark.parametrize(
