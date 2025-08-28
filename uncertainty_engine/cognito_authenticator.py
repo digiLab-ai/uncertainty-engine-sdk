@@ -166,6 +166,27 @@ class CognitoAuthenticator:
         except Exception:
             raise
 
+    @staticmethod
+    def get_cognito_response_value(response: Any, key: str) -> str:
+        """
+        Gets a specific value from a dictionary provided by Cognito.
+
+        Args:
+            response: Cognito response.
+            key: Value key.
+
+        Returns:
+            Response value.
+
+        Raises:
+            KeyError: Raised if the specified value is not present.
+        """
+
+        if value := response.get(key):
+            return str(value)
+
+        raise KeyError(f"Cognito did not provide {key}")
+
     def refresh_tokens(self, refresh_token: str) -> Dict:
         """Refresh tokens using a refresh token.
 
