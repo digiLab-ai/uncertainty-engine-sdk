@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict
+from typing import Any, Dict
 
 import boto3
 import jwt
@@ -136,6 +136,27 @@ class CognitoAuthenticator:
             raise Exception(f"Authentication failed: {error_message}")
         except Exception:
             raise
+
+    @staticmethod
+    def get_cognito_response_value(response: Any, key: str) -> str:
+        """
+        Gets a specific value from a dictionary provided by Cognito.
+
+        Args:
+            response: Cognito response.
+            key: Value key.
+
+        Returns:
+            Response value.
+
+        Raises:
+            KeyError: Raised if the specified value is not present.
+        """
+
+        if value := response.get(key):
+            return str(value)
+
+        raise KeyError(f"Cognito did not provide {key}")
 
     def refresh_tokens(self, refresh_token: str) -> Dict:
         """Refresh tokens using a refresh token.
