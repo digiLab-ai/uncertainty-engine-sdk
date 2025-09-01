@@ -216,6 +216,21 @@ def test_get_auth_header(auth_service_with_file: tuple[AuthService, MagicMock]):
     assert header == {"Authorization": f"Bearer {auth_service.token.access_token}"}
 
 
+def test_get_auth_header_with_id(
+    auth_service_with_file: tuple[AuthService, MagicMock],
+    mock_access_token: str,
+    mock_id_token: str,
+) -> None:
+    auth_service, _ = auth_service_with_file
+
+    headers = auth_service.get_auth_header(include_id=True)
+
+    assert headers == {
+        "Authorization": f"Bearer {mock_access_token}",
+        "X-ID-Token": mock_id_token,
+    }
+
+
 def test_get_auth_header_not_authenticated(auth_service_no_file: AuthService):
     """Test get_auth_header fails when not authenticated"""
     with pytest.raises(ValueError) as excinfo:
