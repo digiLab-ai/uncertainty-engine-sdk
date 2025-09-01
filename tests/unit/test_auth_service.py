@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import pytest
 
@@ -159,9 +159,14 @@ def test_refresh_successful(
 
     # Setup new token values
     new_access_token = "new_access_token"
-    mock_cognito_authenticator.refresh_tokens.return_value = {
-        "access_token": new_access_token
-    }
+    new_id_token = "new_id_token"
+
+    mock_cognito_authenticator.refresh_tokens = Mock(
+        return_value={
+            "access_token": new_access_token,
+            "id_token": new_id_token,
+        },
+    )
 
     # Mock _save_to_file
     monkeypatch.setattr(auth_service, "_save_to_file", lambda: None)
@@ -170,6 +175,7 @@ def test_refresh_successful(
     result = auth_service.refresh()
 
     # Verify token was refreshed
+    assert auth_service.token
     assert result is auth_service.token
     assert auth_service.token.access_token == new_access_token
 
