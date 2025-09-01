@@ -5,6 +5,15 @@ from typing import Optional
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
+AUTH_CACHE_KEYS = [
+    "account_id",
+    "access_token",
+    "refresh_token",
+]
+"""
+All the keys that are expected to exist in the authorisation cache file.
+"""
+
 AUTH_FILE_NAME = ".ue_auth"
 
 
@@ -133,9 +142,7 @@ class AuthService:
         try:
             with open(auth_file, "r") as f:
                 auth_data = json.load(f)
-            if all(
-                k in auth_data for k in ["account_id", "access_token", "refresh_token"]
-            ):
+            if all(k in auth_data for k in AUTH_CACHE_KEYS):
                 self.token = CognitoToken(
                     access_token=auth_data["access_token"],
                     refresh_token=auth_data["refresh_token"],
