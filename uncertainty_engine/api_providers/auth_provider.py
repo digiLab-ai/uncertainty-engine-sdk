@@ -13,7 +13,7 @@ class AuthProvider(ApiProviderBase):
 
     Args:
         auth_service: Authorisation service.
-        deployment: API endpoint.
+        api_endpoint: API endpoint.
     """
 
     def __init__(self, auth_service: AuthService, api_endpoint: str) -> None:
