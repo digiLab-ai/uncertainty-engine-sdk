@@ -92,6 +92,7 @@ def test_init(
             "response": {
                 "AuthenticationResult": {
                     "AccessToken": "mock_access_token",
+                    "IdToken": "mock_id_token",
                     "RefreshToken": "mock_refresh_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
