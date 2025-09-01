@@ -94,26 +94,6 @@ class CognitoAuthenticator:
         # Initialize Cognito client
         self.client = boto3.client("cognito-idp", region_name=self.region)
 
-    def _get_cognito_response_value(self, response: Any, key: str) -> str:
-        """
-        Gets a specific value from a dictionary provided by Cognito.
-
-        Args:
-            response: Cognito response.
-            key: Value key.
-
-        Returns:
-            Response value.
-
-        Raises:
-            KeyError: Raised if the specified value is not present.
-        """
-
-        if value := response.get(key):
-            return str(value)
-
-        raise KeyError(f"Cognito did not provide {key}")
-
     def authenticate(self, username: str, password: str) -> CognitoToken:
         """Authenticate with Cognito and retrieve tokens.
 
@@ -147,9 +127,9 @@ class CognitoAuthenticator:
             result = response["AuthenticationResult"]
 
             return CognitoToken(
-                self._get_cognito_response_value(result, "AccessToken"),
-                self._get_cognito_response_value(result, "RefreshToken"),
-                self._get_cognito_response_value(result, "IdToken"),
+                self.get_cognito_response_value(result, "AccessToken"),
+                self.get_cognito_response_value(result, "RefreshToken"),
+                self.get_cognito_response_value(result, "IdToken"),
             )
 
         except self.client.exceptions.NotAuthorizedException:
