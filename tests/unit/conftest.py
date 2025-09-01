@@ -1,6 +1,6 @@
 import json
 import time
-from unittest.mock import MagicMock, PropertyMock, mock_open, patch
+from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 
 import boto3
 import pytest
@@ -18,6 +18,16 @@ def mock_access_token():
 @pytest.fixture
 def mock_refresh_token():
     return "mock_refresh_token"
+
+
+@pytest.fixture
+def mock_refreshed_cognito_tokens(mock_refresh_token: str) -> CognitoToken:
+    return CognitoToken(
+        "mock_refreshed_access_token",
+        # The implementation of the `refresh_tokens` function intentionally
+        # returns the original refresh token.
+        mock_refresh_token,
+    )
 
 
 @pytest.fixture
@@ -71,7 +81,9 @@ def mock_cognito_token(
 
 @pytest.fixture
 def mock_cognito_authenticator(
-    mock_access_token: str, mock_refresh_token: str, mock_id_token: str
+    mock_access_token: str,
+    mock_refresh_token: str,
+    mock_refreshed_cognito_tokens: CognitoToken,
 ):
     mock_authenticator = MagicMock(spec=CognitoAuthenticator)
     mock_authenticator.authenticate.return_value = {
@@ -79,11 +91,10 @@ def mock_cognito_authenticator(
         "refresh_token": mock_refresh_token,
     }
 
-    mock_authenticator.refresh_tokens.return_value = {
-        "access_token": mock_access_token,
-        "id_token": mock_id_token,
-        "expires_in": int(time.time() + 18000),
-    }
+    mock_authenticator.refresh_tokens = Mock(
+        return_value=mock_refreshed_cognito_tokens,
+    )
+
     return mock_authenticator
 
 

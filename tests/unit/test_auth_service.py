@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
 from uncertainty_engine.auth_service import AuthService
-from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
+from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
 
 def test_init_no_file(auth_service_no_file: AuthService):
@@ -152,21 +152,11 @@ def test_clear(auth_service_with_file: tuple[AuthService, MagicMock]):
 def test_refresh_successful(
     auth_service_with_file: tuple[AuthService, MagicMock],
     mock_cognito_authenticator: CognitoAuthenticator,
+    mock_refreshed_cognito_tokens: CognitoToken,
     monkeypatch,
 ):
     """Test successful token refresh"""
     auth_service, _ = auth_service_with_file
-
-    # Setup new token values
-    new_access_token = "new_access_token"
-    new_id_token = "new_id_token"
-
-    mock_cognito_authenticator.refresh_tokens = Mock(
-        return_value={
-            "access_token": new_access_token,
-            "id_token": new_id_token,
-        },
-    )
 
     # Mock _save_to_file
     monkeypatch.setattr(auth_service, "_save_to_file", lambda: None)
@@ -175,9 +165,8 @@ def test_refresh_successful(
     result = auth_service.refresh()
 
     # Verify token was refreshed
-    assert auth_service.token
     assert result is auth_service.token
-    assert auth_service.token.access_token == new_access_token
+    assert auth_service.token == mock_refreshed_cognito_tokens
 
     # Verify authenticator was called with refresh token
     mock_cognito_authenticator.refresh_tokens.assert_called_once_with(

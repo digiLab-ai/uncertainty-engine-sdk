@@ -160,14 +160,14 @@ class CognitoAuthenticator:
 
         raise KeyError(f"Cognito did not provide {key}")
 
-    def refresh_tokens(self, refresh_token: str) -> Dict:
+    def refresh_tokens(self, refresh_token: str) -> CognitoToken:
         """Refresh tokens using a refresh token.
 
         Args:
             refresh_token (str): The refresh token to use
 
         Returns:
-            Dict: A dictionary containing the new access token and ID token
+            Refreshed tokens.
 
         Raises:
             Exception: If token refresh fails
@@ -181,11 +181,12 @@ class CognitoAuthenticator:
 
             auth_result = response.get("AuthenticationResult", {})
 
-            return {
-                "access_token": auth_result.get("AccessToken"),
-                "id_token": auth_result.get("IdToken"),
-                "expires_in": auth_result.get("ExpiresIn", 3600),
-            }
+            return CognitoToken(
+                self.get_cognito_response_value(auth_result, "AccessToken"),
+                # The original code before I refactored this intentionally kept
+                # the same refresh token.
+                refresh_token,
+            )
 
         except ClientError as e:
             error_message = e.response.get("Error", {}).get("Message", "Unknown error")
