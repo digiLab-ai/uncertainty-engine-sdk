@@ -13,13 +13,13 @@ class AuthProvider(ApiProviderBase):
 
     Args:
         auth_service: Authorisation service.
-        deployment: API endpoint.
+        api_endpoint: API endpoint.
     """
 
-    def __init__(self, auth_service: AuthService, deployment: str) -> None:
-        super().__init__(deployment, auth_service)
+    def __init__(self, auth_service: AuthService, api_endpoint: str) -> None:
+        super().__init__(api_endpoint, auth_service)
 
-        self.client = ApiClient(configuration=Configuration(host=deployment))
+        self.client = ApiClient(configuration=Configuration(host=api_endpoint))
         self.auth_client = AuthApi(self.client)
 
         self.update_api_authentication()

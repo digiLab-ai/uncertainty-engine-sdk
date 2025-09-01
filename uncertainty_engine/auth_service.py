@@ -6,7 +6,13 @@ from typing import Optional
 from uncertainty_engine.api_providers import AuthProvider
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
+AUTH_CACHE_ID_TOKEN = "id_token"
+"""
+Key for the user's ID token in the authorisation cache file.
+"""
+
 AUTH_CACHE_KEYS = [
+    AUTH_CACHE_ID_TOKEN,
     "account_id",
     "access_token",
     "refresh_token",
@@ -108,6 +114,7 @@ class AuthService:
             )
 
         auth_data = {
+            AUTH_CACHE_ID_TOKEN: self.token.id_token,
             "account_id": self.account_id,
             "access_token": self.token.access_token,
             "refresh_token": self.token.refresh_token,
@@ -139,17 +146,28 @@ class AuthService:
             self.clear()
             raise ValueError(f"Failed to refresh token: {str(e)}")
 
-    def get_auth_header(self) -> dict[str, str]:
+    def get_auth_header(self, include_id: bool = False) -> dict[str, str]:
         """
-        Get the Authorization header with the current token
+        Gets the authorisation and identity headers to include in an API
+        request.
+
+        Args:
+            include_id: Include an ID token as the "X-ID-Token" header.
 
         Returns:
-            A configure API Header containing the access token in a dictionary format.
+            HTTP request headers.
         """
         if not self.token:
             raise ValueError("Not authenticated")
 
-        return {"Authorization": f"Bearer {self.token.access_token}"}
+        headers = {
+            "Authorization": f"Bearer {self.token.access_token}",
+        }
+
+        if include_id:
+            headers["X-ID-Token"] = self.token.id_token
+
+        return headers
 
     def _load_from_file(self) -> None:
         """Load authentication details from file if it exists"""
@@ -165,6 +183,7 @@ class AuthService:
                 self.token = CognitoToken(
                     access_token=auth_data["access_token"],
                     refresh_token=auth_data["refresh_token"],
+                    id_token=auth_data[AUTH_CACHE_ID_TOKEN],
                 )
                 self.account_id = auth_data["account_id"]
         except Exception as e:
