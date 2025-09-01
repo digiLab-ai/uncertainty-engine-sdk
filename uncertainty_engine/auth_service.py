@@ -6,6 +6,9 @@ from typing import Optional
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
 AUTH_CACHE_ID_TOKEN = "id_token"
+"""
+Key for the user's ID token in the authorisation cache file.
+"""
 
 AUTH_CACHE_KEYS = [
     AUTH_CACHE_ID_TOKEN,
@@ -13,6 +16,9 @@ AUTH_CACHE_KEYS = [
     "access_token",
     "refresh_token",
 ]
+"""
+All the keys that are expected to exist in the authorisation cache file.
+"""
 
 AUTH_FILE_NAME = ".ue_auth"
 
