@@ -9,6 +9,7 @@ from uncertainty_engine_types import JobInfo, JobStatus
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
     ApiProviderBase,
+    AuthProvider,
     ProjectsProvider,
     ResourceProvider,
     WorkflowsProvider,
@@ -80,6 +81,16 @@ class Client:
         Core API interaction.
         """
 
+        self.auth = AuthProvider(
+            self.auth_service,
+            self.env.resource_api,
+        )
+        """
+        Resource Service Authorisation API client.
+        """
+
+        self.auth_service.auth_provider = self.auth
+
         self.projects = ProjectsProvider(
             self.auth_service,
             self.env.resource_api,
@@ -94,6 +105,7 @@ class Client:
         )
 
         self._providers: list[ApiProviderBase] = [
+            self.auth,
             self.projects,
             self.resources,
             self.workflows,

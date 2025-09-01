@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from uncertainty_engine.api_providers import AuthProvider
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
 AUTH_CACHE_KEYS = [
@@ -22,6 +23,17 @@ class AuthService:
 
     def __init__(self, authenticator: CognitoAuthenticator):
         self.account_id: Optional[str] = None
+
+        self.auth_provider: AuthProvider | None = None
+        """
+        Resource Service Authorisation API client.
+        """
+
+        self.resource_token: str | None = None
+        """
+        Resource Service API token.
+        """
+
         self.token: Optional[CognitoToken] = None
         self.authenticator = authenticator
 
@@ -45,8 +57,17 @@ class AuthService:
                 "Username and password must be provided or set in environment variables UE_USERNAME and UE_PASSWORD"
             )
 
+        if not self.auth_provider:
+            raise ValueError(
+                "Cannot authenticate without an Resource Service "
+                "Authorisation API client"
+            )
+
         self.token = self.authenticator.authenticate(username, password)
         self.account_id = account_id
+
+        self.auth_provider.update_api_authentication()
+        self.resource_token = self.auth_provider.get_tokens().access_token
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
