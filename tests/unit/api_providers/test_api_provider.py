@@ -25,7 +25,7 @@ class ApiProviderTestClass(ApiProviderBase):
         self.fail_count = count
         self.call_count = 0
 
-    def update_api_authentication(self):
+    def update_api_authentication(self) -> None:
         """Update auth header with token from auth_service"""
         self.auth_header = self.auth_service.get_auth_header()
 
