@@ -193,6 +193,7 @@ class CognitoAuthenticator:
                 # The original code before I refactored this intentionally kept
                 # the same refresh token.
                 refresh_token,
+                self.get_cognito_response_value(auth_result, "IdToken"),
             )
 
         except ClientError as e:
