@@ -88,7 +88,7 @@ class CognitoAuthenticator:
         # Initialize Cognito client
         self.client = boto3.client("cognito-idp", region_name=self.region)
 
-    def authenticate(self, username: str, password: str) -> dict[str, str]:
+    def authenticate(self, username: str, password: str) -> CognitoToken:
         """Authenticate with Cognito and retrieve tokens.
 
         Args:
@@ -96,7 +96,7 @@ class CognitoAuthenticator:
             password: str: The password of the user
 
         Returns:
-            Dict: A dictionary containing the access token, refresh token, and ID token
+            Cognito tokens.
 
         Raises:
             Exception: If authentication fails due to invalid credentials or other errors
@@ -118,11 +118,13 @@ class CognitoAuthenticator:
             if response.get("ChallengeName"):
                 raise Exception(f"Authentication was challenged: {response}")
 
-            # Extract authentication result
-            access_token = response["AuthenticationResult"]["AccessToken"]
-            refresh_token = response["AuthenticationResult"]["RefreshToken"]
+            result = response["AuthenticationResult"]
 
-            return {"access_token": access_token, "refresh_token": refresh_token}
+            return CognitoToken(
+                self.get_cognito_response_value(result, "AccessToken"),
+                self.get_cognito_response_value(result, "RefreshToken"),
+            )
+
         except self.client.exceptions.NotAuthorizedException:
             raise Exception("Invalid username or password.")
         except self.client.exceptions.UserNotFoundException:
