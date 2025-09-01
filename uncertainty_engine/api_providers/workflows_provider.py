@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import ValidationError
 from uncertainty_engine_resource_client.api import ProjectRecordsApi, WorkflowsApi
 from uncertainty_engine_resource_client.api_client import ApiClient
 from uncertainty_engine_resource_client.configuration import Configuration
@@ -26,7 +27,6 @@ from uncertainty_engine.api_providers.models import (
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.utils import format_api_error
-from pydantic import ValidationError
 
 
 class WorkflowsProvider(ApiProviderBase):
@@ -68,7 +68,7 @@ class WorkflowsProvider(ApiProviderBase):
         # Update auth headers of the API client (only if authenticated)
         self.update_api_authentication()
 
-    def update_api_authentication(self) -> None:  # type: ignore
+    def update_api_authentication(self) -> None:
         """Update API client with current auth headers"""
         if self.auth_service.is_authenticated:
 

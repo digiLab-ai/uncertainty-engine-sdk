@@ -43,7 +43,7 @@ class ProjectsProvider(ApiProviderBase):
         # Update auth headers of the API client (only if authenticated)
         self.update_api_authentication()
 
-    def update_api_authentication(self) -> None:  # type: ignore
+    def update_api_authentication(self) -> None:
         """Update API client with current auth headers"""
         if self.auth_service.is_authenticated:
             auth_header = self.auth_service.get_auth_header()

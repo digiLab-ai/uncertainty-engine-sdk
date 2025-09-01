@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, NoReturn, TypeVar
+from typing import Any, Callable, TypeVar
 
 from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 
@@ -35,7 +35,7 @@ class ApiProviderBase:
 
         return wrapper
 
-    def update_api_authentication(self) -> NoReturn:
+    def update_api_authentication(self) -> None:
         """
         All API providers that wish to use token refreshing must implement this method.
         This method should update the authorization header in the api client.
