@@ -27,6 +27,7 @@ def mock_refreshed_cognito_tokens(mock_refresh_token: str) -> CognitoToken:
         # The implementation of the `refresh_tokens` function intentionally
         # returns the original refresh token.
         mock_refresh_token,
+        "mock_refreshed_id_token",
     )
 
 

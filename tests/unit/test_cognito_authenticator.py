@@ -216,7 +216,7 @@ def test_get_cognito_response_value_not_provided() -> None:
             "response": {
                 "AuthenticationResult": {
                     "AccessToken": "mock_refreshed_access_token",
-                    "IdToken": "mock_id_token",
+                    "IdToken": "mock_refreshed_id_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
                 }
