@@ -92,6 +92,16 @@ def test_hash_different_refresh(token: CognitoToken) -> None:
     assert hash(token) != hash(b)
 
 
+def test_hash_different_id(token: CognitoToken) -> None:
+    b = CognitoToken(
+        "access",
+        "refresh",
+        "different_id",
+    )
+
+    assert hash(token) != hash(b)
+
+
 def test_init(
     mock_access_token: str,
     mock_id_token: str,
