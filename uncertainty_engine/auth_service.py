@@ -93,6 +93,7 @@ class AuthService:
             )
 
         auth_data = {
+            AUTH_CACHE_ID_TOKEN: self.token.id_token,
             "account_id": self.account_id,
             "access_token": self.token.access_token,
             "refresh_token": self.token.refresh_token,
