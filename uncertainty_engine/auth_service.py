@@ -116,11 +116,8 @@ class AuthService:
         if not self.token or not self.token.refresh_token:
             raise ValueError("No refresh token available. Please authenticate first.")
         try:
-            response = self.authenticator.refresh_tokens(self.token.refresh_token)
-            self.token = CognitoToken(
-                access_token=response["access_token"],
-                id_token=response["id_token"],
-                refresh_token=self.token.refresh_token,  # Keep existing refresh token
+            self.token = self.authenticator.refresh_tokens(
+                self.token.refresh_token,
             )
             self._save_to_file()
             return self.token

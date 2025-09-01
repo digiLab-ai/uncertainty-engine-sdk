@@ -215,7 +215,7 @@ def test_get_cognito_response_value_not_provided() -> None:
             "method": "initiate_auth",
             "response": {
                 "AuthenticationResult": {
-                    "AccessToken": "mock_access_token",
+                    "AccessToken": "mock_refreshed_access_token",
                     "IdToken": "mock_id_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
@@ -232,21 +232,16 @@ def test_get_cognito_response_value_not_provided() -> None:
 )
 def test_refresh_tokens(
     cognito_client_stub,
-    mock_access_token: str,
     mock_refresh_token: str,
-    mock_id_token: str,
-):
+    mock_refreshed_cognito_tokens: CognitoToken,
+) -> None:
     region = "eu-west-1"
     client_id = "1234567890abcdef"
 
     authenticator = CognitoAuthenticator(region, client_id)
     tokens = authenticator.refresh_tokens(mock_refresh_token)
 
-    assert tokens == {
-        "access_token": mock_access_token,
-        "id_token": mock_id_token,
-        "expires_in": 3600,
-    }
+    assert tokens == mock_refreshed_cognito_tokens
 
 
 @pytest.mark.parametrize(
