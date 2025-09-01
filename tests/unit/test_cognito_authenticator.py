@@ -111,6 +111,7 @@ def test_authenticate(
     cognito_client_stub,
     authenticator_args: dict[str, str],
     mock_access_token: str,
+    mock_id_token: str,
     mock_refresh_token: str,
 ):
     """Test the authenticate method of CognitoAuthenticator."""
@@ -124,6 +125,7 @@ def test_authenticate(
     expected_token = CognitoToken(
         mock_access_token,
         mock_refresh_token,
+        mock_id_token,
     )
 
     assert token == expected_token
@@ -214,7 +216,7 @@ def test_get_cognito_response_value_not_provided() -> None:
             "response": {
                 "AuthenticationResult": {
                     "AccessToken": "mock_refreshed_access_token",
-                    "IdToken": "mock_id_token",
+                    "IdToken": "mock_refreshed_id_token",
                     "ExpiresIn": 3600,
                     "TokenType": "Bearer",
                 }

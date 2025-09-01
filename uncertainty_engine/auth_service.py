@@ -5,7 +5,13 @@ from typing import Optional
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
+AUTH_CACHE_ID_TOKEN = "id_token"
+"""
+Key for the user's ID token in the authorisation cache file.
+"""
+
 AUTH_CACHE_KEYS = [
+    AUTH_CACHE_ID_TOKEN,
     "account_id",
     "access_token",
     "refresh_token",
@@ -87,6 +93,7 @@ class AuthService:
             )
 
         auth_data = {
+            AUTH_CACHE_ID_TOKEN: self.token.id_token,
             "account_id": self.account_id,
             "access_token": self.token.access_token,
             "refresh_token": self.token.refresh_token,
@@ -144,6 +151,7 @@ class AuthService:
                 self.token = CognitoToken(
                     access_token=auth_data["access_token"],
                     refresh_token=auth_data["refresh_token"],
+                    id_token=auth_data[AUTH_CACHE_ID_TOKEN],
                 )
                 self.account_id = auth_data["account_id"]
         except Exception as e:

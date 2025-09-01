@@ -12,6 +12,7 @@ def token() -> CognitoToken:
     return CognitoToken(
         "access",
         "refresh",
+        "id",
     )
 
 
@@ -19,6 +20,7 @@ def test_eq(token: CognitoToken) -> None:
     b = CognitoToken(
         "access",
         "refresh",
+        "id",
     )
 
     assert token == b
@@ -34,6 +36,7 @@ def test_eq_different_access(token: CognitoToken) -> None:
     b = CognitoToken(
         "different_access",
         "refresh",
+        "id",
     )
 
     assert token != b
@@ -43,6 +46,17 @@ def test_eq_different_refresh(token: CognitoToken) -> None:
     b = CognitoToken(
         "access",
         "different_refresh",
+        "id",
+    )
+
+    assert token != b
+
+
+def test_eq_different_id(token: CognitoToken) -> None:
+    b = CognitoToken(
+        "access",
+        "refresh",
+        "different_id",
     )
 
     assert token != b
@@ -52,6 +66,7 @@ def test_hash(token: CognitoToken) -> None:
     b = CognitoToken(
         "access",
         "refresh",
+        "id",
     )
 
     assert hash(token) == hash(b)
@@ -61,6 +76,7 @@ def test_hash_different_access(token: CognitoToken) -> None:
     b = CognitoToken(
         "different_access",
         "refresh",
+        "id",
     )
 
     assert hash(token) != hash(b)
@@ -70,14 +86,35 @@ def test_hash_different_refresh(token: CognitoToken) -> None:
     b = CognitoToken(
         "access",
         "different_refresh",
+        "id",
     )
 
     assert hash(token) != hash(b)
 
 
-def test_init(mock_access_token: str, mock_refresh_token: str):
-    token = CognitoToken(mock_access_token, mock_refresh_token)
+def test_hash_different_id(token: CognitoToken) -> None:
+    b = CognitoToken(
+        "access",
+        "refresh",
+        "different_id",
+    )
+
+    assert hash(token) != hash(b)
+
+
+def test_init(
+    mock_access_token: str,
+    mock_id_token: str,
+    mock_refresh_token: str,
+) -> None:
+    token = CognitoToken(
+        mock_access_token,
+        mock_refresh_token,
+        mock_id_token,
+    )
+
     assert token.access_token == mock_access_token
+    assert token.id_token == mock_id_token
     assert token.refresh_token == mock_refresh_token
 
 
