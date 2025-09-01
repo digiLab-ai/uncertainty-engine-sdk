@@ -119,7 +119,10 @@ def test_decoded_payload(token: CognitoToken) -> None:
         )
 
 
-def test_user_sub_id(monkeypatch: MonkeyPatch, token: CognitoToken) -> None:
+def test_user_sub_id(
+    monkeypatch: MonkeyPatch,
+    token: CognitoToken,
+) -> None:
     monkeypatch.setattr(CognitoToken, "decoded_payload", {"sub": "value"})
     assert token.user_sub_id == "value"
 
@@ -150,10 +153,7 @@ def test_user_username_id_exception(
         token.username
 
 
-def test_is_not_expired(
-    monkeypatch: MonkeyPatch,
-    token: CognitoToken,
-) -> None:
+def test_is_not_expired(monkeypatch: MonkeyPatch, token: CognitoToken) -> None:
     monkeypatch.setattr(
         CognitoToken,
         "decoded_payload",
@@ -164,10 +164,7 @@ def test_is_not_expired(
     assert token.is_expired is False
 
 
-def test_is_expired(
-    monkeypatch: MonkeyPatch,
-    token: CognitoToken,
-) -> None:
+def test_is_expired(monkeypatch: MonkeyPatch, token: CognitoToken) -> None:
     monkeypatch.setattr(
         CognitoToken,
         "decoded_payload",
