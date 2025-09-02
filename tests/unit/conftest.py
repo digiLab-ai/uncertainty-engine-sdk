@@ -23,9 +23,7 @@ def mock_access_token():
 
 @pytest.fixture
 def mock_get_resource_token(mock_resource_token: str) -> GetResourceToken:
-    """
-    Returns a function that returns a mock Resource Service API token.
-    """
+    """Return a function that returns a mock resource token."""
 
     def _get_resource_token() -> str:
         return mock_resource_token
@@ -198,19 +196,7 @@ def auth_service_with_file(
     mock_auth_file_data: dict[str, str],
     mock_get_resource_token: GetResourceToken,
 ):
-    """
-    Context manager for an authorisation service with a mock authorisation cache
-    file.
-
-    Args:
-        mock_cognito_authenticator: Mock Cognito authenticator.
-        mock_auth_file_data: Mock content for an authorisation cache file.
-        mock_get_resource_token: Function that returns a mock resource token.
-
-    Yields:
-        Authorisation service.
-    """
-
+    """Creates an AuthService instance with a mocked file that exists."""
     # Mock path for auth file
     mock_path = MagicMock()
     mock_path.exists.return_value = True  # File exists
