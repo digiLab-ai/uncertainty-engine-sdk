@@ -158,9 +158,9 @@ def mock_auth_file_data(
     """
 
     return {
-        AUTH_CACHE_ID_TOKEN: mock_id_token,
-        "access_token": mock_access_token,
         "account_id": mock_account_id,
+        "access_token": mock_access_token,
+        AUTH_CACHE_ID_TOKEN: mock_id_token,
         "refresh_token": mock_refresh_token,
         AUTH_CACHE_RESOURCE_TOKEN: mock_resource_token,
     }
