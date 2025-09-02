@@ -40,5 +40,9 @@ class AuthProvider(ApiProviderBase):
         if not self.auth_service.token:
             return
 
-        headers = self.auth_service.get_auth_header(include_id=True)
+        headers = self.auth_service.get_auth_header(
+            include_any_resource_token=True,
+            include_id=True,
+        )
+
         self.client.default_headers.update(headers)
