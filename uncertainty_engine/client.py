@@ -71,7 +71,10 @@ class Client:
             self.env.cognito_user_pool_client_id,
         )
 
-        self.auth_service = AuthService(authenticator)
+        self.auth_service = AuthService(
+            authenticator,
+            self._get_resource_token,
+        )
 
         self.core_api: ApiInvoker = HttpApiInvoker(
             self.auth_service,
@@ -88,8 +91,6 @@ class Client:
         """
         Resource Service Authorisation API client.
         """
-
-        self.auth_service.auth_provider = self.auth
 
         self.projects = ProjectsProvider(
             self.auth_service,
@@ -110,6 +111,10 @@ class Client:
             self.resources,
             self.workflows,
         ]
+
+    def _get_resource_token(self) -> str:
+        self.auth.update_api_authentication()
+        return self.auth.get_tokens().access_token
 
     def _update_all_providers(self) -> None:
         """Update authentication for all API providers."""

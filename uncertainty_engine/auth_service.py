@@ -1,9 +1,8 @@
 import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
-from uncertainty_engine.api_providers import AuthProvider
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
 AUTH_CACHE_ID_TOKEN = "id_token"
@@ -27,13 +26,13 @@ AUTH_FILE_NAME = ".ue_auth"
 class AuthService:
     """Authentication service that manages tokens and provides them to API clients"""
 
-    def __init__(self, authenticator: CognitoAuthenticator):
+    def __init__(
+        self,
+        authenticator: CognitoAuthenticator,
+        get_resource_token: Callable[[], str],
+    ) -> None:
+        self._get_resource_token = get_resource_token
         self.account_id: Optional[str] = None
-
-        self.auth_provider: AuthProvider | None = None
-        """
-        Resource Service Authorisation API client.
-        """
 
         self.resource_token: str | None = None
         """
@@ -63,17 +62,9 @@ class AuthService:
                 "Username and password must be provided or set in environment variables UE_USERNAME and UE_PASSWORD"
             )
 
-        if not self.auth_provider:
-            raise ValueError(
-                "Cannot authenticate without an Resource Service "
-                "Authorisation API client"
-            )
-
         self.token = self.authenticator.authenticate(username, password)
         self.account_id = account_id
-
-        self.auth_provider.update_api_authentication()
-        self.resource_token = self.auth_provider.get_tokens().access_token
+        self.resource_token = self._get_resource_token()
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
