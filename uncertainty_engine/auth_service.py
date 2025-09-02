@@ -78,6 +78,9 @@ class AuthService:
 
         self.token = self.authenticator.authenticate(username, password)
         self.account_id = account_id
+
+        # Get a new resource token only if we didn't load one already
+        # from the cache.
         self.resource_token = self.resource_token or self._get_resource_token()
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
