@@ -5,7 +5,11 @@ from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 import boto3
 import pytest
 
-from uncertainty_engine.auth_service import AuthService
+from uncertainty_engine.auth_service import (
+    AUTH_CACHE_ID_TOKEN,
+    AUTH_CACHE_RESOURCE_TOKEN,
+    AuthService,
+)
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 
 
@@ -29,6 +33,15 @@ def mock_refreshed_cognito_tokens(mock_refresh_token: str) -> CognitoToken:
         mock_refresh_token,
         "mock_refreshed_id_token",
     )
+
+
+@pytest.fixture
+def mock_resource_token() -> str:
+    """
+    Gets a mock Resource Service API token.
+    """
+
+    return "mock_resource_token"
 
 
 @pytest.fixture
@@ -116,13 +129,28 @@ def mock_auth_file_data(
     mock_access_token: str,
     mock_id_token: str,
     mock_refresh_token: str,
+    mock_resource_token: str,
 ) -> dict[str, str]:
-    """Default mock data for auth file"""
+    """
+    Gets mock content for an authorisation cache file.
+
+    Args:
+        mock_account_id: A mock account ID.
+        mock_access_token: A mock access token.
+        mock_id_token: A mock ID token.
+        mock_refresh_token: A mock refresh token.
+        mock_resource_token: A mock resource token.
+
+    Returns:
+        Mock content for an authorisation cache file.
+    """
+
     return {
         "account_id": mock_account_id,
         "access_token": mock_access_token,
-        "id_token": mock_id_token,
+        AUTH_CACHE_ID_TOKEN: mock_id_token,
         "refresh_token": mock_refresh_token,
+        AUTH_CACHE_RESOURCE_TOKEN: mock_resource_token,
     }
 
 
