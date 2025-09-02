@@ -7,6 +7,7 @@ from pytest import mark
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
+from uncertainty_engine.types import GetResourceToken
 
 
 def test_init_no_file(auth_service_no_file: AuthService):
@@ -122,11 +123,14 @@ def test_is_authenticated_property(auth_service_no_file: AuthService):
     assert auth_service_no_file.is_authenticated is True
 
 
-def test_auth_file_path():
+def test_auth_file_path(mock_get_resource_token: GetResourceToken) -> None:
     """Test auth_file_path property"""
     # Create service with mock authenticator
     authenticator = MagicMock()
-    service = AuthService(authenticator)
+    service = AuthService(
+        authenticator,
+        mock_get_resource_token,
+    )
 
     # Verify auth_file_path
     expected_path = Path.home() / ".ue_auth"

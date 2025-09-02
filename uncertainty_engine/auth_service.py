@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
+from uncertainty_engine.types import GetResourceToken
 
 AUTH_CACHE_ID_TOKEN = "id_token"
 """
@@ -29,9 +30,22 @@ AUTH_FILE_NAME = ".ue_auth"
 
 
 class AuthService:
-    """Authentication service that manages tokens and provides them to API clients"""
+    """
+    Manages API authorisation, including authentication, tokens and HTTP
+    headers.
 
-    def __init__(self, authenticator: CognitoAuthenticator):
+    Args:
+        authenticator: Cognito authenticator.
+        get_resource_token: Callback to request a Resource Service API
+            token.
+    """
+
+    def __init__(
+        self,
+        authenticator: CognitoAuthenticator,
+        get_resource_token: GetResourceToken,
+    ) -> None:
+        self._get_resource_token = get_resource_token
         self.account_id: Optional[str] = None
         self.token: Optional[CognitoToken] = None
         self.authenticator = authenticator
