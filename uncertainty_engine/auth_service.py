@@ -41,12 +41,6 @@ class AuthService:
     ) -> None:
         self._get_resource_token = get_resource_token
         self.account_id: Optional[str] = None
-
-        self.resource_token: str | None = None
-        """
-        Resource Service API token.
-        """
-
         self.token: Optional[CognitoToken] = None
         self.authenticator = authenticator
 
