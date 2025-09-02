@@ -73,6 +73,12 @@ class Client:
 
         self.auth_service = AuthService(
             authenticator,
+            # The authorisation service gets resource tokens via a callback
+            # rather than holding its own reference to the authorisation client/
+            # provider to avoid a circular dependency.
+            #
+            # The client depends on the service to manage the access token, but
+            # the service depends on the client to manage the resource token.
             self._get_resource_token,
         )
 
@@ -113,6 +119,10 @@ class Client:
         ]
 
     def _get_resource_token(self) -> str:
+        """
+        Gets a Resource Service API token.
+        """
+
         self.auth.update_api_authentication()
         return self.auth.get_tokens().access_token
 
