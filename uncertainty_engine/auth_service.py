@@ -10,6 +10,11 @@ AUTH_CACHE_ID_TOKEN = "id_token"
 Key for the user's ID token in the authorisation cache file.
 """
 
+AUTH_CACHE_RESOURCE_TOKEN = "resource_token"
+"""
+Key for the user's resource token in the authorisation cache file.
+"""
+
 AUTH_CACHE_KEYS = [
     AUTH_CACHE_ID_TOKEN,
     "account_id",
