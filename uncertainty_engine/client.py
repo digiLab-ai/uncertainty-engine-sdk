@@ -113,9 +113,7 @@ class Client:
         ]
 
     def _get_resource_token(self) -> str:
-        """
-        Gets a Resource Service API token.
-        """
+        """Get a Resource Service API token."""
         self.auth.update_api_authentication()
         return self.auth.get_tokens().access_token
 
