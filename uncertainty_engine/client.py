@@ -116,7 +116,6 @@ class Client:
         """
         Gets a Resource Service API token.
         """
-
         self.auth.update_api_authentication()
         return self.auth.get_tokens().access_token
 
