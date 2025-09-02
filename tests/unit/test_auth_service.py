@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
+from pytest import mark
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
@@ -214,6 +215,44 @@ def test_get_auth_header(auth_service_with_file: tuple[AuthService, MagicMock]):
 
     # Verify header format
     assert header == {"Authorization": f"Bearer {auth_service.token.access_token}"}
+
+
+@mark.parametrize(
+    "resource_token, expect_resource_header",
+    [
+        (None, "mock_access_token"),
+        ("this_resource_token", "this_resource_token"),
+    ],
+)
+def test_get_auth_header_with_any_resource_token(
+    auth_service_with_file: tuple[AuthService, MagicMock],
+    mock_access_token: str,
+    resource_token: str | None,
+    expect_resource_header: str,
+) -> None:
+    """
+    Asserts that `AuthService.get_auth_header()` returns the expected
+    "X-Resource-Service-Token" header when `include_any_resource_token` is
+    `True` and when a resource token is and isn't present.
+
+    Args:
+        auth_service_with_file: Tuple of an `AuthService` instance and IO for
+            a mock open of the authorisation cache file.
+        mock_access_token: Mock access token.
+        resource_token: Resource token to arrange for the test.
+        expect_resource_header: "X-Resource-Service-Token" header value to
+            expect.
+    """
+
+    auth_service, _ = auth_service_with_file
+    auth_service.resource_token = resource_token
+
+    headers = auth_service.get_auth_header(include_any_resource_token=True)
+
+    assert headers == {
+        "Authorization": f"Bearer {mock_access_token}",
+        "X-Resource-Service-Token": expect_resource_header,
+    }
 
 
 def test_get_auth_header_with_id(
