@@ -20,13 +20,13 @@ def mock_access_token():
 @pytest.fixture
 def mock_get_resource_token(mock_resource_token: str) -> GetResourceToken:
     """
-    Gets a mock function that returns a Resource Service API token.
+    Gets a function that returns a mock Resource Service API token.
 
     Args:
         mock_resource_token: The Resource Service API token to return.
 
     Returns:
-        A mock function that returns a Resource Service API token.
+        A function that returns a mock Resource Service API token.
     """
 
     def _get_resource_token() -> str:
