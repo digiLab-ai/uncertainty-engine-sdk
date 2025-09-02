@@ -24,7 +24,14 @@ AUTH_FILE_NAME = ".ue_auth"
 
 
 class AuthService:
-    """Authentication service that manages tokens and provides them to API clients"""
+    """
+    Manages API authorisation, including authentication, recording tokens and
+    generating HTTP request headers.
+
+    Args:
+        authenticator: Cognito authenticator.
+        get_resource_token: Callback to request a Resource Service API token.
+    """
 
     def __init__(
         self,
