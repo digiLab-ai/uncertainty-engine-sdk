@@ -31,6 +31,11 @@ class AuthService:
         self.token: Optional[CognitoToken] = None
         self.authenticator = authenticator
 
+        self.resource_token: str | None = None
+        """
+        Resource Service API token.
+        """
+
         # Load auth details, if not found they will remain None
         self._load_from_file()
 
@@ -125,12 +130,19 @@ class AuthService:
             self.clear()
             raise ValueError(f"Failed to refresh token: {str(e)}")
 
-    def get_auth_header(self, include_id: bool = False) -> dict[str, str]:
+    def get_auth_header(
+        self,
+        include_any_resource_token: bool = False,
+        include_id: bool = False,
+    ) -> dict[str, str]:
         """
         Gets the authorisation and identity headers to include in an API
         request.
 
         Args:
+            include_any_resource_token: Include the resource token as the
+                "X-Resource-Service-Token" header if that token is present,
+                otherwise pass the access token instead.
             include_id: Include an ID token as the "X-ID-Token" header.
 
         Returns:
@@ -142,6 +154,11 @@ class AuthService:
         headers = {
             "Authorization": f"Bearer {self.token.access_token}",
         }
+
+        if include_any_resource_token:
+            headers["X-Resource-Service-Token"] = (
+                self.resource_token or self.token.access_token
+            )
 
         if include_id:
             headers["X-ID-Token"] = self.token.id_token
