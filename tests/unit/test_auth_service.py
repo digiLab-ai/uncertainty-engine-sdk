@@ -124,16 +124,13 @@ def test_is_authenticated_property(auth_service_no_file: AuthService):
 
 
 def test_auth_file_path(mock_get_resource_token: GetResourceToken) -> None:
-    """
-    Asserts that the default path to the authorisation file cache is correct.
-
-    Args:
-        mock_get_resource_token: Function that returns a mock resource token.
-    """
-
+    """Test auth_file_path property"""
     # Create service with mock authenticator
     authenticator = MagicMock()
-    service = AuthService(authenticator, mock_get_resource_token)
+    service = AuthService(
+        authenticator,
+        mock_get_resource_token,
+    )
 
     # Verify auth_file_path
     expected_path = Path.home() / ".ue_auth"

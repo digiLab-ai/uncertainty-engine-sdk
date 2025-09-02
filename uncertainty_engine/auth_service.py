@@ -37,7 +37,8 @@ class AuthService:
 
     Args:
         authenticator: Cognito authenticator.
-        get_resource_token: Callback to request a Resource Service API token.
+        get_resource_token: Callback to request a Resource Service API
+            token.
     """
 
     def __init__(
