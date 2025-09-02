@@ -1,5 +1,6 @@
 import json
 import time
+from typing import Iterator
 from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 
 import boto3
@@ -7,12 +8,31 @@ import pytest
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
+from uncertainty_engine.types import GetResourceToken
 
 
 # Token values as fixtures
 @pytest.fixture
 def mock_access_token():
     return "mock_access_token"
+
+
+@pytest.fixture
+def mock_get_resource_token(mock_resource_token: str) -> GetResourceToken:
+    """
+    Gets a mock function that returns a Resource Service API token.
+
+    Args:
+        mock_resource_token: The Resource Service API token to return.
+
+    Returns:
+        A mock function that returns a Resource Service API token.
+    """
+
+    def _get_resource_token() -> str:
+        return mock_resource_token
+
+    return _get_resource_token
 
 
 @pytest.fixture
@@ -29,6 +49,18 @@ def mock_refreshed_cognito_tokens(mock_refresh_token: str) -> CognitoToken:
         mock_refresh_token,
         "mock_refreshed_id_token",
     )
+
+
+@pytest.fixture
+def mock_resource_token() -> str:
+    """
+    Gets a mock Resource Service API token.
+
+    Returns:
+        Mock Resource Service API token.
+    """
+
+    return "mock_resource_token"
 
 
 @pytest.fixture
@@ -154,8 +186,21 @@ def cognito_client():
 def auth_service_with_file(
     mock_cognito_authenticator: CognitoAuthenticator,
     mock_auth_file_data: dict[str, str],
+    mock_get_resource_token: GetResourceToken,
 ):
-    """Creates an AuthService instance with a mocked file that exists."""
+    """
+    Context manager for an authorisation service with a mock authorisation cache
+    file.
+
+    Args:
+        mock_cognito_authenticator: Mock Cognito authenticator.
+        mock_auth_file_data: Mock content for an authorisation cache file.
+        mock_get_resource_token: Function that returns a mock resource token.
+
+    Yields:
+        Authorisation service.
+    """
+
     # Mock path for auth file
     mock_path = MagicMock()
     mock_path.exists.return_value = True  # File exists
@@ -173,13 +218,31 @@ def auth_service_with_file(
     # Apply patches
     with path_patch, open_patch, chmod_patch:
         # Create AuthService instance
-        auth_service = AuthService(mock_cognito_authenticator)
+        auth_service = AuthService(
+            mock_cognito_authenticator,
+            mock_get_resource_token,
+        )
+
         yield auth_service, m  # Return both the service and the mock file handler
 
 
 @pytest.fixture
-def auth_service_no_file(mock_cognito_authenticator: CognitoAuthenticator):
-    """Creates an AuthService instance with a mocked file that doesn't exist."""
+def auth_service_no_file(
+    mock_cognito_authenticator: CognitoAuthenticator,
+    mock_get_resource_token: GetResourceToken,
+) -> Iterator[AuthService]:
+    """
+    Context manager for an authorisation service with a mock authorisation cache
+    file that doesn't exist.
+
+    Args:
+        mock_cognito_authenticator: Mock Cognito authenticator.
+        mock_get_resource_token: Function that returns a mock resource token.
+
+    Yields:
+        Authorisation service.
+    """
+
     mock_path = MagicMock()
     mock_path.exists.return_value = False  # File doesn't exist
 
@@ -188,5 +251,7 @@ def auth_service_no_file(mock_cognito_authenticator: CognitoAuthenticator):
     )
 
     with path_patch:
-        auth_service = AuthService(mock_cognito_authenticator)
-        yield auth_service
+        yield AuthService(
+            mock_cognito_authenticator,
+            mock_get_resource_token,
+        )
