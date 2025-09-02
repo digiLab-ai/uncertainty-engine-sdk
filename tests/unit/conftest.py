@@ -1,5 +1,6 @@
 import json
 import time
+from typing import Iterator
 from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 
 import boto3
@@ -11,12 +12,23 @@ from uncertainty_engine.auth_service import (
     AuthService,
 )
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
+from uncertainty_engine.types import GetResourceToken
 
 
 # Token values as fixtures
 @pytest.fixture
 def mock_access_token():
     return "mock_access_token"
+
+
+@pytest.fixture
+def mock_get_resource_token(mock_resource_token: str) -> GetResourceToken:
+    """Return a function that returns a mock resource token."""
+
+    def _get_resource_token() -> str:
+        return mock_resource_token
+
+    return _get_resource_token
 
 
 @pytest.fixture
@@ -182,6 +194,7 @@ def cognito_client():
 def auth_service_with_file(
     mock_cognito_authenticator: CognitoAuthenticator,
     mock_auth_file_data: dict[str, str],
+    mock_get_resource_token: GetResourceToken,
 ):
     """Creates an AuthService instance with a mocked file that exists."""
     # Mock path for auth file
@@ -201,12 +214,19 @@ def auth_service_with_file(
     # Apply patches
     with path_patch, open_patch, chmod_patch:
         # Create AuthService instance
-        auth_service = AuthService(mock_cognito_authenticator)
+        auth_service = AuthService(
+            mock_cognito_authenticator,
+            mock_get_resource_token,
+        )
+
         yield auth_service, m  # Return both the service and the mock file handler
 
 
 @pytest.fixture
-def auth_service_no_file(mock_cognito_authenticator: CognitoAuthenticator):
+def auth_service_no_file(
+    mock_cognito_authenticator: CognitoAuthenticator,
+    mock_get_resource_token: GetResourceToken,
+) -> Iterator[AuthService]:
     """Creates an AuthService instance with a mocked file that doesn't exist."""
     mock_path = MagicMock()
     mock_path.exists.return_value = False  # File doesn't exist
@@ -216,5 +236,9 @@ def auth_service_no_file(mock_cognito_authenticator: CognitoAuthenticator):
     )
 
     with path_patch:
-        auth_service = AuthService(mock_cognito_authenticator)
+        auth_service = AuthService(
+            mock_cognito_authenticator,
+            mock_get_resource_token,
+        )
+
         yield auth_service
