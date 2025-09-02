@@ -59,9 +59,6 @@ def mock_refreshed_cognito_tokens(mock_refresh_token: str) -> CognitoToken:
 def mock_resource_token() -> str:
     """
     Gets a mock Resource Service API token.
-
-    Returns:
-        Mock Resource Service API token.
     """
 
     return "mock_resource_token"
@@ -170,10 +167,10 @@ def mock_auth_file_data(
 
     return {
         AUTH_CACHE_ID_TOKEN: mock_id_token,
-        AUTH_CACHE_RESOURCE_TOKEN: mock_resource_token,
         "access_token": mock_access_token,
         "account_id": mock_account_id,
         "refresh_token": mock_refresh_token,
+        AUTH_CACHE_RESOURCE_TOKEN: mock_resource_token,
     }
 
 
