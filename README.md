@@ -4,6 +4,8 @@
 
 [![PyPI](https://badge.fury.io/py/uncertainty-engine.svg)](https://badge.fury.io/py/uncertainty-engine) [![Python Versions](https://img.shields.io/pypi/pyversions/uncertainty-engine.svg)](https://pypi.org/project/uncertainty-engine/)
 
+> ⚠️ **Pre-Release Notice:** This SDK is currently in pre-release development. Please ensure you are reading documentation that corresponds to the specific version of the SDK you have installed, as features and APIs may change between versions.
+
 ## Requirements
 
 - Python >=3.10, <3.13
@@ -20,8 +22,6 @@ With optional dependencies:
 ```bash
 pip install "uncertainty_engine[vis,notebook,data]"
 ```
-
-> ⚠️ **Pre-Release Notice:** This SDK is currently in pre-release development. Please ensure you are reading documentation that corresponds to the specific version of the SDK you have installed, as features and APIs may change between versions.
 
 ## Usage
 
