@@ -18,6 +18,7 @@ Key for the user's resource token in the authorisation cache file.
 
 AUTH_CACHE_KEYS = [
     AUTH_CACHE_ID_TOKEN,
+    AUTH_CACHE_RESOURCE_TOKEN,
     "account_id",
     "access_token",
     "refresh_token",
@@ -78,6 +79,10 @@ class AuthService:
         self.token = self.authenticator.authenticate(username, password)
         self.account_id = account_id
 
+        # Get a new resource token only if we didn't load one already
+        # from the cache.
+        self.resource_token = self.resource_token or self._get_resource_token()
+
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
 
@@ -118,6 +123,7 @@ class AuthService:
 
         auth_data = {
             AUTH_CACHE_ID_TOKEN: self.token.id_token,
+            AUTH_CACHE_RESOURCE_TOKEN: self.resource_token,
             "account_id": self.account_id,
             "access_token": self.token.access_token,
             "refresh_token": self.token.refresh_token,
@@ -201,6 +207,7 @@ class AuthService:
                     id_token=auth_data[AUTH_CACHE_ID_TOKEN],
                 )
                 self.account_id = auth_data["account_id"]
+                self.resource_token = auth_data[AUTH_CACHE_RESOURCE_TOKEN]
         except Exception as e:
             raise Exception(
                 f"Error loading authentication details: {str(e)}. Please ensure you are authenticated."
