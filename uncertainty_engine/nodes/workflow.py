@@ -1,4 +1,5 @@
 from typeguard import typechecked
+from typing import Any
 
 from uncertainty_engine.nodes.base import Node
 
@@ -10,7 +11,7 @@ class Workflow(Node):
 
     Args:
         graph: The graph of nodes to execute.
-        input: The input to the workflow.
+        inputs: The inputs to the workflow.
         requested_output: The requested output from the workflow.
         external_input_id: String identifier that refers to external inputs to the graph.
             Default is "_".
@@ -18,7 +19,7 @@ class Workflow(Node):
     Example:
         >>> workflow = Workflow(
         ...     graph=graph.nodes,
-        ...     input=graph.external_input,
+        ...     inputs=graph.external_input,
         ...     requested_output={
         ...         "Result": {"node_name": "Download", "node_handle": "file"}
         ...     }
@@ -31,15 +32,15 @@ class Workflow(Node):
 
     def __init__(
         self,
-        graph: dict,
-        input: dict,
-        requested_output: dict,
+        graph: dict[str, Any],
+        inputs: dict[str, Any],
+        requested_output: dict[str, Any],
         external_input_id: str = "_",
     ):
         super().__init__(
             node_name=self.node_name,
             external_input_id=external_input_id,
             graph=graph,
-            inputs=input,
+            inputs=inputs,
             requested_output=requested_output,
         )
