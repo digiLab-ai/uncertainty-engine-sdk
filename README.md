@@ -21,6 +21,8 @@ With optional dependencies:
 pip install "uncertainty_engine[vis,notebook,data]"
 ```
 
+> ⚠️ **Pre-Release Notice:** This SDK is currently in pre-release development. Please ensure you are reading documentation that corresponds to the specific version of the SDK you have installed, as features and APIs may change between versions.
+
 ## Usage
 
 ### Setting your username and password
