@@ -76,7 +76,7 @@ def handle_input_deprecation(
         The resolved inputs value
 
     Raises:
-        ValueError: If both parameters are provided or both are None
+        ValueError: If both parameters are provided
     """
     if input is not None and inputs is not None:
         raise ValueError("Cannot specify both 'input' and 'inputs'. Use 'inputs' only.")
