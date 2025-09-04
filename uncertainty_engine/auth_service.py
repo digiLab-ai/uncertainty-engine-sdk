@@ -157,17 +157,15 @@ class AuthService:
 
     def get_auth_header(
         self,
-        include_any_resource_token: bool = False,
         include_id: bool = False,
     ) -> dict[str, str]:
         """
-        Gets the authorisation and identity headers to include in an API
-        request.
+        Gets the authorisation and identity headers to include in an API request.
+
+        If the resource token is present it will be passed as the
+        "X-Resource-Service-Token", otherwise the access token will be passed instead.
 
         Args:
-            include_any_resource_token: Include the resource token as the
-                "X-Resource-Service-Token" header if that token is present,
-                otherwise pass the access token instead.
             include_id: Include an ID token as the "X-ID-Token" header.
 
         Returns:
@@ -178,12 +176,8 @@ class AuthService:
 
         headers = {
             "Authorization": f"Bearer {self.token.access_token}",
+            "X-Resource-Service-Token": self.resource_token or self.token.access_token,
         }
-
-        if include_any_resource_token:
-            headers["X-Resource-Service-Token"] = (
-                self.resource_token or self.token.access_token
-            )
 
         if include_id:
             headers["X-ID-Token"] = self.token.id_token

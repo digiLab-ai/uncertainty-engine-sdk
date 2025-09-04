@@ -49,7 +49,6 @@ class AuthProvider(ApiProviderBase):
             # We expect to hit that endpoint only when we don't have a
             # resource token, so it's okay to populate the headers here
             # with the best token we have available at the time.
-            include_any_resource_token=True,
             include_id=True,
         )
 

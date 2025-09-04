@@ -101,9 +101,7 @@ class HttpApiInvoker(ApiInvoker):
 
         kwargs = {
             "headers": {
-                **self._auth_service.get_auth_header(
-                    include_any_resource_token=True,
-                ),
+                **self._auth_service.get_auth_header(),
             },
         }
 
@@ -134,9 +132,7 @@ class HttpApiInvoker(ApiInvoker):
             # Update the authorisation header.
             kwargs["headers"] = {
                 **kwargs["headers"],
-                **self._auth_service.get_auth_header(
-                    include_any_resource_token=True,
-                ),
+                **self._auth_service.get_auth_header(),
             }
 
             # Remember that we've refreshed the token in case the next
