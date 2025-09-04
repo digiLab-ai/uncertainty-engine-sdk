@@ -19,7 +19,7 @@ from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.environments import Environment
 from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import _handle_input_deprecation
+from uncertainty_engine.utils import handle_input_deprecation
 
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
@@ -195,7 +195,7 @@ class Client:
             A Job object representing the queued job.
         """
         # TODO: Remove once `input` is removed and make `inputs` required
-        final_inputs = _handle_input_deprecation(input, inputs)
+        final_inputs = handle_input_deprecation(input, inputs)
 
         if isinstance(node, Node):
             node, final_inputs = node()
@@ -235,7 +235,7 @@ class Client:
             A JobInfo object containing the response data of the job.
         """
         # TODO: Remove once `input` is removed and make `inputs` required
-        final_inputs = _handle_input_deprecation(input, inputs)
+        final_inputs = handle_input_deprecation(input, inputs)
 
         job_id = self.queue_node(node, final_inputs)
         return self._wait_for_job(job_id)

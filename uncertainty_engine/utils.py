@@ -61,7 +61,7 @@ def format_api_error(e: ApiException) -> str:
     return f"API Error: {reason}\nDetails: {detail}"
 
 
-def _handle_input_deprecation(
+def handle_input_deprecation(
     input: dict[str, Any] | None, inputs: dict[str, Any] | None, stacklevel: int = 3
 ) -> dict[str, Any] | None:
     """

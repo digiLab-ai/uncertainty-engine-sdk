@@ -3,7 +3,7 @@ from typing import Any
 from typeguard import typechecked
 
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.utils import _handle_input_deprecation
+from uncertainty_engine.utils import handle_input_deprecation
 
 
 @typechecked
@@ -46,7 +46,7 @@ class Workflow(Node):
         input: dict[str, Any] | None = None,
     ):
         # TODO: Remove once `input` is removed and make `inputs` required
-        final_inputs = _handle_input_deprecation(input, inputs)
+        final_inputs = handle_input_deprecation(input, inputs)
 
         if final_inputs is None:
             raise ValueError("'inputs' must be provided.")
