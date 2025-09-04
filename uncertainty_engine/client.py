@@ -1,6 +1,6 @@
 from os import environ
 from time import sleep
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 from typeguard import typechecked
@@ -19,6 +19,7 @@ from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
 from uncertainty_engine.environments import Environment
 from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.utils import _handle_input_deprecation
 
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
 
@@ -174,7 +175,12 @@ class Client:
 
         return node_list
 
-    def queue_node(self, node: Union[str, Node], inputs: Optional[dict] = None) -> Job:
+    def queue_node(
+        self,
+        node: Union[str, Node],
+        inputs: Optional[dict[str, Any]] = None,
+        input: Optional[dict[str, Any]] = None,
+    ) -> Job:
         """
         Queue a node for execution.
 
@@ -182,13 +188,18 @@ class Client:
             node: The name of the node to execute or the node object itself.
             inputs: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
+            input: **DEPRECATED** The input data for the node. Use `inputs` instead.
+                Will be removed in a future version.
 
         Returns:
             A Job object representing the queued job.
         """
+        # TODO: Remove once `input` is removed and make `inputs` required
+        final_inputs = _handle_input_deprecation(input, inputs)
+
         if isinstance(node, Node):
-            node, inputs = node()
-        elif isinstance(node, str) and inputs is None:
+            node, final_inputs = node()
+        elif isinstance(node, str) and final_inputs is None:
             raise ValueError(
                 "Input data/parameters are required when specifying a node by name."
             )
@@ -198,7 +209,7 @@ class Client:
             {
                 "email": self.email,
                 "node_id": node,
-                "inputs": inputs,
+                "inputs": final_inputs,
             },
         )
 
@@ -207,7 +218,8 @@ class Client:
     def run_node(
         self,
         node: Union[str, Node],
-        inputs: Optional[dict] = None,
+        inputs: Optional[dict[str, Any]] = None,
+        input: Optional[dict[str, Any]] = None,
     ) -> JobInfo:
         """
         Run a node synchronously.
@@ -216,11 +228,16 @@ class Client:
             node: The name of the node to execute or the node object itself.
             inputs: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
+            input: **DEPRECATED** The input data for the node. Use `inputs` instead.
+                Will be removed in a future version.
 
         Returns:
             A JobInfo object containing the response data of the job.
         """
-        job_id = self.queue_node(node, inputs)
+        # TODO: Remove once `input` is removed and make `inputs` required
+        final_inputs = _handle_input_deprecation(input, inputs)
+
+        job_id = self.queue_node(node, final_inputs)
         return self._wait_for_job(job_id)
 
     def job_status(self, job: Job) -> JobInfo:

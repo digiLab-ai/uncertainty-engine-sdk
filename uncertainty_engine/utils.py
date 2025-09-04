@@ -1,5 +1,6 @@
 import json
-from typing import TypeAlias, TypeVar, Union
+from typing import TypeAlias, TypeVar, Union, Any
+from warnings import warn
 
 from typeguard import typechecked
 from uncertainty_engine_resource_client.exceptions import ApiException
@@ -58,3 +59,35 @@ def format_api_error(e: ApiException) -> str:
         detail = "No error message"
 
     return f"API Error: {reason}\nDetails: {detail}"
+
+
+def _handle_input_deprecation(
+    input: dict[str, Any] | None, inputs: dict[str, Any] | None, stacklevel: int = 3
+) -> dict[str, Any] | None:
+    """
+    Handle deprecation of 'input' parameter in favor of 'inputs'.
+
+    Args:
+        input: The deprecated parameter value
+        inputs: The new parameter value
+        stacklevel: Stack level for the warning (default 3 to account for helper call)
+
+    Returns:
+        The resolved inputs value
+
+    Raises:
+        ValueError: If both parameters are provided or both are None
+    """
+    if input is not None and inputs is not None:
+        raise ValueError("Cannot specify both 'input' and 'inputs'. Use 'inputs' only.")
+
+    if input is not None:
+        warn(
+            "The 'input' parameter is deprecated and will be removed in the next "
+            "release. Use 'inputs' instead.",
+            DeprecationWarning,
+            stacklevel=stacklevel,
+        )
+        return input
+
+    return inputs

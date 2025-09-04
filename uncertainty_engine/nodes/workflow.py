@@ -1,9 +1,9 @@
-import warnings
 from typing import Any
 
 from typeguard import typechecked
 
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.utils import _handle_input_deprecation
 
 
 @typechecked
@@ -42,27 +42,13 @@ class Workflow(Node):
         graph: dict[str, Any],
         requested_output: dict[str, Any],
         external_input_id: str = "_",
-        # TODO: Make this required once `input` parameter is removed
         inputs: dict[str, Any] | None = None,
-        # Deprecated: Use `inputs` instead. Will be removed in next release
         input: dict[str, Any] | None = None,
     ):
-        if input is not None and inputs is not None:
-            raise ValueError(
-                "Cannot specify both 'input' and 'inputs'. Use 'inputs' only."
-            )
+        # TODO: Remove once `input` is removed and make `inputs` required
+        final_inputs = _handle_input_deprecation(input, inputs)
 
-        if input is not None:
-            warnings.warn(
-                "The 'input' parameter is deprecated and will be removed in the next "
-                "release. Use 'inputs' instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            final_inputs = input
-        elif inputs is not None:
-            final_inputs = inputs
-        else:
+        if final_inputs is None:
             raise ValueError("'inputs' must be provided.")
 
         super().__init__(
