@@ -160,8 +160,10 @@ class AuthService:
         include_id: bool = False,
     ) -> dict[str, str]:
         """
-        Gets the authorisation and identity headers to include in an API
-        request.
+        Gets the authorisation and identity headers to include in an API request.
+
+        If the resource token is present it will be passed as the
+        "X-Resource-Service-Token", otherwise the access token will be passed instead.
 
         Args:
             include_id: Include an ID token as the "X-ID-Token" header.
