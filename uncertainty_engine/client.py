@@ -207,7 +207,6 @@ class Client:
         job_id = self.core_api.post(
             "/nodes/queue",
             {
-                "email": self.email,
                 "node_id": node,
                 "inputs": final_inputs,
             },

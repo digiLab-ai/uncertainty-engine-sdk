@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from uncertainty_engine_types import JobInfo, JobStatus
 
 from tests.mock_api_invoker import mock_core_api
@@ -102,7 +101,6 @@ class TestClientMethods:
             api.expect_post(
                 "/nodes/queue",
                 expect_body={
-                    "email": client.email,
                     "node_id": mock_job.node_id,
                     "inputs": {"key": "value"},
                 },
@@ -157,7 +155,6 @@ class TestClientMethods:
             api.expect_post(
                 "/nodes/queue",
                 expect_body={
-                    "email": client.email,
                     "node_id": mock_job.node_id,
                     "inputs": {"key": "value"},
                 },
