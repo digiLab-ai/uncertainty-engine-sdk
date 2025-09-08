@@ -236,7 +236,12 @@ class WorkflowsProvider(ApiProviderBase):
         executable_workflow = (
             WorkflowExecutable(  # Workflow must be wrapped by this to be executable
                 node_id="Workflow",
-                inputs=workflow.__dict__,
+                inputs={
+                    "external_input_id": workflow.external_input_id,
+                    "graph": workflow.graph,
+                    "inputs": workflow.inputs,
+                    "requested_output": workflow.requested_output,
+                },
             )
         )
 
