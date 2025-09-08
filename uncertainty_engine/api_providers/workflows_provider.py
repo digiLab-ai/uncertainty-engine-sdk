@@ -197,7 +197,12 @@ class WorkflowsProvider(ApiProviderBase):
         )
         workflow = executable_workflow.inputs
 
-        return Workflow(**workflow)
+        return Workflow(
+            graph=workflow["graph"],
+            inputs=workflow["inputs"],
+            requested_output=workflow["requested_output"],
+            external_input_id=workflow["external_input_id"],
+        )
 
     @ApiProviderBase.with_auth_refresh
     def save(
