@@ -51,6 +51,12 @@ class Workflow(Node):
         if final_inputs is None:
             raise ValueError("'inputs' must be provided.")
 
+        # Store as Workflow attributes
+        self.graph = graph
+        self.requested_output = requested_output
+        self.external_input_id = external_input_id
+        self.inputs = final_inputs
+
         super().__init__(
             node_name=self.node_name,
             external_input_id=external_input_id,
