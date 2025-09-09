@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from typeguard import typechecked
 
@@ -40,10 +40,10 @@ class Workflow(Node):
     def __init__(
         self,
         graph: dict[str, Any],
-        inputs: Optional[dict[str, Any]] = None,
-        requested_output: Optional[dict[str, Any]] = None,
+        inputs: dict[str, Any] | None = None,
+        requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
-        input: Optional[dict[str, Any]] = None,
+        input: dict[str, Any] | None = None,
     ):
         # TODO: Remove once `input` is removed and make `inputs` required
         final_inputs = handle_input_deprecation(input, inputs)
