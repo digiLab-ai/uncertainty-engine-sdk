@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from typeguard import typechecked
 
@@ -13,10 +13,10 @@ class Workflow(Node):
 
     Args:
         graph: The graph of nodes to execute.
+        inputs: The inputs to the workflow. Defaults to None.
         requested_output: The requested output from the workflow.
         external_input_id: String identifier that refers to external inputs to the
             graph. Default is "_".
-        inputs: The inputs to the workflow. Defaults to None.
         input: **DEPRECATED** The inputs to the workflow. Use `inputs` instead.
             Will be removed in a future version.
 
@@ -40,10 +40,10 @@ class Workflow(Node):
     def __init__(
         self,
         graph: dict[str, Any],
-        requested_output: dict[str, Any],
+        inputs: Optional[dict[str, Any]] = None,
+        requested_output: Optional[dict[str, Any]] = None,
         external_input_id: str = "_",
-        inputs: dict[str, Any] | None = None,
-        input: dict[str, Any] | None = None,
+        input: Optional[dict[str, Any]] = None,
     ):
         # TODO: Remove once `input` is removed and make `inputs` required
         final_inputs = handle_input_deprecation(input, inputs)
