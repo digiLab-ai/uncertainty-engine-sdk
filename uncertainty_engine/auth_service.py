@@ -79,7 +79,10 @@ class AuthService:
                 "The 'account_id' parameter is deprecated and will be removed in the next "
                 "release. Fetching account ID from HTTP headers instead.",
                 DeprecationWarning,
-                stacklevel=2,
+                # The stack level is set to 3 so that when it is called
+                # via the `Client` the deprecation warning will still
+                # show.
+                stacklevel=3,
             )
 
         # Load username + password from .env or take inputs
