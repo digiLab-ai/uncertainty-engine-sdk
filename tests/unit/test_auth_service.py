@@ -124,7 +124,7 @@ def test_authenticate_invalid_token(
     auth_service_no_file: AuthService,
     monkeypatch: MonkeyPatch,
 ):
-    """Test successful authentication"""
+    """Test authentication fails if decoded token is invalid."""
     # Setup
     username = "test_user"
     password = "test_password"
