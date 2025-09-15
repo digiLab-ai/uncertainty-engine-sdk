@@ -85,9 +85,9 @@ class AuthService:
         # from the cache.
         self.resource_token = self.resource_token or self._get_resource_token()
 
-        # Set the account ID if it is not already set.
-        if not self.account_id:
-            self.account_id = self._get_account_id(self.resource_token)
+        # Get the account ID from the resource token if it is not
+        # already set.
+        self.account_id = self.account_id or self._get_account_id(self.resource_token)
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
@@ -144,10 +144,13 @@ class AuthService:
     @staticmethod
     def _get_account_id(resource_token: str) -> None:
         """
-        Sets the user's account ID by decoding the resource token.
+        Gets the user's account ID by decoding the resource token.
+
+        Args:
+            resource_token: The resource token to decode.
 
         Raises:
-            ValueError: If the resource token is `None` or if the
+            ValueError: If JWT is unable to decode the token or if the
                 account ID cannot be found in the decoded token.
         """
         try:
