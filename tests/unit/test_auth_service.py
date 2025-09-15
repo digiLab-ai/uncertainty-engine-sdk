@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from pytest import MonkeyPatch
+from pytest import MonkeyPatch, mark
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
@@ -115,7 +115,7 @@ def test_authenticate_account_id_set(
     assert auth_service_no_file.is_authenticated is True
 
 
-@pytest.mark.parametrize(
+@mark.parametrize(
     "decoded_token",
     [{"invalid": "token"}, {}],
 )
