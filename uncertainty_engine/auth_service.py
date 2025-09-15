@@ -85,7 +85,7 @@ class AuthService:
         # from the cache.
         self.resource_token = self.resource_token or self._get_resource_token()
 
-        # Set the account_id if it is not already set.
+        # Set the account ID if it is not already set.
         if not self.account_id:
             self._set_account_id()
 
