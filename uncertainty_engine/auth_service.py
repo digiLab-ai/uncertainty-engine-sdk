@@ -64,20 +64,20 @@ class AuthService:
 
     def authenticate(self, account_id: str | None = None) -> None:
         """
-        Set authentication credentials
+        Set authentication credentials.
 
         Args:
             account_id : **DEPRECATED** This parameter is no longer used
                 and will be removed in a future release. Defaults to
-                `None`. The account ID is now obtained from
-                authentication headers.
+                `None`. The account ID is now obtained from HTTP
+                headers.
         """
         # TODO: The following can be removed once `account_id` argument
         # is removed.
         if account_id is not None:
             warn(
                 "The 'account_id' parameter is deprecated and will be removed in the next "
-                "release. Fetching account ID from authentication headers instead.",
+                "release. Fetching account ID from HTTP headers instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
