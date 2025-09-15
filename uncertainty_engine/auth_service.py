@@ -68,7 +68,7 @@ class AuthService:
 
         Args:
             account_id : **DEPRECATED** This parameter is no longer used
-                and will be removed in a future release. Defaults to
+                and will be removed in the next release. Defaults to
                 `None`. The account ID is now obtained from HTTP
                 headers.
         """
