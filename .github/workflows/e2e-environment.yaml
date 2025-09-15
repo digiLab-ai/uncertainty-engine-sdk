@@ -11,10 +11,6 @@ on:
         type: string
 
     secrets:
-      ue-account-id:
-        description: Resource Service account ID.
-        required: true
-
       ue-cognito-client-id:
         description:
           Cognito User Pool Application Client ID. You must provide either this
@@ -78,7 +74,6 @@ jobs:
 
       - name: Run tests
         env:
-          UE_ACCOUNT_ID: ${{ secrets.ue-account-id }}
           UE_COGNITO_CLIENT_ID: ${{ secrets.ue-cognito-client-id }}
           UE_CORE_API: ${{ secrets.ue-core-api }}
           UE_ENVIRONMENT: ${{ inputs.ue-environment }}
