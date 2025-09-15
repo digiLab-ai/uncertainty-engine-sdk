@@ -101,7 +101,5 @@ To add new API providers:
 client = Client()
 
 # Authenticate with credentials
-client.authenticate(
-    account_id="123456789",
-)
+client.authenticate()
 ```
