@@ -64,3 +64,49 @@ class TestClientMethods:
             time.sleep(5)
 
         assert status == JobStatus.COMPLETED.value
+
+    def test_node_info(self, e2e_client: Client):
+        """
+        Verify that the node_info method returns correct information
+        for the Add node.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        node_id = "Add"
+        node_info = e2e_client.node_info(node_id)
+
+        assert node_info.id == "Add"
+        assert node_info.label == "Add"
+        assert node_info.category == "Basic"
+        assert node_info.description == "Add two numbers"
+        assert node_info.long_description == "Add two numbers"
+        assert node_info.image_name == "uncertainty-engine-add-node"
+        assert node_info.cost == 1
+
+        # Check inputs
+        assert "lhs" in node_info.inputs
+        assert node_info.inputs["lhs"].type == "float"
+        assert node_info.inputs["lhs"].label == "LHS"
+        assert node_info.inputs["lhs"].description == "Left-hand side of the addition"
+
+        assert "rhs" in node_info.inputs
+        assert node_info.inputs["rhs"].type == "float"
+        assert node_info.inputs["rhs"].label == "RHS"
+        assert node_info.inputs["rhs"].description == "Right-hand side of the addition"
+
+        # Check outputs
+        assert "ans" in node_info.outputs
+        assert node_info.outputs["ans"].type == "float"
+        assert node_info.outputs["ans"].label == "Answer"
+        assert node_info.outputs["ans"].description == "Result of the addition"
+
+        # Check requirements
+        assert node_info.requirements.cpu == 256
+        assert node_info.requirements.gpu is False
+        assert node_info.requirements.memory == 512
+        assert node_info.requirements.timeout == 15
+
+        # Check URLs
+        assert node_info.load_balancer_url.startswith("http://dev-un-uncer")
+        assert node_info.queue_url.startswith("https://sqs.eu-west-2.amazonaws.com/")
