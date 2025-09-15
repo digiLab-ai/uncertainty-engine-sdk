@@ -11,7 +11,6 @@ jobs:
   legacy:
     uses: ./.github/workflows/e2e-environment.yaml
     secrets:
-      ue-account-id: ${{ secrets.UE_LEGACY_ACCOUNT_ID }}
       ue-cognito-client-id: ${{ secrets.UE_COGNITO_CLIENT_ID }}
       ue-core-api: ${{ secrets.UE_CORE_API }}
       ue-password: ${{ secrets.UE_LEGACY_PASSWORD }}
@@ -24,7 +23,6 @@ jobs:
     with:
       ue-environment: dev
     secrets:
-      ue-account-id: ${{ secrets.UE_DEV_ACCOUNT_ID }}
       ue-password: ${{ secrets.UE_DEV_PASSWORD }}
       ue-username: ${{ secrets.UE_DEV_USERNAME }}
 
@@ -33,6 +31,5 @@ jobs:
     with:
       ue-environment: prod
     secrets:
-      ue-account-id: ${{ secrets.UE_PROD_ACCOUNT_ID }}
       ue-password: ${{ secrets.UE_PROD_PASSWORD }}
       ue-username: ${{ secrets.UE_PROD_USERNAME }}
