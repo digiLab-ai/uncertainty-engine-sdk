@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from typing import Optional
 
+import jwt
+
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
 
@@ -59,6 +61,7 @@ class AuthService:
         # Load auth details, if not found they will remain None
         self._load_from_file()
 
+    # TODO: Make account ID optional as it is no longer required.
     def authenticate(self, account_id: str) -> None:
         """
         Set authentication credentials
@@ -77,11 +80,14 @@ class AuthService:
             )
 
         self.token = self.authenticator.authenticate(username, password)
-        self.account_id = account_id
 
         # Get a new resource token only if we didn't load one already
         # from the cache.
         self.resource_token = self.resource_token or self._get_resource_token()
+
+        # Get the account ID from the resource token if it is not
+        # already set.
+        self.account_id = self.account_id or self._get_account_id(self.resource_token)
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
@@ -134,6 +140,32 @@ class AuthService:
 
         # Set file permissions (owner read/write only - 0600)
         os.chmod(self.auth_file_path, 0o600)
+
+    @staticmethod
+    def _get_account_id(resource_token: str) -> str:
+        """
+        Gets the user's account ID by decoding the resource token.
+
+        Args:
+            resource_token: The resource token to decode.
+
+        Raises:
+            ValueError: If JWT is unable to decode the token or if the
+                account ID cannot be found in the decoded token.
+        """
+        try:
+            decoded_token = jwt.decode(
+                resource_token,
+                options={
+                    "verify_signature": False,
+                },
+            )
+
+            return decoded_token["account_id"]
+        except jwt.DecodeError as e:
+            raise ValueError(f"Failed to decode token: {e}")
+        except KeyError:
+            raise ValueError("Unable to find 'account_id' in decoded token.")
 
     def refresh(self) -> CognitoToken:
         """
