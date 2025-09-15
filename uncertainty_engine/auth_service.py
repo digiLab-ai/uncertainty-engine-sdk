@@ -61,6 +61,7 @@ class AuthService:
         # Load auth details, if not found they will remain None
         self._load_from_file()
 
+    # TODO: Make account ID optional as it is no longer required.
     def authenticate(self, account_id: str) -> None:
         """
         Set authentication credentials
@@ -166,7 +167,7 @@ class AuthService:
         Sets the user's account ID by decoding the resource token.
 
         Raises:
-            ValueError: If the resource token is `None` or id the
+            ValueError: If the resource token is `None` or if the
                 account ID cannot be found in the decoded token.
         """
         if self.resource_token is None:
