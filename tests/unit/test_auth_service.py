@@ -47,7 +47,7 @@ def test_authenticate(
     monkeypatch.setenv("UE_PASSWORD", password)
 
     # Call authenticate
-    auth_service_no_file.authenticate(account_id)
+    auth_service_no_file.authenticate()
 
     # Verify authenticator was called with correct params
     mock_cognito_authenticator.authenticate.assert_called_once_with(username, password)
@@ -70,9 +70,14 @@ def test_authenticate_account_id_set(
     monkeypatch.setenv("UE_PASSWORD", password)
 
     auth_service_no_file.account_id = "preset_account_id"
-    auth_service_no_file.authenticate("override_account_id")
+    with patch(
+        "uncertainty_engine.auth_service.AuthService._get_account_id"
+    ) as mock_get_account_id:
+        mock_get_account_id.return_value = "override_account_id"
+        auth_service_no_file.authenticate()
 
-    assert auth_service_no_file.account_id == "preset_account_id"
+        assert auth_service_no_file.account_id == "preset_account_id"
+        mock_get_account_id.assert_not_called()
 
 
 def test_authenticate_from_env_vars(
@@ -82,7 +87,6 @@ def test_authenticate_from_env_vars(
 ):
     """Test authentication using environment variables"""
     # Setup
-    account_id = "test_account"
     env_username = "env_user"
     env_password = "env_password"
 
@@ -91,7 +95,7 @@ def test_authenticate_from_env_vars(
     monkeypatch.setenv("UE_PASSWORD", env_password)
 
     # Call authenticate without username/password
-    auth_service_no_file.authenticate(account_id)
+    auth_service_no_file.authenticate()
 
     # Verify authenticator was called with env vars
     mock_cognito_authenticator.authenticate.assert_called_once_with(
@@ -109,7 +113,7 @@ def test_authenticate_missing_credentials(
 
     # Verify authentication raises error
     with pytest.raises(ValueError) as excinfo:
-        auth_service_no_file.authenticate("test_account")
+        auth_service_no_file.authenticate()
 
     assert "Username and password must be provided" in str(excinfo.value)
 
