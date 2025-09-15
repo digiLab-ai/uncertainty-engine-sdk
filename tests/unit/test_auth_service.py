@@ -340,4 +340,3 @@ def test_load_from_file_missing_keys(auth_service_no_file: AuthService):
 
             # Verify token and account_id weren't set
             assert auth_service_no_file.token is None
-            assert auth_service_no_file.token is None
