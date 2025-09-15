@@ -1,7 +1,9 @@
 import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+
+import jwt
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
@@ -77,11 +79,14 @@ class AuthService:
             )
 
         self.token = self.authenticator.authenticate(username, password)
-        self.account_id = account_id
 
         # Get a new resource token only if we didn't load one already
         # from the cache.
         self.resource_token = self.resource_token or self._get_resource_token()
+
+        # Set the account_id if it is not already set.
+        if not self.account_id:
+            self._set_account_id()
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
@@ -113,6 +118,27 @@ class AuthService:
         if auth_file.exists():
             auth_file.unlink()
 
+    @staticmethod
+    def _decode_jwt_token(token: str) -> dict[str, Any]:
+        """
+        Decodes a JWT token.
+
+        Args:
+            token: The string token to decode.
+
+        Returns:
+            The decoded JWT payload as a dictionary.
+
+        Raises:
+            ValueError: If the header is missing, empty, or the token is
+                invalid.
+        """
+        try:
+            decoded_token = jwt.decode(token, options={"verify_signature": False})
+            return decoded_token
+        except jwt.DecodeError as e:
+            raise ValueError(f"Failed to decode token: {e}")
+
     def _save_to_file(self) -> None:
         """Save authentication details to a file"""
 
@@ -134,6 +160,26 @@ class AuthService:
 
         # Set file permissions (owner read/write only - 0600)
         os.chmod(self.auth_file_path, 0o600)
+
+    def _set_account_id(self) -> None:
+        """
+        Sets the user's account ID by decoding the resource token.
+
+        Raises:
+            ValueError: If the resource token is `None` or id the
+                account ID cannot be found in the decoded token.
+        """
+        if self.resource_token is None:
+            raise ValueError("Unable to set account id. No resource token found.")
+
+        decoded_token = self._decode_jwt_token(self.resource_token)
+
+        try:
+            self.account_id = decoded_token["account_id"]
+        except KeyError:
+            raise ValueError(
+                "Unable to set account id. The token does not contain an account ID."
+            )
 
     def refresh(self) -> CognitoToken:
         """
