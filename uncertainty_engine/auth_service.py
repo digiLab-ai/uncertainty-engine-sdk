@@ -142,7 +142,7 @@ class AuthService:
         os.chmod(self.auth_file_path, 0o600)
 
     @staticmethod
-    def _get_account_id(resource_token: str) -> None:
+    def _get_account_id(resource_token: str) -> str:
         """
         Gets the user's account ID by decoding the resource token.
 
