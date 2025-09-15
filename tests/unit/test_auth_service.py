@@ -145,7 +145,7 @@ def test_authenticate_invalid_token(
     # Verify authentication raises error
     with pytest.raises(
         ValueError,
-        match="Unable to set account id. The token does not contain an account ID.",
+        match="Unable to set account ID. Resource token does not contain an account ID.",
     ):
         auth_service_no_file.authenticate("account_id")
 

@@ -179,7 +179,7 @@ class AuthService:
             self.account_id = decoded_token["account_id"]
         except KeyError:
             raise ValueError(
-                "Unable to set account id. The token does not contain an account ID."
+                "Unable to set account ID. Resource token does not contain an account ID."
             )
 
     def refresh(self) -> CognitoToken:
