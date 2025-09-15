@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import jwt
 
@@ -87,7 +87,7 @@ class AuthService:
 
         # Set the account ID if it is not already set.
         if not self.account_id:
-            self._set_account_id()
+            self.account_id = self._get_account_id(self.resource_token)
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
@@ -119,27 +119,6 @@ class AuthService:
         if auth_file.exists():
             auth_file.unlink()
 
-    @staticmethod
-    def _decode_jwt_token(token: str) -> dict[str, Any]:
-        """
-        Decodes a JWT token.
-
-        Args:
-            token: The string token to decode.
-
-        Returns:
-            The decoded JWT payload as a dictionary.
-
-        Raises:
-            ValueError: If the header is missing, empty, or the token is
-                invalid.
-        """
-        try:
-            decoded_token = jwt.decode(token, options={"verify_signature": False})
-            return decoded_token
-        except jwt.DecodeError as e:
-            raise ValueError(f"Failed to decode token: {e}")
-
     def _save_to_file(self) -> None:
         """Save authentication details to a file"""
 
@@ -162,7 +141,8 @@ class AuthService:
         # Set file permissions (owner read/write only - 0600)
         os.chmod(self.auth_file_path, 0o600)
 
-    def _set_account_id(self) -> None:
+    @staticmethod
+    def _get_account_id(resource_token: str) -> None:
         """
         Sets the user's account ID by decoding the resource token.
 
@@ -170,13 +150,17 @@ class AuthService:
             ValueError: If the resource token is `None` or if the
                 account ID cannot be found in the decoded token.
         """
-        if self.resource_token is None:
-            raise ValueError("Unable to set account id. No resource token found.")
-
-        decoded_token = self._decode_jwt_token(self.resource_token)
-
         try:
-            self.account_id = decoded_token["account_id"]
+            decoded_token = jwt.decode(
+                resource_token,
+                options={
+                    "verify_signature": False,
+                },
+            )
+
+            return decoded_token["account_id"]
+        except jwt.DecodeError as e:
+            raise ValueError(f"Failed to decode token: {e}")
         except KeyError:
             raise ValueError(
                 "Unable to set account ID. Resource token does not contain an account ID."

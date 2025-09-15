@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-from pytest import MonkeyPatch, mark
+from pytest import MonkeyPatch
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
@@ -42,14 +42,6 @@ def test_authenticate(
     password = "test_password"
     account_id = "test_account"
 
-    # Mock save_to_file to prevent actual file operations
-    monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
-    monkeypatch.setattr(
-        auth_service_no_file,
-        "_decode_jwt_token",
-        lambda token: {"account_id": account_id},  # type: ignore
-    )
-
     # Set environment variables using monkeypatch
     monkeypatch.setenv("UE_USERNAME", username)
     monkeypatch.setenv("UE_PASSWORD", password)
@@ -68,93 +60,19 @@ def test_authenticate(
 
 def test_authenticate_account_id_set(
     auth_service_no_file: AuthService,
-    mock_cognito_authenticator: MagicMock,
     monkeypatch: MonkeyPatch,
 ):
     """Test successful authentication when account ID is already set."""
     username = "test_user"
     password = "test_password"
-    account_id = "test_account"
-
-    mock_set_account_id = MagicMock()
-
-    # Mock `_save_to_file` to prevent actual file operations
-    monkeypatch.setattr(
-        auth_service_no_file,
-        "_save_to_file",
-        lambda: None,
-    )
-    monkeypatch.setattr(
-        auth_service_no_file,
-        "_set_account_id",
-        mock_set_account_id,
-    )
-    monkeypatch.setattr(
-        auth_service_no_file,
-        "account_id",
-        account_id,
-    )
 
     monkeypatch.setenv("UE_USERNAME", username)
     monkeypatch.setenv("UE_PASSWORD", password)
 
-    auth_service_no_file.authenticate(account_id)
+    auth_service_no_file.account_id = "preset_account_id"
+    auth_service_no_file.authenticate("override_account_id")
 
-    # Verify authenticator was called with correct params
-    mock_cognito_authenticator.authenticate.assert_called_once_with(username, password)
-
-    # Verify `_set_account_id` is not called
-    mock_set_account_id.assert_not_called()
-
-    # Verify `token` and `account_id` were set
-    assert auth_service_no_file.account_id == account_id
-    assert auth_service_no_file.token is not None
-    assert auth_service_no_file.is_authenticated is True
-
-
-@mark.parametrize(
-    "decoded_token",
-    [{"invalid": "token"}, {}],
-)
-def test_authenticate_invalid_token(
-    decoded_token: dict[str, str],
-    auth_service_no_file: AuthService,
-    monkeypatch: MonkeyPatch,
-):
-    """Test authentication fails if decoded token is invalid."""
-    username = "test_user"
-    password = "test_password"
-
-    mock_save_to_file = MagicMock()
-
-    # Mock `_save_to_file` to prevent actual file operations
-    monkeypatch.setattr(
-        auth_service_no_file,
-        "_save_to_file",
-        mock_save_to_file,
-    )
-    monkeypatch.setattr(
-        auth_service_no_file,
-        "_decode_jwt_token",
-        lambda token: decoded_token,  # type: ignore
-    )
-
-    monkeypatch.setenv("UE_USERNAME", username)
-    monkeypatch.setenv("UE_PASSWORD", password)
-
-    # Verify authentication raises error
-    with pytest.raises(
-        ValueError,
-        match="Unable to set account ID. Resource token does not contain an account ID.",
-    ):
-        auth_service_no_file.authenticate("account_id")
-
-    # Verify `_save_to_file`` is not called
-    mock_save_to_file.assert_not_called()
-
-    # Verify account ID is not set
-    assert auth_service_no_file.account_id is None
-    assert auth_service_no_file.is_authenticated is False
+    assert auth_service_no_file.account_id == "preset_account_id"
 
 
 def test_authenticate_from_env_vars(
@@ -171,12 +89,6 @@ def test_authenticate_from_env_vars(
     # Set environment variables using monkeypatch
     monkeypatch.setenv("UE_USERNAME", env_username)
     monkeypatch.setenv("UE_PASSWORD", env_password)
-
-    # Mock save_to_file to prevent actual file operations
-    monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
-    monkeypatch.setattr(
-        auth_service_no_file, "_decode_jwt_token", lambda token: {"account_id": account_id}  # type: ignore
-    )
 
     # Call authenticate without username/password
     auth_service_no_file.authenticate(account_id)

@@ -4,6 +4,7 @@ from typing import Iterator
 from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 
 import boto3
+import jwt
 import pytest
 
 from uncertainty_engine.auth_service import (
@@ -53,7 +54,12 @@ def mock_resource_token() -> str:
     Gets a mock Resource Service API token.
     """
 
-    return "mock_resource_token"
+    return jwt.encode(
+        {
+            "account_id": "test_account",
+        },
+        "",
+    )
 
 
 @pytest.fixture
@@ -240,5 +246,7 @@ def auth_service_no_file(
             mock_cognito_authenticator,
             mock_get_resource_token,
         )
+
+        auth_service._save_to_file = lambda: None
 
         yield auth_service
