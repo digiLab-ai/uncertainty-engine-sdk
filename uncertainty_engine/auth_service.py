@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from typing import Optional
+from warnings import warn
 
 import jwt
 
@@ -61,14 +62,25 @@ class AuthService:
         # Load auth details, if not found they will remain None
         self._load_from_file()
 
-    # TODO: Make account ID optional as it is no longer required.
-    def authenticate(self, account_id: str) -> None:
+    def authenticate(self, account_id: str | None = None) -> None:
         """
         Set authentication credentials
 
         Args:
-            account_id : The account ID to authenticate with.
+            account_id : **DEPRECATED** This parameter is no longer used
+                and will be removed in a future release. Defaults to
+                `None`. The account ID is now obtained from
+                authentication headers.
         """
+        # TODO: The following can be removed once `account_id` argument
+        # is removed.
+        if account_id is not None:
+            warn(
+                "The 'account_id' parameter is deprecated and will be removed in the next "
+                "release. Fetching account ID from authentication headers instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         # Load username + password from .env or take inputs
         username = os.getenv("UE_USERNAME")
