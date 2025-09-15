@@ -45,7 +45,9 @@ def test_authenticate(
     # Mock save_to_file to prevent actual file operations
     monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
     monkeypatch.setattr(
-        auth_service_no_file, "_decode_jwt_token", lambda token: {"account_id": account_id}  # type: ignore
+        auth_service_no_file,
+        "_decode_jwt_token",
+        lambda token: {"account_id": account_id},  # type: ignore
     )
 
     # Set environment variables using monkeypatch
@@ -78,9 +80,21 @@ def test_authenticate_account_id_set(
     mock_set_account_id = MagicMock()
 
     # Mock save_to_file to prevent actual file operations
-    monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
-    monkeypatch.setattr(auth_service_no_file, "_set_account_id", mock_set_account_id)
-    monkeypatch.setattr(auth_service_no_file, "account_id", account_id)
+    monkeypatch.setattr(
+        auth_service_no_file,
+        "_save_to_file",
+        lambda: None,
+    )
+    monkeypatch.setattr(
+        auth_service_no_file,
+        "_set_account_id",
+        mock_set_account_id,
+    )
+    monkeypatch.setattr(
+        auth_service_no_file,
+        "account_id",
+        account_id,
+    )
 
     # Set environment variables using monkeypatch
     monkeypatch.setenv("UE_USERNAME", username)
@@ -99,6 +113,53 @@ def test_authenticate_account_id_set(
     assert auth_service_no_file.account_id == account_id
     assert auth_service_no_file.token is not None
     assert auth_service_no_file.is_authenticated is True
+
+
+@pytest.mark.parametrize(
+    "decoded_token",
+    [{"invalid": "token"}, {}],
+)
+def test_authenticate_invalid_token(
+    decoded_token: dict[str, str],
+    auth_service_no_file: AuthService,
+    monkeypatch: MonkeyPatch,
+):
+    """Test successful authentication"""
+    # Setup
+    username = "test_user"
+    password = "test_password"
+
+    mock_save_to_file = MagicMock()
+
+    # Mock save_to_file to prevent actual file operations
+    monkeypatch.setattr(
+        auth_service_no_file,
+        "_save_to_file",
+        mock_save_to_file,
+    )
+    monkeypatch.setattr(
+        auth_service_no_file,
+        "_decode_jwt_token",
+        lambda token: decoded_token,  # type: ignore
+    )
+
+    # Set environment variables using monkeypatch
+    monkeypatch.setenv("UE_USERNAME", username)
+    monkeypatch.setenv("UE_PASSWORD", password)
+
+    # Verify authentication raises error
+    with pytest.raises(
+        ValueError,
+        match="Unable to set account id. The token does not contain an account ID.",
+    ):
+        auth_service_no_file.authenticate("account_id")
+
+    # Verify _save_to_file is not called
+    mock_save_to_file.assert_not_called()
+
+    # Verify token and account_id were set
+    assert auth_service_no_file.account_id is None
+    assert auth_service_no_file.is_authenticated is False
 
 
 def test_authenticate_from_env_vars(
