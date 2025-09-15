@@ -71,7 +71,7 @@ def test_authenticate_account_id_set(
     mock_cognito_authenticator: MagicMock,
     monkeypatch: MonkeyPatch,
 ):
-    """Test successful authentication when account id is already set."""
+    """Test successful authentication when account ID is already set."""
     username = "test_user"
     password = "test_password"
     account_id = "test_account"
