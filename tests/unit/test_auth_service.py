@@ -64,6 +64,43 @@ def test_authenticate(
     assert auth_service_no_file.is_authenticated is True
 
 
+def test_authenticate_account_id_set(
+    auth_service_no_file: AuthService,
+    mock_cognito_authenticator: CognitoAuthenticator,
+    monkeypatch: MonkeyPatch,
+):
+    """Test successful authentication when account id is already set."""
+    # Setup
+    username = "test_user"
+    password = "test_password"
+    account_id = "test_account"
+
+    mock_set_account_id = MagicMock()
+
+    # Mock save_to_file to prevent actual file operations
+    monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
+    monkeypatch.setattr(auth_service_no_file, "_set_account_id", mock_set_account_id)
+    monkeypatch.setattr(auth_service_no_file, "account_id", account_id)
+
+    # Set environment variables using monkeypatch
+    monkeypatch.setenv("UE_USERNAME", username)
+    monkeypatch.setenv("UE_PASSWORD", password)
+
+    # Call authenticate
+    auth_service_no_file.authenticate(account_id)
+
+    # Verify authenticator was called with correct params
+    mock_cognito_authenticator.authenticate.assert_called_once_with(username, password)
+
+    # Verify `_set_account_id` is not called
+    mock_set_account_id.assert_not_called()
+
+    # Verify token and account_id were set
+    assert auth_service_no_file.account_id == account_id
+    assert auth_service_no_file.token is not None
+    assert auth_service_no_file.is_authenticated is True
+
+
 def test_authenticate_from_env_vars(
     auth_service_no_file: AuthService,
     mock_cognito_authenticator: CognitoAuthenticator,
