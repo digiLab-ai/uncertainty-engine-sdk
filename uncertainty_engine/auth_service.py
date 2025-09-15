@@ -165,9 +165,7 @@ class AuthService:
         except jwt.DecodeError as e:
             raise ValueError(f"Failed to decode token: {e}")
         except KeyError:
-            raise ValueError(
-                "Unable to set account ID. Resource token does not contain an account ID."
-            )
+            raise ValueError("Unable to find 'account_id' in decoded token.")
 
     def refresh(self) -> CognitoToken:
         """
