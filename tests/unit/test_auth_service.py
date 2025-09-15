@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
+from pytest import MonkeyPatch
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
@@ -33,7 +34,7 @@ def test_init_with_file(
 def test_authenticate(
     auth_service_no_file: AuthService,
     mock_cognito_authenticator: CognitoAuthenticator,
-    monkeypatch,
+    monkeypatch: MonkeyPatch,
 ):
     """Test successful authentication"""
     # Setup
@@ -43,6 +44,9 @@ def test_authenticate(
 
     # Mock save_to_file to prevent actual file operations
     monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
+    monkeypatch.setattr(
+        auth_service_no_file, "_decode_jwt_token", lambda token: {"account_id": account_id}  # type: ignore
+    )
 
     # Set environment variables using monkeypatch
     monkeypatch.setenv("UE_USERNAME", username)
@@ -63,7 +67,7 @@ def test_authenticate(
 def test_authenticate_from_env_vars(
     auth_service_no_file: AuthService,
     mock_cognito_authenticator: CognitoAuthenticator,
-    monkeypatch,
+    monkeypatch: MonkeyPatch,
 ):
     """Test authentication using environment variables"""
     # Setup
@@ -77,6 +81,9 @@ def test_authenticate_from_env_vars(
 
     # Mock save_to_file to prevent actual file operations
     monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
+    monkeypatch.setattr(
+        auth_service_no_file, "_decode_jwt_token", lambda token: {"account_id": account_id}  # type: ignore
+    )
 
     # Call authenticate without username/password
     auth_service_no_file.authenticate(account_id)
@@ -295,4 +302,5 @@ def test_load_from_file_missing_keys(auth_service_no_file: AuthService):
             auth_service_no_file._load_from_file()
 
             # Verify token and account_id weren't set
+            assert auth_service_no_file.token is None
             assert auth_service_no_file.token is None
