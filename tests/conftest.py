@@ -22,7 +22,6 @@ def e2e_client():
 
     You _must_ set the following environment variables:
 
-    - `UE_ACCOUNT_ID`: The user's Resource Service account ID.
     - `UE_PASSWORD`: User account password.
     - `UE_USERNAME`: User account email.
 
@@ -43,7 +42,7 @@ def e2e_client():
     )
 
     client = Client(env=env)
-    client.authenticate(os.environ["UE_ACCOUNT_ID"])
+    client.authenticate()
     return client
 
 

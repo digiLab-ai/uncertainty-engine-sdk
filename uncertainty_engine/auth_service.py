@@ -2,6 +2,9 @@ import json
 import os
 from pathlib import Path
 from typing import Optional
+from warnings import warn
+
+import jwt
 
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
@@ -59,13 +62,28 @@ class AuthService:
         # Load auth details, if not found they will remain None
         self._load_from_file()
 
-    def authenticate(self, account_id: str) -> None:
+    def authenticate(self, account_id: str | None = None) -> None:
         """
-        Set authentication credentials
+        Set authentication credentials.
 
         Args:
-            account_id : The account ID to authenticate with.
+            account_id : **DEPRECATED** This parameter is no longer used
+                and will be removed in the next release. Defaults to
+                `None`. The account ID is now obtained from HTTP
+                headers.
         """
+        # TODO: The following can be removed once `account_id` argument
+        # is removed.
+        if account_id is not None:
+            warn(
+                "The 'account_id' parameter is deprecated and will be removed in the next "
+                "release. Fetching account ID from HTTP headers instead.",
+                DeprecationWarning,
+                # The stack level is set to 3 so that when it is called
+                # via the `Client` the deprecation warning will still
+                # show.
+                stacklevel=3,
+            )
 
         # Load username + password from .env or take inputs
         username = os.getenv("UE_USERNAME")
@@ -77,11 +95,14 @@ class AuthService:
             )
 
         self.token = self.authenticator.authenticate(username, password)
-        self.account_id = account_id
 
         # Get a new resource token only if we didn't load one already
         # from the cache.
         self.resource_token = self.resource_token or self._get_resource_token()
+
+        # Get the account ID from the resource token if it is not
+        # already set.
+        self.account_id = self.account_id or self._get_account_id(self.resource_token)
 
         # Save tokens to AUTH_FILE_NAME in the user's home directory
         self._save_to_file()
@@ -134,6 +155,32 @@ class AuthService:
 
         # Set file permissions (owner read/write only - 0600)
         os.chmod(self.auth_file_path, 0o600)
+
+    @staticmethod
+    def _get_account_id(resource_token: str) -> str:
+        """
+        Gets the user's account ID by decoding the resource token.
+
+        Args:
+            resource_token: The resource token to decode.
+
+        Raises:
+            ValueError: If JWT is unable to decode the token or if the
+                account ID cannot be found in the decoded token.
+        """
+        try:
+            decoded_token = jwt.decode(
+                resource_token,
+                options={
+                    "verify_signature": False,
+                },
+            )
+
+            return decoded_token["account_id"]
+        except jwt.DecodeError as e:
+            raise ValueError(f"Failed to decode token: {e}")
+        except KeyError:
+            raise ValueError("Unable to find 'account_id' in decoded token.")
 
     def refresh(self) -> CognitoToken:
         """

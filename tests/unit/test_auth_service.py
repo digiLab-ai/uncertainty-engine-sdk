@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
+from pytest import MonkeyPatch, mark
 
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
@@ -33,7 +34,7 @@ def test_init_with_file(
 def test_authenticate(
     auth_service_no_file: AuthService,
     mock_cognito_authenticator: CognitoAuthenticator,
-    monkeypatch,
+    monkeypatch: MonkeyPatch,
 ):
     """Test successful authentication"""
     # Setup
@@ -41,15 +42,12 @@ def test_authenticate(
     password = "test_password"
     account_id = "test_account"
 
-    # Mock save_to_file to prevent actual file operations
-    monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
-
     # Set environment variables using monkeypatch
     monkeypatch.setenv("UE_USERNAME", username)
     monkeypatch.setenv("UE_PASSWORD", password)
 
     # Call authenticate
-    auth_service_no_file.authenticate(account_id)
+    auth_service_no_file.authenticate()
 
     # Verify authenticator was called with correct params
     mock_cognito_authenticator.authenticate.assert_called_once_with(username, password)
@@ -60,14 +58,39 @@ def test_authenticate(
     assert auth_service_no_file.is_authenticated is True
 
 
+@mark.parametrize(
+    "preset_id, expected_id",
+    [
+        ("preset_account_id", "preset_account_id"),
+        (None, "test_account"),
+    ],
+)
+def test_authenticate_only_updates_account_id_when_none(
+    preset_id: str | None,
+    expected_id: str,
+    auth_service_no_file: AuthService,
+    monkeypatch: MonkeyPatch,
+):
+    """Test authentication only updates the `account_id` when `None`."""
+    username = "test_user"
+    password = "test_password"
+
+    monkeypatch.setenv("UE_USERNAME", username)
+    monkeypatch.setenv("UE_PASSWORD", password)
+
+    auth_service_no_file.account_id = preset_id
+    auth_service_no_file.authenticate()
+
+    assert auth_service_no_file.account_id == expected_id
+
+
 def test_authenticate_from_env_vars(
     auth_service_no_file: AuthService,
     mock_cognito_authenticator: CognitoAuthenticator,
-    monkeypatch,
+    monkeypatch: MonkeyPatch,
 ):
     """Test authentication using environment variables"""
     # Setup
-    account_id = "test_account"
     env_username = "env_user"
     env_password = "env_password"
 
@@ -75,11 +98,8 @@ def test_authenticate_from_env_vars(
     monkeypatch.setenv("UE_USERNAME", env_username)
     monkeypatch.setenv("UE_PASSWORD", env_password)
 
-    # Mock save_to_file to prevent actual file operations
-    monkeypatch.setattr(auth_service_no_file, "_save_to_file", lambda: None)
-
     # Call authenticate without username/password
-    auth_service_no_file.authenticate(account_id)
+    auth_service_no_file.authenticate()
 
     # Verify authenticator was called with env vars
     mock_cognito_authenticator.authenticate.assert_called_once_with(
@@ -97,7 +117,7 @@ def test_authenticate_missing_credentials(
 
     # Verify authentication raises error
     with pytest.raises(ValueError) as excinfo:
-        auth_service_no_file.authenticate("test_account")
+        auth_service_no_file.authenticate()
 
     assert "Username and password must be provided" in str(excinfo.value)
 

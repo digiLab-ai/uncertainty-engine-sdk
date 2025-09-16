@@ -125,13 +125,16 @@ class Client:
 
     def authenticate(
         self,
-        account_id: str,
+        account_id: str | None = None,
     ) -> None:
         """
-        Authenticate the user with the Uncertainty Engine"
+        Authenticate the user with the Uncertainty Engine.
 
         Args:
-            account_id : The account ID to authenticate with.
+            account_id : **DEPRECATED** This parameter is no longer used
+                and will be removed in the next release. Defaults to
+                `None`. The account ID is now obtained from HTTP
+                headers.
         """
         self.auth_service.authenticate(account_id)
 
