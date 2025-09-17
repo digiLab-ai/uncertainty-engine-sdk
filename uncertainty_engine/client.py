@@ -262,19 +262,17 @@ class Client:
         response_data = self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
         return JobInfo(**response_data)
 
-    def view_tokens(self) -> Optional[int]:
+    def view_tokens(self) -> int:
         """
-        View how many tokens the user currently has available.
+        View the number of tokens currently available to the user's
+        organisation by calling the relevant core API endpoint.
 
         Returns:
-            Number of tokens the user currently has available.
+            The number of tokens currently available to the user's
+            organisation.
         """
 
-        # The token service for the new backend is not yet implemented.
-        # This is a placeholder for when the service is implemented.
-        # TODO: Make a request to the token service to get the user's token balance once it is implemented.
-        # response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
-        tokens = 100
+        tokens = self.core_api.get("/organizations/tokens/available")
 
         return tokens
 

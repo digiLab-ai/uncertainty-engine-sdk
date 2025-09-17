@@ -64,3 +64,15 @@ class TestClientMethods:
             time.sleep(5)
 
         assert status == JobStatus.COMPLETED.value
+
+    def test_view_tokens(self, e2e_client: Client) -> None:
+        """
+        Verify that the `view_tokens` method returns an integer
+        representing the number of available tokens.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        tokens = e2e_client.view_tokens()
+        assert isinstance(tokens, int)
+        assert tokens >= 0
