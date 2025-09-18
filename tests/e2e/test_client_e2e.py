@@ -69,8 +69,9 @@ class TestClientMethods:
         """
         Verify that the `view_tokens` method returns an integer
         representing the number of available tokens.
+
         Args:
-            e2e_client: A Client instance.
+            e2e_client: A `Client` instance.
         """
         tokens = e2e_client.view_tokens()
         assert isinstance(tokens, int)
@@ -78,10 +79,11 @@ class TestClientMethods:
 
     def test_node_info(self, e2e_client: Client):
         """
-        Verify that the node_info method returns correct information
-        for the Add node.
+        Verify that the `node_info` method returns correct information
+        for the `Add` node.
+
         Args:
-            e2e_client: A Client instance.
+            e2e_client: A `Client` instance.
         """
         node_id = "Add"
         node_info = e2e_client.node_info(node_id)
