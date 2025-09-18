@@ -65,11 +65,21 @@ class TestClientMethods:
 
         assert status == JobStatus.COMPLETED.value
 
+    def test_view_tokens(self, e2e_client: Client) -> None:
+        """
+        Verify that the `view_tokens` method returns an integer
+        representing the number of available tokens.
+        Args:
+            e2e_client: A Client instance.
+        """
+        tokens = e2e_client.view_tokens()
+        assert isinstance(tokens, int)
+        assert tokens >= 0
+
     def test_node_info(self, e2e_client: Client):
         """
         Verify that the node_info method returns correct information
         for the Add node.
-
         Args:
             e2e_client: A Client instance.
         """
