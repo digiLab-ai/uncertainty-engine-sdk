@@ -71,7 +71,7 @@ class TestClientMethods:
         representing the number of available tokens.
 
         Args:
-            e2e_client: A `Client` instance.
+            e2e_client: A Client instance.
         """
         tokens = e2e_client.view_tokens()
         assert isinstance(tokens, int)

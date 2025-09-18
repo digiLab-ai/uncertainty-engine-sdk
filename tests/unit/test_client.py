@@ -277,7 +277,7 @@ class TestClientMethods:
         Verify that the `view_tokens` method pokes the correct endpoint.
 
         Args:
-            client: A `Client` instance.
+            client: A Client instance.
         """
         with mock_core_api(client) as api:
             api.expect_get(
