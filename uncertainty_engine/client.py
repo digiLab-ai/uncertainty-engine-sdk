@@ -265,7 +265,7 @@ class Client:
     def view_tokens(self) -> int:
         """
         View the number of tokens currently available to the user's
-        organisation by calling the relevant core API endpoint.
+        organisation.
 
         Returns:
             The number of tokens currently available to the user's

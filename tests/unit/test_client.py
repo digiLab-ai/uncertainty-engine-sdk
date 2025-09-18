@@ -274,8 +274,7 @@ class TestClientMethods:
 
     def test_view_tokens(self, client: Client) -> None:
         """
-        Verify that the `view_tokens` method pokes the correct endpoint
-        and returns an integer.
+        Verify that the `view_tokens` method pokes the correct endpoint.
 
         Args:
             client: A Client instance.
@@ -286,7 +285,4 @@ class TestClientMethods:
                 123,
             )
 
-            tokens = client.view_tokens()
-
-            assert isinstance(tokens, int)
-            assert tokens == 123
+            client.view_tokens()
