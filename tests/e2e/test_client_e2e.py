@@ -120,5 +120,7 @@ class TestClientMethods:
         assert node_info.requirements.timeout == 15
 
         # Check URLs
-        assert node_info.load_balancer_url.startswith("http://dev-un-uncer")
+        assert node_info.load_balancer_url.startswith(
+            ("http://dev-un-uncer", "http://prod-un-uncer")
+        )
         assert node_info.queue_url.startswith("https://sqs.eu-west-2.amazonaws.com/")
