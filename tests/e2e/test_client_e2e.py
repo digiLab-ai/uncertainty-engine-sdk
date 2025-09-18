@@ -77,16 +77,16 @@ class TestClientMethods:
         assert isinstance(tokens, int)
         assert tokens >= 0
 
-    def test_node_info(self, e2e_client: Client):
+    def test_get_node_info(self, e2e_client: Client):
         """
-        Verify that the `node_info` method returns correct information
-        for the `Add` node.
+        Verify that the `get_node_info` method returns correct
+        information for the `Add` node.
 
         Args:
             e2e_client: A `Client` instance.
         """
         node_id = "Add"
-        node_info = e2e_client.node_info(node_id)
+        node_info = e2e_client.get_node_info(node_id)
 
         assert node_info.id == "Add"
         assert node_info.label == "Add"

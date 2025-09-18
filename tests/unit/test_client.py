@@ -287,10 +287,10 @@ class TestClientMethods:
 
             client.view_tokens()
 
-    def test_node_info(self, client: Client):
+    def test_get_node_info(self, client: Client):
         """
-        Verify that the `node_info` method pokes the correct endpoint
-        and returns a `NodeInfo` object.
+        Verify that the `get_node_info` method pokes the correct
+        endpoint and returns a `NodeInfo` object.
 
         Args:
             client: A `Client` instance.
@@ -313,4 +313,4 @@ class TestClientMethods:
             }
             api.expect_get(f"/nodes/{node_id}", node_info_dict)
 
-            client.node_info(node_id)
+            client.get_node_info(node_id)

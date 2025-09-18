@@ -178,7 +178,7 @@ class Client:
 
         return node_list
 
-    def node_info(self, node: str) -> NodeInfo:
+    def get_node_info(self, node: str) -> NodeInfo:
         """
         Get information about a specific node.
 
