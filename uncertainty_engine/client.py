@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 from typeguard import typechecked
-from uncertainty_engine_types import JobInfo, JobStatus
+from uncertainty_engine_types import JobInfo, JobStatus, NodeInfo
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
@@ -177,6 +177,20 @@ class Client:
             node_list = [node for node in node_list if node["category"] == category]
 
         return node_list
+
+    def get_node_info(self, node: str) -> NodeInfo:
+        """
+        Get information about a specific node.
+
+        Args:
+            node: The ID of the node to get information about.
+
+        Returns:
+            Information about the node as a NodeInfo object.
+        """
+
+        node_info = self.core_api.get(f"/nodes/{node}")
+        return NodeInfo(**node_info)
 
     def queue_node(
         self,

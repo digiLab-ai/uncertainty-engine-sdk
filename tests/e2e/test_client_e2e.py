@@ -76,3 +76,17 @@ class TestClientMethods:
         tokens = e2e_client.view_tokens()
         assert isinstance(tokens, int)
         assert tokens >= 0
+
+    def test_get_node_info(self, e2e_client: Client) -> None:
+        """
+        Test that the `Add` node info returns the correct id, and that
+        all inputs and outputs exist and are not empty.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+
+        node_info = e2e_client.get_node_info("Add")
+        assert node_info.id == "Add"
+        assert node_info.inputs
+        assert node_info.outputs
