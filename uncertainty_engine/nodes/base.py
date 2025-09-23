@@ -10,13 +10,13 @@ class Node:
     A generic representation of a node in the Uncertainty Engine.
 
     Args:
-        node_name: The name of the node.
+        node_name: The name of the node. # TODO CHANGE TO ID
         label: A human-readable label for the node. Defaults to None.
         **kwargs: Arbitrary keyword arguments representing the input parameters of the node.
 
     Example:
         >>> add_node = Node(
-        ...     node_name="Add",
+        ...     node_name="Add", # TODO CHANGE TO ID
         ...     lhs=1,
         ...     rhs=2,
         ... )
@@ -24,8 +24,10 @@ class Node:
         ('Add', {'lhs': 1, 'rhs': 2})
     """
 
-    def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):
-        self.node_name = node_name
+    def __init__(
+        self, node_name: str, label: Optional[str] = None, **kwargs
+    ):  # TODO CHANGE TO ID
+        self.node_name = node_name  # TODO CHANGE TO ID
         self.label = label
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -41,9 +43,9 @@ class Node:
         input = {
             key: getattr(self, key)
             for key in self.__dict__
-            if key not in ["node_name", "label"]
+            if key not in ["node_name", "label"]  # TODO CHANGE TO ID
         }
-        return self.node_name, input
+        return self.node_name, input  # TODO CHANGE TO ID
 
     def make_handle(self, output_name: str) -> Handle:
         """

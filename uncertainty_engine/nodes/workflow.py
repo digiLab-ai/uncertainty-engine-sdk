@@ -28,14 +28,14 @@ class Workflow(Node):
         ...     graph=graph.nodes,
         ...     inputs=graph.external_input,
         ...     requested_output={
-        ...         "Result": {"node_name": "Download", "node_handle": "file"}
+        ...         "Result": {"node_name": "Download", "node_handle": "file"} # TODO CHANGE TO ID
         ...     }
         ... )
         >>> client.queue_node(workflow)
         "<job_id>"
     """
 
-    node_name: str = "Workflow"
+    node_name: str = "Workflow"  # TODO CHANGE TO ID
 
     def __init__(
         self,
@@ -58,7 +58,7 @@ class Workflow(Node):
         self.inputs = final_inputs
 
         super().__init__(
-            node_name=self.node_name,
+            node_name=self.node_name,  # TODO CHANGE TO ID
             external_input_id=external_input_id,
             graph=graph,
             inputs=final_inputs,

@@ -36,13 +36,15 @@ class TestClientMethods:
         Args:
             e2e_client: A Client instance.
         """
-        node_name = "Add"
+        node_name = "Add"  # TODO CHANGE TO ID
         inputs = {
             "lhs": 1,
             "rhs": 2,
         }  # Inputs are left hand side and right hand side of equation
 
-        job_id = e2e_client.queue_node(node=node_name, inputs=inputs)
+        job_id = e2e_client.queue_node(
+            node=node_name, inputs=inputs
+        )  # TODO CHANGE TO ID
 
         # Add the job_id as an attribute of the test class so that it can be used in other tests
         TestClientMethods.job_id = job_id

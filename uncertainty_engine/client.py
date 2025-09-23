@@ -30,7 +30,7 @@ class Job(BaseModel):
     Represents a job in the Uncertainty Engine.
     """
 
-    node_id: str
+    node_id: str  # TODO CHANGE TO ID
     job_id: str
 
 
@@ -178,7 +178,7 @@ class Client:
 
         return node_list
 
-    def get_node_info(self, node: str) -> NodeInfo:
+    def get_node_info(self, node: str) -> NodeInfo:  # TODO CHANGE TO ID
         """
         Get information about a specific node.
 
@@ -189,12 +189,12 @@ class Client:
             Information about the node as a NodeInfo object.
         """
 
-        node_info = self.core_api.get(f"/nodes/{node}")
+        node_info = self.core_api.get(f"/nodes/{node}")  # TODO CHANGE TO ID
         return NodeInfo(**node_info)
 
     def queue_node(
         self,
-        node: Union[str, Node],
+        node: Union[str, Node],  # TODO CHANGE TO ID
         inputs: Optional[dict[str, Any]] = None,
         input: Optional[dict[str, Any]] = None,
     ) -> Job:
@@ -202,7 +202,7 @@ class Client:
         Queue a node for execution.
 
         Args:
-            node: The name of the node to execute or the node object itself.
+            node: The name of the node to execute or the node object itself. # TODO CHANGE TO ID
             inputs: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
             input: **DEPRECATED** The input data for the node. Use `inputs` instead.
@@ -214,9 +214,9 @@ class Client:
         # TODO: Remove once `input` is removed and make `inputs` required
         final_inputs = handle_input_deprecation(input, inputs)
 
-        if isinstance(node, Node):
-            node, final_inputs = node()
-        elif isinstance(node, str) and final_inputs is None:
+        if isinstance(node, Node):  # TODO CHANGE TO ID
+            node, final_inputs = node()  # TODO CHANGE TO ID
+        elif isinstance(node, str) and final_inputs is None:  # TODO CHANGE TO ID
             raise ValueError(
                 "Input data/parameters are required when specifying a node by name."
             )
@@ -224,16 +224,16 @@ class Client:
         job_id = self.core_api.post(
             "/nodes/queue",
             {
-                "node_id": node,
+                "node_id": node,  # TODO CHANGE TO ID
                 "inputs": final_inputs,
             },
         )
 
-        return Job(node_id=node, job_id=job_id)
+        return Job(node_id=node, job_id=job_id)  # TODO CHANGE TO ID
 
     def run_node(
         self,
-        node: Union[str, Node],
+        node: Union[str, Node],  # TODO CHANGE TO ID
         inputs: Optional[dict[str, Any]] = None,
         input: Optional[dict[str, Any]] = None,
     ) -> JobInfo:
@@ -241,7 +241,7 @@ class Client:
         Run a node synchronously.
 
         Args:
-            node: The name of the node to execute or the node object itself.
+            node: The name of the node to execute or the node object itself. # TODO CHANGE TO ID
             inputs: The input data for the node. If the node is defined by its name,
                 this is required. Defaults to ``None``.
             input: **DEPRECATED** The input data for the node. Use `inputs` instead.
@@ -273,7 +273,9 @@ class Client:
                 outputs={'ans': 3.0}
                 )
         """
-        response_data = self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
+        response_data = self.core_api.get(
+            f"/nodes/status/{job.node_id}/{job.job_id}"
+        )  # TODO CHANGE TO ID
         return JobInfo(**response_data)
 
     def view_tokens(self) -> int:
