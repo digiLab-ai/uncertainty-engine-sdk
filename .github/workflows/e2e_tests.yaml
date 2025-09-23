@@ -8,16 +8,6 @@ on:
     - cron: "0 09,17 * * *" # Run every day at 9:00 and 17:00
 
 jobs:
-  legacy:
-    uses: ./.github/workflows/e2e-environment.yaml
-    secrets:
-      ue-cognito-client-id: ${{ secrets.UE_COGNITO_CLIENT_ID }}
-      ue-core-api: ${{ secrets.UE_CORE_API }}
-      ue-password: ${{ secrets.UE_LEGACY_PASSWORD }}
-      ue-region: ${{ secrets.UE_REGION }}
-      ue-resource-api: ${{ secrets.UE_RESOURCE_API }}
-      ue-username: ${{ secrets.UE_LEGACY_USERNAME }}
-
   dev:
     uses: ./.github/workflows/e2e-environment.yaml
     with:
