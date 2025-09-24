@@ -51,12 +51,12 @@ class Graph:
 
             node_input_dict = dict()
             for ki, vi in node.__dict__.items():
-                if ki not in ["node_name", "label"]:
+                if ki not in ["node_name", "label"]:  # TODO CHANGE TO ID
                     if isinstance(vi, Handle):
                         node_input_dict[ki] = vi.model_dump()
                     else:
                         node_input_dict[ki] = {
-                            "node_name": self.external_input_id,
+                            "node_name": self.external_input_id,  # TODO CHANGE TO ID
                             "node_handle": f"{label}_{ki}",
                         }
                         self.external_input[f"{label}_{ki}"] = vi
@@ -71,7 +71,10 @@ class Graph:
                 if ki not in ["self", "label"]
             }
 
-        self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
+        self.nodes["nodes"][label] = {
+            "type": node.node_name,
+            "inputs": node_input_dict,
+        }  # TODO CHANGE TO ID
 
     def add_nodes_from(self, nodes: list[Node]) -> None:
         """
@@ -96,7 +99,7 @@ class Graph:
             target_key: The input key of the target node.
         """
         self.nodes["nodes"][target]["inputs"][target_key] = {
-            "node_name": source,
+            "node_name": source,  # TODO CHANGE TO ID
             "node_handle": source_key,
         }
 

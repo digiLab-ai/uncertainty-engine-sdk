@@ -21,7 +21,7 @@ class BuildSensorDesigner(Node):
         sigma: The uncertainty of the sensor data. If a float, the same uncertainty is applied to all sensors.
     """
 
-    node_name: str = "BuildSensorDesigner"
+    node_name: str = "BuildSensorDesigner"  # TODO CHANGE TO ID
 
     def __init__(
         self,
@@ -50,7 +50,7 @@ class BuildSensorDesigner(Node):
             quantities_of_interest_data_processed = None
 
         super().__init__(
-            node_name=self.node_name,
+            node_name=self.node_name,  # TODO CHANGE TO ID
             label=label,
             sensor_data=sensor_data_processed,
             quantities_of_interest_data=quantities_of_interest_data_processed,
@@ -87,7 +87,7 @@ class SuggestSensorDesign(Node):
             ).model_dump()
 
         super().__init__(
-            node_name=self.node_name,
+            node_name=self.node_name,  # TODO CHANGE TO ID
             label=label,
             sensor_designer=sensor_designer_processed,
             num_sensors=num_sensors,
@@ -105,7 +105,7 @@ class ScoreSensorDesign(Node):
         design: A list of sensors that make up the design.
     """
 
-    node_name: str = "ScoreSensorDesign"
+    node_name: str = "ScoreSensorDesign"  # TODO CHANGE TO ID
 
     def __init__(
         self,
@@ -122,7 +122,7 @@ class ScoreSensorDesign(Node):
             ).model_dump()
 
         super().__init__(
-            node_name=self.node_name,
+            node_name=self.node_name,  # TODO CHANGE TO ID
             label=label,
             sensor_designer=sensor_designer_processed,
             design=design,

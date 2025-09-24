@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class WorkflowExecutable(BaseModel):
-    node_id: Literal["Workflow"]
+    node_id: Literal["Workflow"]  # TODO CHANGE TO ID
     inputs: dict[str, Any]
 
 

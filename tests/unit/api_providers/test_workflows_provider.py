@@ -52,7 +52,7 @@ def mock_workflow_dict() -> dict[str, Any]:
 @pytest.fixture
 def mock_executable_dict(mock_workflow_dict: dict[str, Any]) -> dict[str, Any]:
     """Executable workflow test data."""
-    return {"node_id": "Workflow", "inputs": mock_workflow_dict}
+    return {"node_id": "Workflow", "inputs": mock_workflow_dict}  # TODO CHANGE TO ID
 
 
 @pytest.fixture
@@ -73,7 +73,7 @@ def mock_executable_workflow(
 ):
     """Create mock executable workflow object."""
     executable = Mock(spec=WorkflowExecutable)
-    executable.node_id = "Workflow"
+    executable.node_id = "Workflow"  # TODO CHANGE TO ID
     executable.inputs = {
         "graph": mock_workflow.graph,
         "inputs": mock_workflow.inputs,
@@ -487,7 +487,10 @@ def test_read_version_success(
 ):
     """Test reading workflow versions (latest and specific)."""
     mock_response = Mock()
-    mock_response.workflow = {"node_id": "Workflow", "inputs": mock_workflow_dict}
+    mock_response.workflow = {
+        "node_id": "Workflow",
+        "inputs": mock_workflow_dict,
+    }  # TODO CHANGE TO ID
 
     api_method = getattr(mock_workflows_client, expected_api_method)
     api_method.return_value = mock_response
@@ -495,7 +498,7 @@ def test_read_version_success(
     result = version_manager.read_version("project-123", "workflow-123", version_id)
 
     assert isinstance(result, WorkflowExecutable)
-    assert result.node_id == "Workflow"
+    assert result.node_id == "Workflow"  # TODO CHANGE TO ID
     assert result.inputs == mock_workflow_dict
 
     api_method.assert_called_once_with(*expected_api_args)

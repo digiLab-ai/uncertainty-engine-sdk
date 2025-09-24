@@ -235,7 +235,7 @@ class WorkflowsProvider(ApiProviderBase):
 
         executable_workflow = (
             WorkflowExecutable(  # Workflow must be wrapped by this to be executable
-                node_id="Workflow",
+                node_id="Workflow",  # TODO CHANGE TO ID
                 inputs={
                     "external_input_id": workflow.external_input_id,
                     "graph": workflow.graph,

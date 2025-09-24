@@ -26,7 +26,7 @@ class Add(Node):
         label: Optional[str] = None,
     ):
         super().__init__(
-            node_name=self.node_name,
+            node_name=self.node_name,  # TODO CHANGE TO ID
             label=label,
             lhs=lhs,
             rhs=rhs,
