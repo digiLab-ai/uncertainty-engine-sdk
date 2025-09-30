@@ -271,3 +271,46 @@ class TestClientMethods:
 
             mock_queue_node.assert_called_once_with("node_a", {"key": "value"})
             mock_wait_for_job.assert_called_once_with(mock_job)
+
+    def test_view_tokens(self, client: Client) -> None:
+        """
+        Verify that the `view_tokens` method pokes the correct endpoint.
+
+        Args:
+            client: A Client instance.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/organizations/tokens/available",
+                123,
+            )
+
+            client.view_tokens()
+
+    def test_get_node_info(self, client: Client):
+        """
+        Verify that the `get_node_info` method pokes the correct
+        endpoint and returns a `NodeInfo` object.
+
+        Args:
+            client: A `Client` instance.
+        """
+        with mock_core_api(client) as api:
+            node_id = "node_a"
+            node_info_dict = {
+                "id": node_id,
+                "label": node_id,
+                "category": "test_category",
+                "description": "A test node",
+                "long_description": "A long description for the test node.",
+                "image_name": "test_image.png",
+                "cost": 10,
+                "inputs": {},
+                "outputs": {},
+                "version_types_lib": "1.0.0",
+                "version_base_image": 1,
+                "version_node": 1,
+            }
+            api.expect_get(f"/nodes/{node_id}", node_info_dict)
+
+            client.get_node_info(node_id)

@@ -1,6 +1,6 @@
 [project]
 name = "uncertainty-engine"
-version = "0.8.0"
+version = "0.10.0"
 description = "SDK for the Uncertainty Engine"
 authors = [
     { name = "digiLab Solutions Ltd.", email = "info@digilab.ai" },
@@ -11,7 +11,7 @@ maintainers = [
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.10,<3.14"
 typeguard = "^4.4.2"
 requests = "^2.32.4"
 matplotlib = { version = "^3.10.0", optional = true }

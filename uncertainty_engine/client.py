@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 from pydantic import BaseModel
 from typeguard import typechecked
-from uncertainty_engine_types import JobInfo, JobStatus
+from uncertainty_engine_types import JobInfo, JobStatus, NodeInfo
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
@@ -178,6 +178,20 @@ class Client:
 
         return node_list
 
+    def get_node_info(self, node: str) -> NodeInfo:
+        """
+        Get information about a specific node.
+
+        Args:
+            node: The ID of the node to get information about.
+
+        Returns:
+            Information about the node as a NodeInfo object.
+        """
+
+        node_info = self.core_api.get(f"/nodes/{node}")
+        return NodeInfo(**node_info)
+
     def queue_node(
         self,
         node: Union[str, Node],
@@ -262,19 +276,17 @@ class Client:
         response_data = self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
         return JobInfo(**response_data)
 
-    def view_tokens(self) -> Optional[int]:
+    def view_tokens(self) -> int:
         """
-        View how many tokens the user currently has available.
+        View the number of tokens currently available to the user's
+        organisation.
 
         Returns:
-            Number of tokens the user currently has available.
+            The number of tokens currently available to the user's
+            organisation.
         """
 
-        # The token service for the new backend is not yet implemented.
-        # This is a placeholder for when the service is implemented.
-        # TODO: Make a request to the token service to get the user's token balance once it is implemented.
-        # response = requests.get(f"{self.deployment}/tokens/user/{self.email}")
-        tokens = 100
+        tokens = self.core_api.get("/organizations/tokens/available")
 
         return tokens
 
