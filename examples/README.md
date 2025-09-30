@@ -20,7 +20,7 @@ poetry install --extras "vis notebook data"
 
 ## Available Examples
 
-1. **Basic Usage** ([demo_add.ipynb](./demo_add.ipynb))
+1. **Basic Usage** ([add.ipynb](./add.ipynb))
 
    Learn the fundamentals of working the Uncertainty Engine:
 
@@ -28,7 +28,7 @@ poetry install --extras "vis notebook data"
    - Listing available nodes
    - Executing basic node operations (using the add node)
 
-2. **Basic Node Usage** ([demo_node.ipynb](./demo_node.ipynb))
+2. **Basic Node Usage** ([node.ipynb](./node.ipynb))
 
    Learn the fundamentals of working with nodes in the Uncertainty Engine:
 
@@ -36,7 +36,7 @@ poetry install --extras "vis notebook data"
    - Executing nodes
    - Understanding node responses
 
-3. **Building Workflows** ([demo_workflow.ipynb](./demo_workflow.ipynb))
+3. **Building Workflows** ([workflow.ipynb](./workflow.ipynb))
 
    Discover how to create and execute workflows:
 
@@ -46,7 +46,7 @@ poetry install --extras "vis notebook data"
    - Visualising workflows
    - Executing multi-node workflows
 
-4. **Model Training & Prediction** ([demo_train_predict.ipynb](./demo_train_predict.ipynb))
+4. **Model Training & Prediction** ([train_predict.ipynb](./train_predict.ipynb))
 
    A practical example showing how to:
 
@@ -55,7 +55,7 @@ poetry install --extras "vis notebook data"
    - Download your results
    - Visualise results
 
-5. **Handling Resources** ([demo_resource.ipynb](./demo_resource.ipynb))
+5. **Handling Resources** ([resource.ipynb](./resource.ipynb))
 
    Learn how to manage resources in the Uncertainty Engine:
 
@@ -135,5 +135,5 @@ You will need to make sure you have all the [prerequisites](#prerequisites) abov
    pprint(result)
    ```
 
-1. Start with [`demo_node.ipynb`](./demo_node.ipynb) to learn the basics
+1. Start with [`node.ipynb`](./node.ipynb) to learn the basics
 1. Progress to more complex examples as needed
