@@ -23,15 +23,14 @@ class LoadDataset(Node):
     def __init__(
         self,
         project_id: str,
-        file_id: ResourceID,
+        file_id: str,
         label: Optional[str] = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
             project_id=project_id,
-            file_id=file_id,
+            file_id=ResourceID(id=file_id).model_dump(),
         )
         self.project_id = project_id
-        self.file_id = file_id
         self.label = label
