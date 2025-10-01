@@ -1,0 +1,85 @@
+{
+  "graph": {
+    "nodes": {
+      "Model Config": {
+        "type": "ModelConfig",
+        "inputs": {}
+      },
+      "LoadDatasetX": {
+        "type": "LoadDataset",
+        "inputs": {
+          "project_id": {
+            "node_name": "_",
+            "node_handle": "LoadDatasetX_project_id"
+          },
+          "file_id": {
+            "node_name": "_",
+            "node_handle": "LoadDatasetX_file_id"
+          }
+        }
+      },
+      "LoadDatasetY": {
+        "type": "LoadDataset",
+        "inputs": {
+          "project_id": {
+            "node_name": "_",
+            "node_handle": "LoadDatasetY_project_id"
+          },
+          "file_id": {
+            "node_name": "_",
+            "node_handle": "LoadDatasetY_file_id"
+          }
+        }
+      },
+      "Train Model": {
+        "type": "TrainModel",
+        "inputs": {
+          "config": {
+            "node_name": "Model Config",
+            "node_handle": "config"
+          },
+          "inputs": {
+            "node_name": "_",
+            "node_handle": "Train Model_inputs"
+          },
+          "outputs": {
+            "node_name": "_",
+            "node_handle": "Train Model_outputs"
+          }
+        }
+      },
+      "Save Output": {
+        "type": "Save",
+        "inputs": {
+          "file": {
+            "node_name": "Train Model",
+            "node_handle": "model"
+          },
+          "project_id": {
+            "node_name": "_",
+            "node_handle": "Save Output_project_id"
+          }
+        }
+      }
+    }
+  },
+  "requested_output": {},
+  "external_input_id": "_",
+  "inputs": {
+    "LoadDatasetX_project_id": "68dbf8e5c8ed92f3ad5f0a97",
+    "LoadDatasetX_file_id": "",
+    "LoadDatasetY_project_id": "68dbf8e5c8ed92f3ad5f0a97",
+    "LoadDatasetY_file_id": "",
+    "Train Model_inputs": {
+      "node_name": "LoadDatasetX",
+      "node_handle": "file"
+    },
+    "Train Model_outputs": {
+      "node_name": "LoadDatasetY",
+      "node_handle": "file"
+    },
+    "Save Output_project_id": "68dbf8e5c8ed92f3ad5f0a97"
+  },
+  "node_name": "Workflow",
+  "label": null
+}
