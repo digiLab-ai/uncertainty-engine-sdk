@@ -8,7 +8,7 @@ def test_loaddataset_initialization() -> None:
 
     # Example values
     project_id = "projectid-123"
-    file_id = ResourceID(id="fileid-456")
+    file_id = "fileid-456"
     label = "Test Load Dataset"
 
     node = LoadDataset(
@@ -19,5 +19,5 @@ def test_loaddataset_initialization() -> None:
 
     assert node.node_name == "LoadDataset"
     assert node.project_id == project_id
-    assert node.file_id == file_id
+    assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
