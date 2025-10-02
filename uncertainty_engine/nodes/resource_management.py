@@ -1,9 +1,10 @@
 from typing import Optional
 
 from typeguard import typechecked
-from uncertainty_engine_types import ResourceID
+from uncertainty_engine_types import ResourceID, S3Storage
 
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.utils import HandleUnion
 
 
 @typechecked
@@ -33,4 +34,45 @@ class LoadDataset(Node):
             file_id=ResourceID(id=file_id).model_dump(),
         )
         self.project_id = project_id
+        self.label = label
+
+
+@typechecked
+class Save(Node):
+    """
+    Save a resource in the Uncertainty Engine resource management
+    system.
+
+    Note that this is for saving resources that are output by a node.
+    If you wish to upload a file to use in your workflow then you should
+    use the resource provider (use `client.resources.upload()` to upload
+    a local resource to the Uncertainty Engine).
+
+    Args:
+        data: A reference to the node output data to be saved.
+        file_name: The human-readable name for the saved resource.
+        project_id: The ID of the project to save to.
+        label: An optional human-readable label for the node. Defaults
+            to None.
+    """
+
+    node_name: str = "Save"
+
+    def __init__(
+        self,
+        data: HandleUnion[S3Storage],
+        file_name: str,
+        project_id: str,
+        label: str | None = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            data=data,
+            # NOTE: The save node input ID for the file name is
+            # `file_id` however, we refer to it as the `file_name` in
+            # this class for ease of use.
+            file_id=file_name,
+            project_id=project_id,
+        )
         self.label = label
