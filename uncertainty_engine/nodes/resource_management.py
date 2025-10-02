@@ -47,16 +47,22 @@ class Save(Node):
     If you wish to upload a file to use in your workflow then you should
     use the resource provider (use `client.resources.upload()` to upload
     a local resource to the Uncertainty Engine).
-
-    Args:
-        data: A reference to the node output data to be saved.
-        file_name: The human-readable name for the saved resource.
-        project_id: The ID of the project to save to.
-        label: An optional human-readable label for the node. Defaults
-            to None.
     """
 
+    data: HandleUnion[S3Storage]
+    """A reference to the node output data to be saved."""
+
+    file_id: str
+    """The human-readable name for the saved resource."""
+
+    project_id: str
+    """The ID of the project to save to."""
+
+    label: str | None
+    """An optional human-readable label for the node. Defaults to None."""
+
     node_name: str = "Save"
+    """The node ID."""
 
     def __init__(
         self,
@@ -75,4 +81,3 @@ class Save(Node):
             file_id=file_name,
             project_id=project_id,
         )
-        self.label = label
