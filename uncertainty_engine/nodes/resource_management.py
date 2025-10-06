@@ -53,13 +53,20 @@ class Save(Node):
     """A reference to the node output data to be saved."""
 
     file_id: str
-    """The human-readable name for the saved resource."""
+    """
+    The human-readable name for the saved resource. If a resource of the
+    same type and name already exists, the save node will create a new
+    version of that existing resource.
+    """
 
     project_id: str
     """The ID of the project to save to."""
 
     label: str | None
-    """An optional human-readable label for the node. Defaults to None."""
+    """
+    A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
 
     node_name: str = "Save"
     """The node ID."""
