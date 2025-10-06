@@ -75,9 +75,9 @@ class Save(Node):
             node_name=self.node_name,
             label=label,
             data=data,
-            # NOTE: The save node input ID for the file name is
-            # `file_id` however, we refer to it as the `file_name` in
-            # this class for ease of use.
+            # NOTE: The underlying node input ID for the file name is
+            # `file_id`, but we refer to it as `file_name` in this class
+            # for clarity and ease of use.
             file_id=file_name,
             project_id=project_id,
         )
