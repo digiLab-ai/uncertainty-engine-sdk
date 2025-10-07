@@ -44,6 +44,7 @@ class LoadDataset(Node):
         self.label = label
 
 
+@typechecked
 class LoadDocument(Node):
     """
     Load a document from the Uncertainty Engine resource management
