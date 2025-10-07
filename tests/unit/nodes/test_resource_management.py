@@ -1,6 +1,11 @@
-from uncertainty_engine_types import ResourceID, Handle
+from uncertainty_engine_types import Handle, ResourceID
 
-from uncertainty_engine.nodes.resource_management import LoadDataset, Save, LoadModel
+from uncertainty_engine.nodes.resource_management import (
+    LoadDataset,
+    LoadDocument,
+    LoadModel,
+    Save,
+)
 
 
 def test_loaddataset_initialization() -> None:
@@ -18,6 +23,45 @@ def test_loaddataset_initialization() -> None:
     )
 
     assert node.node_name == "LoadDataset"
+    assert node.project_id == project_id
+    assert node.file_id == ResourceID(id=file_id).model_dump()
+    assert node.label == label
+
+
+def test_loaddocument_initialization() -> None:
+    """Test the initialization of the LoadDocument node."""
+
+    # Example values
+    project_id = "projectid-123"
+    file_id = "fileid-456"
+    label = "Test Load Document"
+
+    node = LoadDocument(
+        project_id=project_id,
+        file_id=file_id,
+        label=label,
+    )
+
+    assert node.node_name == "LoadDocument"
+    assert node.project_id == project_id
+    assert node.file_id == ResourceID(id=file_id).model_dump()
+    assert node.label == label
+
+
+def test_load_model_initialization() -> None:
+    """Test the initialisation of the `LoadModel` node."""
+    # Example values
+    file_id = "resource-456"
+    label = "Test Load Model"
+    project_id = "projectid-123"
+
+    node = LoadModel(
+        label=label,
+        file_id=file_id,
+        project_id=project_id,
+    )
+
+    assert node.node_name == "LoadModel"
     assert node.project_id == project_id
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
@@ -44,21 +88,6 @@ def test_save_initialization() -> None:
     assert node.file_id == file_name
     assert node.label == label
 
-
-def test_load_model_initialization() -> None:
-    """Test the initialisation of the `LoadModel` node."""
-    # Example values
-    file_id = "resource-456"
-    label = "Test Load Model"
-    project_id = "projectid-123"
-
-    node = LoadModel(
-        label=label,
-        file_id=file_id,
-        project_id=project_id,
-    )
-
-    assert node.node_name == "LoadModel"
     assert node.project_id == project_id
-    assert node.file_id == ResourceID(id=file_id).model_dump()
+    assert node.file_id == file_name
     assert node.label == label

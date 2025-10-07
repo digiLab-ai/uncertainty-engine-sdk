@@ -41,6 +41,36 @@ class LoadDataset(Node):
         self.label = label
 
 
+class LoadDocument(Node):
+    """
+    Load a document from the Uncertainty Engine resource management
+    system.
+
+    Args:
+       project_id: The ID of the project containing the document.
+       file_id: The ID of the document file to load.
+       label: A human-readable label for the node. Defaults to None.
+    """
+
+    file_id: str
+    label: str | None
+    node_name: str = "LoadDocument"
+    project_id: str
+
+    def __init__(
+        self,
+        project_id: str,
+        file_id: str,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_id=ResourceID(id=file_id).model_dump(),
+        )
+
+
 @typechecked
 class LoadModel(Node):
     """
@@ -53,7 +83,7 @@ class LoadModel(Node):
     file_id: ResourceIdDict
     """The ID of the model to load."""
 
-    label: str | None
+    label: str | None = None
     """
     A human-readable label for the node. This should be unique to all
     other node labels in a workflow.
