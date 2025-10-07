@@ -40,8 +40,7 @@ class LoadDataset(Node):
 @typechecked
 class LoadModel(Node):
     """
-    Load a model from the Uncertainty Engine resource management
-    system.
+    Load a model from the Uncertainty Engine resource management system.
     """
 
     project_id: str
