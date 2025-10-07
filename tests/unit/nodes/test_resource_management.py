@@ -1,6 +1,11 @@
 from uncertainty_engine_types import Handle, ResourceID
 
-from uncertainty_engine.nodes.resource_management import LoadDataset, LoadDocument, Save
+from uncertainty_engine.nodes.resource_management import (
+    LoadDataset,
+    LoadDocument,
+    LoadModel,
+    Save,
+)
 
 
 def test_loaddataset_initialization() -> None:
@@ -38,6 +43,25 @@ def test_loaddocument_initialization() -> None:
     )
 
     assert node.node_name == "LoadDocument"
+    assert node.project_id == project_id
+    assert node.file_id == ResourceID(id=file_id).model_dump()
+    assert node.label == label
+
+
+def test_load_model_initialization() -> None:
+    """Test the initialisation of the `LoadModel` node."""
+    # Example values
+    file_id = "resource-456"
+    label = "Test Load Model"
+    project_id = "projectid-123"
+
+    node = LoadModel(
+        label=label,
+        file_id=file_id,
+        project_id=project_id,
+    )
+
+    assert node.node_name == "LoadModel"
     assert node.project_id == project_id
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label

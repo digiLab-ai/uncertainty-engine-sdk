@@ -69,6 +69,41 @@ class LoadDocument(Node):
 
 
 @typechecked
+class LoadModel(Node):
+    """
+    Load a model from the Uncertainty Engine resource management system.
+    """
+
+    project_id: str
+    """The ID of the project containing the model."""
+
+    file_id: dict[str, str]
+    """The ID of the model to load, as a serialised `ResourceID`."""
+
+    label: str | None = None
+    """
+    A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
+
+    node_name: str = "LoadModel"
+    """The node ID."""
+
+    def __init__(
+        self,
+        project_id: str,
+        file_id: str,
+        label: str | None = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_id=ResourceID(id=file_id).model_dump(),
+        )
+
+
+@typechecked
 class Save(Node):
     """
     Save a resource in the Uncertainty Engine resource management
