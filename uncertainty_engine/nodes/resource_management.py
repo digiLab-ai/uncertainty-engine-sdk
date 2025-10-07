@@ -38,6 +38,37 @@ class LoadDataset(Node):
 
 
 @typechecked
+class LoadDocument(Node):
+    """
+    Load a document from the Uncertainty Engine resource management
+    system.
+
+    Args:
+       project_id: The ID of the project containing the document.
+       file_id: The ID of the document file to load.
+       label: A human-readable label for the node. Defaults to None.
+    """
+
+    file_id: str
+    label: str | None
+    node_name: str = "LoadDocument"
+    project_id: str
+
+    def __init__(
+        self,
+        project_id: str,
+        file_id: str,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_id=ResourceID(id=file_id).model_dump(),
+        )
+
+
+@typechecked
 class Save(Node):
     """
     Save a resource in the Uncertainty Engine resource management
