@@ -87,7 +87,3 @@ def test_save_initialization() -> None:
     assert node.project_id == project_id
     assert node.file_id == file_name
     assert node.label == label
-
-    assert node.project_id == project_id
-    assert node.file_id == file_name
-    assert node.label == label

@@ -8,7 +8,10 @@ from uncertainty_engine.utils import HandleUnion
 
 
 class ResourceIdDict(TypedDict):
+    """A typed dictionary representing a serialised `ResourceID`."""
+
     id: str
+    """The string resource ID."""
 
 
 @typechecked
