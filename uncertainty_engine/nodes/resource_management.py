@@ -1,10 +1,14 @@
-from typing import Optional
+from typing import Optional, TypedDict
 
 from typeguard import typechecked
 from uncertainty_engine_types import ResourceID, S3Storage
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
+
+
+class ResourceIdDict(TypedDict):
+    id: str
 
 
 @typechecked
@@ -46,7 +50,7 @@ class LoadModel(Node):
     project_id: str
     """The ID of the project containing the model."""
 
-    file_id: dict[str, str]
+    file_id: ResourceIdDict
     """The ID of the model to load."""
 
     label: str | None
