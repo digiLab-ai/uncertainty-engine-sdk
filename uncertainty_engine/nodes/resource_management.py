@@ -48,9 +48,7 @@ class LoadModel(Node):
     """The ID of the project containing the model."""
 
     file_id: dict[str, str]
-    """
-    The ID of the model to load.
-    """
+    """The ID of the model to load."""
 
     label: str | None
     """
