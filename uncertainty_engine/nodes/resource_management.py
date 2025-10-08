@@ -8,6 +8,37 @@ from uncertainty_engine.utils import HandleUnion
 
 
 @typechecked
+class LoadChatHistory(Node):
+    """
+    Load a chat history from the Uncertainty Engine resource management
+    system.
+
+    Args:
+       project_id: The ID of the project containing the dataset.
+       file_id: The ID of the dataset file to load.
+       label: A human-readable label for the node. Defaults to None.
+    """
+
+    file_id: str
+    label: str | None
+    node_name: str = "LoadChatHistory"
+    project_id: str
+
+    def __init__(
+        self,
+        project_id: str,
+        file_id: str,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_id=ResourceID(id=file_id).model_dump(),
+        )
+
+
+@typechecked
 class LoadDataset(Node):
     """
     Load a dataset from the Uncertainty Engine resource management
