@@ -186,6 +186,7 @@ class Save(Node):
             project_id=project_id,
         )
 
+
 @typechecked
 class Download(Node):
     """
@@ -212,8 +213,4 @@ class Download(Node):
         file: HandleUnion[S3Storage],
         label: str | None = None,
     ):
-        super().__init__(
-            node_name=self.node_name,
-            label=label,
-            file=file
-        )
+        super().__init__(node_name=self.node_name, label=label, file=file)

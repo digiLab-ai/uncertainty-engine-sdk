@@ -118,7 +118,6 @@ def test_download_initialization() -> None:
     file_name = Handle(node_name="LoadDataset", node_handle="dataset")
     label = "Test Download"
 
-
     node = Download(
         file=file_name,
         label=label,
