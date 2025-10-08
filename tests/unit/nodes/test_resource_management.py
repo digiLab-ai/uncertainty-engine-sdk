@@ -1,11 +1,32 @@
 from uncertainty_engine_types import Handle, ResourceID
 
 from uncertainty_engine.nodes.resource_management import (
+    LoadChatHistory,
     LoadDataset,
     LoadDocument,
     LoadModel,
     Save,
 )
+
+
+def test_loadchathistory_initialization() -> None:
+    """Test the initialization of the LoadChatHistory node."""
+
+    # Example values
+    project_id = "projectid-123"
+    file_id = "fileid-456"
+    label = "Test Load Chat History"
+
+    node = LoadChatHistory(
+        project_id=project_id,
+        file_id=file_id,
+        label=label,
+    )
+
+    assert node.node_name == "LoadChatHistory"
+    assert node.project_id == project_id
+    assert node.file_id == ResourceID(id=file_id).model_dump()
+    assert node.label == label
 
 
 def test_loaddataset_initialization() -> None:
