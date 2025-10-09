@@ -88,10 +88,13 @@ def test_load_multiple_initialization():
     )
 
     assert node.project_id == project_id
-    assert node.file_ids == [ResourceID(id=file_id).model_dump() for file_id in file_ids]
+    assert node.file_ids == [
+        ResourceID(id=file_id).model_dump() for file_id in file_ids
+    ]
     assert node.file_type == file_type
     assert node.label == label
     assert node.node_name == "LoadMultiple"
+
 
 def test_load_model_initialization() -> None:
     """Test the initialisation of the `LoadModel` node."""
