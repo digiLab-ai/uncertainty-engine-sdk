@@ -6,6 +6,7 @@ from uncertainty_engine.nodes.resource_management import (
     LoadDataset,
     LoadDocument,
     LoadModel,
+    LoadMultiple,
     Save,
 )
 
@@ -69,6 +70,28 @@ def test_loaddocument_initialization() -> None:
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
 
+
+def test_load_multiple_initialization():
+    """
+    Test the initialization of the LoadMultiple node.
+    """
+    project_id = "test_project"
+    file_ids = ["file_id_1", "file_id_2", "file_id_3"]
+    file_type = "dataset"
+    label = "Load Multiple Test"
+
+    node = LoadMultiple(
+        project_id=project_id,
+        file_ids=file_ids,
+        file_type=file_type,
+        label=label,
+    )
+
+    assert node.project_id == project_id
+    assert node.file_ids == [ResourceID(id=file_id).model_dump() for file_id in file_ids]
+    assert node.file_type == file_type
+    assert node.label == label
+    assert node.node_name == "LoadMultiple"
 
 def test_load_model_initialization() -> None:
     """Test the initialisation of the `LoadModel` node."""
