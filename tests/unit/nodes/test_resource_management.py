@@ -1,6 +1,7 @@
 from uncertainty_engine_types import Handle, ResourceID
 
 from uncertainty_engine.nodes.resource_management import (
+    Download,
     LoadChatHistory,
     LoadDataset,
     LoadDocument,
@@ -107,4 +108,21 @@ def test_save_initialization() -> None:
     assert node.node_name == "Save"
     assert node.project_id == project_id
     assert node.file_id == file_name
+    assert node.label == label
+
+
+def test_download_initialization() -> None:
+    """Test the initialization of the `Download` node."""
+
+    # Example values
+    file_name = Handle(node_name="LoadDataset", node_handle="dataset")
+    label = "Test Download"
+
+    node = Download(
+        file=file_name,
+        label=label,
+    )
+
+    assert node.node_name == "Download"
+    assert node.file == file_name
     assert node.label == label

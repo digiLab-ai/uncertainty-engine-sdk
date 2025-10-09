@@ -185,3 +185,32 @@ class Save(Node):
             file_id=file_name,
             project_id=project_id,
         )
+
+
+@typechecked
+class Download(Node):
+    """
+    Download a resource from the Uncertainty Engine resource management
+    system.
+
+    Note that this is for downloading resources that are output by a node.
+    """
+
+    file: HandleUnion[S3Storage]
+    """The ID of the file to download."""
+
+    label: str | None
+    """
+    A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
+
+    node_name: str = "Download"
+    """The node ID."""
+
+    def __init__(
+        self,
+        file: HandleUnion[S3Storage],
+        label: str | None = None,
+    ):
+        super().__init__(node_name=self.node_name, label=label, file=file)
