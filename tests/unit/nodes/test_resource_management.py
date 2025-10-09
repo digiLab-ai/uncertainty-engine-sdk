@@ -92,6 +92,7 @@ def test_load_multiple_initialization():
     assert node.file_type == file_type
     assert node.label == label
     assert node.node_name == "LoadMultiple"
+    
 
 def test_load_model_initialization() -> None:
     """Test the initialisation of the `LoadModel` node."""

@@ -131,6 +131,7 @@ class LoadMultiple(Node):
             file_ids=[ResourceID(id=file_id).model_dump() for file_id in file_ids],
             file_type=file_type,
         )
+        
 
 @typechecked
 class LoadModel(Node):
