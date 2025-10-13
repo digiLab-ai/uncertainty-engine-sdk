@@ -11,11 +11,12 @@ on:
         type: string
 
       use-sdk-release:
+        default: false
         description:
           Use either the latest release of the SDK (true) or the commit
           that triggered the tests (false).
         required: false
-        type: string
+        type: boolean
 
     secrets:
       ue-cognito-client-id:
