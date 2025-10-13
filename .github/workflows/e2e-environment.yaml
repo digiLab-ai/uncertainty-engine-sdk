@@ -86,6 +86,7 @@ jobs:
           poetry run pip install uncertainty-engine
           sdk_version=$(poetry run pip show uncertainty-engine | grep Version | awk -F': ' '{print $2}')
           echo "SDK version: ${sdk_version}"
+          git fetch --tags
           git checkout "v${sdk_version}"
           git pull
 
