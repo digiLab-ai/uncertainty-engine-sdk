@@ -82,12 +82,11 @@ jobs:
       - name: Install the latest release of the SDK
         if: ${{ inputs.use-sdk-release }}
         run: |
-          poetry install --no-root --only dev
           poetry run pip install uncertainty-engine
           sdk_version=$(poetry run pip show uncertainty-engine | grep Version | awk -F': ' '{print $2}')
-          echo "SDK version: ${sdk_version}"
           git fetch --tags
           git checkout "v${sdk_version}" -b "v${sdk_version}_ci"
+          poetry install --no-root --only dev
 
       - name: Run tests
         env:
