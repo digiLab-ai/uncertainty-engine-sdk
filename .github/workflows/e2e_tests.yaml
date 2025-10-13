@@ -16,11 +16,12 @@ jobs:
       ue-password: ${{ secrets.UE_DEV_PASSWORD }}
       ue-username: ${{ secrets.UE_DEV_USERNAME }}
 
-  prod-latest:
-    # If the tests were triggered by a PR then test that bleeding-edge
+  prod-committed:
+    # If the tests were triggered by a PR then test this bleeding-edge
     # commit in production. We accept that these tests will fail if they
-    # use APIs not yet deployed to production.
-    # if: github.event_name == 'pull_request'
+    # use APIs not yet deployed to production. The onus is on the
+    # developer to recognise if a test failure is significant.
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/e2e-environment.yaml
     with:
       ue-environment: prod
@@ -28,14 +29,14 @@ jobs:
       ue-password: ${{ secrets.UE_PROD_PASSWORD }}
       ue-username: ${{ secrets.UE_PROD_USERNAME }}
 
-  prod-release:
+  prod-released:
     # If the tests were triggered by a schedule then test the latest
     # release of the SDK--rather than the latest commit--in production.
     # We expect these tests to always pass because the latest release
     # of the SDK should always be compatible with the latest production
     # release of the platform, regardless of the state of the latest
     # unreleased commit.
-    # if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/e2e-environment.yaml
     with:
       ue-environment: prod
