@@ -106,7 +106,7 @@ class LoadMultiple(Node):
     system.
 
     Args:
-       project_id: The ID of the project containing the document.
+       project_id: The ID of the project.
        file_ids: List of File IDs of the files to load.
        file_type: The type of resource to load. One of 'dataset', 'model', 'chat_history', or 'document'.
        label: A human-readable label for the node. Defaults to None.
