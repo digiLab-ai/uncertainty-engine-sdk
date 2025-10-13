@@ -100,6 +100,41 @@ class LoadDocument(Node):
 
 
 @typechecked
+class LoadMultiple(Node):
+    """
+    Load multiple datasets, models, chat histories or documents from the Uncertainty Engine resource management
+    system.
+
+    Args:
+       project_id: The ID of the project.
+       file_ids: List of File IDs of the files to load.
+       file_type: The type of resource to load. One of 'dataset', 'model', 'chat_history', or 'document'.
+       label: A human-readable label for the node. Defaults to None.
+    """
+
+    file_ids: list[str]
+    label: str | None
+    node_name: str = "LoadMultiple"
+    project_id: str
+    file_type: str
+
+    def __init__(
+        self,
+        project_id: str,
+        file_ids: list[str],
+        file_type: str,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_ids=[ResourceID(id=file_id).model_dump() for file_id in file_ids],
+            file_type=file_type,
+        )
+
+
+@typechecked
 class LoadModel(Node):
     """
     Load a model from the Uncertainty Engine resource management system.
