@@ -84,6 +84,10 @@ jobs:
         run: |
           poetry install --no-root --only dev
           poetry run pip install uncertainty-engine
+          sdk_version=$(poetry run pip show uncertainty-engine | grep Version | awk -F': ' '{print $2}')
+          echo "SDK version: ${sdk_version}"
+          git checkout "v${sdk_version}"
+          git pull
 
       - name: Run tests
         env:
