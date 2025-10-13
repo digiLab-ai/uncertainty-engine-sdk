@@ -82,7 +82,7 @@ jobs:
       - name: Install the latest release of the SDK
         if: ${{ inputs.use-sdk-release }}
         run: |
-          poetry install --only dev
+          poetry install --no-root --only dev
           poetry run pip install uncertainty-engine
 
       - name: Run tests
