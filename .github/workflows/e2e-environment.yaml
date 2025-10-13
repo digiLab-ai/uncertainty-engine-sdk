@@ -71,12 +71,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Poetry
-        run: pipx install poetry
+        run: pipx install poetry && rm -f poetry.lock
 
       - name: Install the latest commit of the SDK
         if: ${{ ! inputs.use-sdk-release }}
         run: |
-          rm -f poetry.lock
           poetry install --all-extras
 
       - name: Install the latest release of the SDK
