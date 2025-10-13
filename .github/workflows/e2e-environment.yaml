@@ -79,16 +79,26 @@ jobs:
 
       - name: Install the latest commit of the SDK
         if: ${{ ! inputs.use-sdk-release }}
-        run: |
-          poetry install --all-extras
+        run: poetry install --all-extras
 
       - name: Install the latest release of the SDK
         if: ${{ inputs.use-sdk-release }}
         run: |
+          # Install the latest release of the SDK.
           poetry run pip install uncertainty-engine
+
+          # Discover the version of the SDK that was just installed
+          # (e.g. "0.10.0").
           sdk_version=$(poetry run pip show uncertainty-engine | grep Version | awk -F': ' '{print $2}')
+
+          # Use the historic rather than latest tests (i.e. if version
+          # 0.10.0 of the SDK is installed then run the tests as they
+          # were at the moment 0.10.0 was tagged).
           git fetch --tags
           git checkout "v${sdk_version}" -b "v${sdk_version}_ci"
+
+          # Use the historic rather than latest development (testing)
+          # dependencies.
           poetry install --no-root --only dev
 
       - name: Run tests
