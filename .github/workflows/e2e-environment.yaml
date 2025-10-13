@@ -83,7 +83,7 @@ jobs:
         if: ${{ inputs.use-sdk-release }}
         run: |
           poetry install --only dev
-          pipx install uncertainty-engine
+          poetry run pip install uncertainty-engine
 
       - name: Run tests
         env:
