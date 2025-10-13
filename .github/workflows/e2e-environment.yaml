@@ -10,6 +10,13 @@ on:
         required: false
         type: string
 
+      use-sdk-release:
+        description:
+          Use either the latest release of the SDK (true) or the commit
+          that triggered the tests (false).
+        required: false
+        type: string
+
     secrets:
       ue-cognito-client-id:
         description:
@@ -66,11 +73,17 @@ jobs:
       - name: Install Poetry
         run: pipx install poetry
 
-      - name: Delete .lock file
-        run: rm -f poetry.lock
+      - name: Install the latest commit of the SDK
+        if: ${{ ! inputs.use-sdk-release }}
+        run: |
+          rm -f poetry.lock
+          poetry install --all-extras
 
-      - name: Install dependencies
-        run: poetry install --all-extras
+      - name: Install the latest release of the SDK
+        if: ${{ inputs.use-sdk-release }}
+        run: |
+          poetry install --only dev
+          pipx install uncertainty-engine
 
       - name: Run tests
         env:
