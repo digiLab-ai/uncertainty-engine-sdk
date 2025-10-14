@@ -19,7 +19,7 @@ class LoadChatHistory(Node):
        label: A human-readable label for the node. Defaults to None.
     """
 
-    file_id: str
+    file_id: dict[str, str]
     """
     The ID of the chat history to load, as a serialised `ResourceID`.
     """
@@ -62,7 +62,7 @@ class LoadDataset(Node):
        label: A human-readable label for the node. Defaults to None.
     """
 
-    file_id: str
+    file_id: dict[str, str]
     """The ID of the dataset to load, as a serialised `ResourceID`."""
 
     label: str | None
@@ -103,7 +103,7 @@ class LoadDocument(Node):
        label: A human-readable label for the node. Defaults to None.
     """
 
-    file_id: str
+    file_id: dict[str, str]
     """The ID of the document to load, as a serialised `ResourceID`."""
 
     label: str | None
@@ -146,7 +146,7 @@ class LoadMultiple(Node):
        label: A human-readable label for the node. Defaults to None.
     """
 
-    file_ids: list[str]
+    file_ids: list[dict[str, str]]
     """The IDs of the resources to load, as serialised `ResourceID`s."""
 
     label: str | None
