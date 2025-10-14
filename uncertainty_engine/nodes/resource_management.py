@@ -275,7 +275,8 @@ class Download(Node):
     Download a resource from the Uncertainty Engine resource management
     system.
 
-    Note that this is for downloading resources that are output by a node.
+    Note that this is for downloading resources that are output by a
+    node.
     """
 
     file: HandleUnion[S3Storage]
