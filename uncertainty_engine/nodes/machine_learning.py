@@ -1,7 +1,7 @@
 from typing import Optional
 
 from typeguard import typechecked
-from uncertainty_engine_types import CSVDataset, ModelConfig
+from uncertainty_engine_types import CSVDataset, ModelConfig, S3Storage
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
@@ -42,8 +42,8 @@ class TrainModel(Node):
     def __init__(
         self,
         config: HandleUnion[ModelConfig],
-        inputs: HandleUnion[CSVDataset],
-        outputs: HandleUnion[CSVDataset],
+        inputs: HandleUnion[S3Storage],
+        outputs: HandleUnion[S3Storage],
         label: Optional[str] = None,
         project_id: Optional[str] = None,
     ):
