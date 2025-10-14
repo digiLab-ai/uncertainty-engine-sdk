@@ -8,6 +8,37 @@ from uncertainty_engine.utils import HandleUnion
 
 
 @typechecked
+class LoadChatHistory(Node):
+    """
+    Load a chat history from the Uncertainty Engine resource management
+    system.
+
+    Args:
+       project_id: The ID of the project containing the dataset.
+       file_id: The ID of the dataset file to load.
+       label: A human-readable label for the node. Defaults to None.
+    """
+
+    file_id: str
+    label: str | None
+    node_name: str = "LoadChatHistory"
+    project_id: str
+
+    def __init__(
+        self,
+        project_id: str,
+        file_id: str,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_id=ResourceID(id=file_id).model_dump(),
+        )
+
+
+@typechecked
 class LoadDataset(Node):
     """
     Load a dataset from the Uncertainty Engine resource management
@@ -65,6 +96,41 @@ class LoadDocument(Node):
             label=label,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
+        )
+
+
+@typechecked
+class LoadMultiple(Node):
+    """
+    Load multiple datasets, models, chat histories or documents from the Uncertainty Engine resource management
+    system.
+
+    Args:
+       project_id: The ID of the project.
+       file_ids: List of File IDs of the files to load.
+       file_type: The type of resource to load. One of 'dataset', 'model', 'chat_history', or 'document'.
+       label: A human-readable label for the node. Defaults to None.
+    """
+
+    file_ids: list[str]
+    label: str | None
+    node_name: str = "LoadMultiple"
+    project_id: str
+    file_type: str
+
+    def __init__(
+        self,
+        project_id: str,
+        file_ids: list[str],
+        file_type: str,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            project_id=project_id,
+            file_ids=[ResourceID(id=file_id).model_dump() for file_id in file_ids],
+            file_type=file_type,
         )
 
 
@@ -154,3 +220,32 @@ class Save(Node):
             file_id=file_name,
             project_id=project_id,
         )
+
+
+@typechecked
+class Download(Node):
+    """
+    Download a resource from the Uncertainty Engine resource management
+    system.
+
+    Note that this is for downloading resources that are output by a node.
+    """
+
+    file: HandleUnion[S3Storage]
+    """The ID of the file to download."""
+
+    label: str | None
+    """
+    A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
+
+    node_name: str = "Download"
+    """The node ID."""
+
+    def __init__(
+        self,
+        file: HandleUnion[S3Storage],
+        label: str | None = None,
+    ):
+        super().__init__(node_name=self.node_name, label=label, file=file)
