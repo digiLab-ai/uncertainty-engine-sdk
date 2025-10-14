@@ -79,7 +79,7 @@ class PredictModel(Node):
     model: HandleUnion[S3Storage]
     """A reference to the trained machine-learning model to use for prediction."""
 
-    inputs: HandleUnion[CSVDataset]
+    dataset: HandleUnion[S3Storage]
     """A reference to the input dataset for making predictions."""
 
     project_id: Optional[str] = None
@@ -88,7 +88,7 @@ class PredictModel(Node):
     def __init__(
         self,
         model: HandleUnion[S3Storage],
-        inputs: HandleUnion[S3Storage],
+        dataset: HandleUnion[S3Storage],
         label: Optional[str] = None,
         project_id: Optional[str] = None,
     ):
@@ -96,6 +96,6 @@ class PredictModel(Node):
             node_name=self.node_name,
             label=label or self.label,
             model=model,
-            inputs=inputs,
+            dataset=dataset,
             project_id=project_id,
         )
