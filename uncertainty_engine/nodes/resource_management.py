@@ -20,9 +20,21 @@ class LoadChatHistory(Node):
     """
 
     file_id: str
+    """
+    The ID of the chat history to load, as a serialised `ResourceID`.
+    """
+
     label: str | None
+    """
+    A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
+
     node_name: str = "LoadChatHistory"
+    """The node ID."""
+
     project_id: str
+    """The ID of the project containing the model."""
 
     def __init__(
         self,
