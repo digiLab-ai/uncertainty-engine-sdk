@@ -30,10 +30,10 @@ class TrainModel(Node):
     config: HandleUnion[ModelConfig]
     """A reference to the model configuration to use for training."""
 
-    inputs: HandleUnion[CSVDataset]
+    inputs: HandleUnion[S3Storage]
     """A reference to the input dataset for training the model."""
 
-    outputs: HandleUnion[CSVDataset]
+    outputs: HandleUnion[S3Storage]
     """A reference to the output dataset for training the model."""
 
     project_id: Optional[str] = None
