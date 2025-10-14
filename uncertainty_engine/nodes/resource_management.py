@@ -104,9 +104,19 @@ class LoadDocument(Node):
     """
 
     file_id: str
+    """The ID of the document to load, as a serialised `ResourceID`."""
+
     label: str | None
+    """
+    A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
+
     node_name: str = "LoadDocument"
+    """The node ID."""
+
     project_id: str
+    """The ID of the project containing the document."""
 
     def __init__(
         self,
