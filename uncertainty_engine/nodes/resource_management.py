@@ -147,10 +147,23 @@ class LoadMultiple(Node):
     """
 
     file_ids: list[str]
+    """The IDs of the resources to load, as serialised `ResourceID`s."""
+
     label: str | None
+    """A human-readable label for the node. This should be unique to all
+    other node labels in a workflow.
+    """
+
     node_name: str = "LoadMultiple"
+    """The node ID."""
+
     project_id: str
+    """The ID of the project containing the resources."""
+
     file_type: str
+    """The type of resource to load. One of 'dataset', 'model',
+    'chat_history', or 'document'.
+    """
 
     def __init__(
         self,
