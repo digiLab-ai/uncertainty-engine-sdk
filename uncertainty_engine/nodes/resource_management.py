@@ -34,7 +34,7 @@ class LoadChatHistory(Node):
     """The node ID."""
 
     project_id: str
-    """The ID of the project containing the model."""
+    """The ID of the project containing the chat history."""
 
     def __init__(
         self,
