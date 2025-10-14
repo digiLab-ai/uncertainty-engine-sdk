@@ -14,8 +14,8 @@ class LoadChatHistory(Node):
     system.
 
     Args:
-       project_id: The ID of the project containing the dataset.
-       file_id: The ID of the dataset file to load.
+       project_id: The ID of the project containing the chat history.
+       file_id: The ID of the chat history file to load.
        label: A human-readable label for the node. Defaults to None.
     """
 
