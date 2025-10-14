@@ -63,9 +63,7 @@ class LoadDataset(Node):
     """
 
     file_id: str
-    """
-    The ID of the dataset to load, as a serialised `ResourceID`.
-    """
+    """The ID of the dataset to load, as a serialised `ResourceID`."""
 
     label: str | None
     """
