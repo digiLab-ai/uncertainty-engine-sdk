@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Optional
 
 from typeguard import typechecked
 from uncertainty_engine_types import CSVDataset, ModelConfig, S3Storage
