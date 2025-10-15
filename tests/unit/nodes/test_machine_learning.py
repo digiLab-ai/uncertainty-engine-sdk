@@ -1,22 +1,12 @@
 from uncertainty_engine_types import Handle, ModelConfig, S3Storage
 
 from uncertainty_engine.nodes.machine_learning import PredictModel, TrainModel
-from uncertainty_engine.nodes.machine_learning import TrainModel
 
 
 def test_train_model_initialization():
     """Test the initialization of the TrainModel node."""
 
     # Example values, test with handles and direct objects
-
-    config = ModelConfig()
-
-    inputs = S3Storage(bucket="my-bucket", key="input.csv")
-
-    outputs = Handle(node_name="OutputNode", node_handle="outputs")
-
-    label = "Test Train Model"
-
     config = ModelConfig()
     inputs = S3Storage(bucket="my-bucket", key="input.csv")
     outputs = Handle(node_name="OutputNode", node_handle="outputs")
@@ -58,8 +48,5 @@ def test_predict_model_initialization():
     assert node.node_name == "PredictModel"
     assert node.model == model
     assert node.dataset == dataset
-    assert node.config == config
-    assert node.inputs == inputs
-    assert node.outputs == outputs
     assert node.label == label
     assert node.project_id == project_id
