@@ -33,7 +33,6 @@ def test_model_config_initialization():
     assert node.seed == 42
     assert node.label == "Model Config"
     assert node.project_id == "projectid-789"
-from uncertainty_engine.nodes.machine_learning import PredictModel, TrainModel
 
 
 def test_train_model_initialization():
