@@ -1,7 +1,7 @@
 from typing import Optional
 
 from typeguard import typechecked
-from uncertainty_engine_types import CSVDataset, ModelConfig, S3Storage
+from uncertainty_engine_types import ModelConfig, S3Storage
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
