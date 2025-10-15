@@ -1,61 +1,42 @@
-from typing import Optional
-
-from typeguard import typechecked
 from uncertainty_engine_types import Handle, ModelConfig, S3Storage
 
-from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.nodes.machine_learning import PredictModel
-from uncertainty_engine.utils import HandleUnion
+from uncertainty_engine.nodes.machine_learning import PredictModel, TrainModel
 
 
-@typechecked
-class TrainModel(Node):
-    """
-    Train a Gaussian Process model using the Uncertainty Engine.
+def test_train_model_initialization():
+    """Test the initialization of the TrainModel node."""
 
-    Args:
-        config: A reference to the model configuration to use for training.
-        inputs: A reference to the input dataset for training the model.
-        outputs: A reference to the output dataset for training the model.
-        label: A human-readable label for the node. This should be unique to all
-               other node labels in a workflow. Defaults to "Train Model".
-        project_id: The ID of the project to associate with this node.
-    """
+    # Example values, test with handles and direct objects
 
-    node_name: str = "TrainModel"
-    """The node ID."""
+    config = ModelConfig()
 
-    label: str = "Train Model"
-    """A human-readable label for the node."""
+    inputs = S3Storage(bucket="my-bucket", key="input.csv")
 
-    config: HandleUnion[ModelConfig]
-    """A reference to the model configuration to use for training."""
+    outputs = Handle(node_name="OutputNode", node_handle="outputs")
 
-    inputs: HandleUnion[S3Storage]
-    """A reference to the input dataset for training the model."""
+    label = "Test Train Model"
 
-    outputs: HandleUnion[S3Storage]
-    """A reference to the output dataset for training the model."""
+    project_id = "projectid-123"
 
-    project_id: Optional[str] = None
-    """The ID of the project to associate with this node."""
+    node = TrainModel(
+        config=config,
+        inputs=inputs,
+        outputs=outputs,
+        label=label,
+        project_id=project_id,
+    )
 
-    def __init__(
-        self,
-        config: HandleUnion[ModelConfig],
-        inputs: HandleUnion[S3Storage],
-        outputs: HandleUnion[S3Storage],
-        label: Optional[str] = None,
-        project_id: Optional[str] = None,
-    ):
-        super().__init__(
-            node_name=self.node_name,
-            label=label or self.label,
-            config=config,
-            inputs=inputs,
-            outputs=outputs,
-            project_id=project_id,
-        )
+    assert node.node_name == "TrainModel"
+
+    assert node.config == config
+
+    assert node.inputs == inputs
+
+    assert node.outputs == outputs
+
+    assert node.label == label
+
+    assert node.project_id == project_id
 
 
 def test_predict_model_initialization():
