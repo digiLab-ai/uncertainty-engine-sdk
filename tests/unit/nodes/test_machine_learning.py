@@ -3,7 +3,6 @@ from uncertainty_engine_types import Handle, S3Storage
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
     PredictModel,
-    Recommend,
     TrainModel,
 )
 
