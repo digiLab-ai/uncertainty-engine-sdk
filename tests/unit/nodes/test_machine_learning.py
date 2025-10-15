@@ -1,6 +1,10 @@
 from uncertainty_engine_types import Handle, ModelConfig, S3Storage
 
-from uncertainty_engine.nodes.machine_learning import PredictModel, TrainModel
+from uncertainty_engine.nodes.machine_learning import (
+    ModelConfig,
+    PredictModel,
+    TrainModel,
+)
 
 
 def test_train_model_initialization():
@@ -50,3 +54,32 @@ def test_predict_model_initialization():
     assert node.dataset == dataset
     assert node.label == label
     assert node.project_id == project_id
+
+
+def test_model_config_initialization():
+    """Test the initialization of the ModelConfig node."""
+
+    node = ModelConfig(
+        input_variance=0.95,
+        input_retained_dimensions=5,
+        output_variance=0.9,
+        output_retained_dimensions=3,
+        model_type="SingleTaskVariationalGPTorch",
+        kernel="RBF",
+        warp_inputs=True,
+        seed=42,
+        label="Test Model Config",
+        project_id="projectid-789",
+    )
+
+    assert node.node_name == "ModelConfig"
+    assert node.input_variance == 0.95
+    assert node.input_retained_dimensions == 5
+    assert node.output_variance == 0.9
+    assert node.output_retained_dimensions == 3
+    assert node.model_type == "SingleTaskVariationalGPTorch"
+    assert node.kernel == "RBF"
+    assert node.warp_inputs is True
+    assert node.seed == 42
+    assert node.label == "Test Model Config"
+    assert node.project_id == "projectid-789"

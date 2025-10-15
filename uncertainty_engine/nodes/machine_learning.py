@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from typeguard import typechecked
 from uncertainty_engine_types import CSVDataset, ModelConfig, S3Storage
@@ -97,5 +97,96 @@ class PredictModel(Node):
             label=label or self.label,
             model=model,
             dataset=dataset,
+            project_id=project_id,
+        )
+
+
+@typechecked
+class ModelConfig(Node):
+    """
+    Config for a machine learning model.
+
+    Args:
+        input_variance: Percentage of variance to retain in the input data.
+        input_retained_dimensions: Number of dimensions to retain in the input data.
+        output_variance: Percentage of variance to retain in the output data.
+        output_retained_dimensions: Number of dimensions to retain in the output data.
+        model_type: Type of model to use.
+        kernel: Type of kernel to use for the model.
+        warp_inputs: Whether to warp the inputs for the model.
+        seed: Seed for reproducible training.
+        label: A human-readable label for the node. This should be unique to all other node labels in a workflow.
+        project_id: The ID of the project to associate with this node.
+    """
+
+    node_name: str = "ModelConfig"
+    """The node ID."""
+
+    label: str = "Model Config"
+    """A human-readable label for the node."""
+
+    input_variance: Optional[float] = None
+    """Percentage of variance to retain in the input data."""
+
+    input_retained_dimensions: Optional[int] = None
+    """Number of dimensions to retain in the input data."""
+
+    output_variance: Optional[float] = None
+    """Percentage of variance to retain in the output data."""
+
+    output_retained_dimensions: Optional[int] = None
+    """Number of dimensions to retain in the output data."""
+
+    model_type: Optional[
+        Literal[
+            "BernoulliClassificationGPTorch",
+            "SingleTaskGPTorch",
+            "SingleTaskVariationalGPTorch",
+        ]
+    ] = "SingleTaskGPTorch"
+    """Type of model to use."""
+
+    kernel: Optional[str] = None
+    """Type of kernel to use for the model."""
+
+    warp_inputs: bool = False
+    """Whether to warp the inputs for the model."""
+
+    seed: Optional[int] = None
+    """Seed for reproducible training."""
+
+    project_id: Optional[str] = None
+    """The ID of the project to associate with this node."""
+
+    def __init__(
+        self,
+        input_variance: Optional[float] = None,
+        input_retained_dimensions: Optional[int] = None,
+        output_variance: Optional[float] = None,
+        output_retained_dimensions: Optional[int] = None,
+        model_type: Optional[
+            Literal[
+                "BernoulliClassificationGPTorch",
+                "SingleTaskGPTorch",
+                "SingleTaskVariationalGPTorch",
+            ]
+        ] = "SingleTaskGPTorch",
+        kernel: Optional[str] = None,
+        warp_inputs: bool = False,
+        seed: Optional[int] = None,
+        label: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label or self.label,
+            input_variance=input_variance,
+            input_retained_dimensions=input_retained_dimensions,
+            output_variance=output_variance,
+            output_retained_dimensions=output_retained_dimensions,
+            model_type=model_type,
+            kernel=kernel,
+            warp_inputs=warp_inputs,
+            seed=seed,
             project_id=project_id,
         )
