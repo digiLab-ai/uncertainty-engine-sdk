@@ -2,6 +2,7 @@ from typing import Optional
 
 from typeguard import typechecked
 from uncertainty_engine_types import CSVDataset, ModelConfig, S3Storage
+from uncertainty_engine_types import ModelConfig, S3Storage
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
@@ -30,10 +31,10 @@ class TrainModel(Node):
     config: HandleUnion[ModelConfig]
     """A reference to the model configuration to use for training."""
 
-    inputs: HandleUnion[CSVDataset]
+    inputs: HandleUnion[S3Storage]
     """A reference to the input dataset for training the model."""
 
-    outputs: HandleUnion[CSVDataset]
+    outputs: HandleUnion[S3Storage]
     """A reference to the output dataset for training the model."""
 
     project_id: Optional[str] = None

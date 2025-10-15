@@ -1,6 +1,7 @@
 from uncertainty_engine_types import Handle, ModelConfig, S3Storage
 
 from uncertainty_engine.nodes.machine_learning import PredictModel, TrainModel
+from uncertainty_engine.nodes.machine_learning import TrainModel
 
 
 def test_train_model_initialization():
@@ -16,6 +17,10 @@ def test_train_model_initialization():
 
     label = "Test Train Model"
 
+    config = ModelConfig()
+    inputs = S3Storage(bucket="my-bucket", key="input.csv")
+    outputs = Handle(node_name="OutputNode", node_handle="outputs")
+    label = "Test Train Model"
     project_id = "projectid-123"
 
     node = TrainModel(
@@ -27,15 +32,10 @@ def test_train_model_initialization():
     )
 
     assert node.node_name == "TrainModel"
-
     assert node.config == config
-
     assert node.inputs == inputs
-
     assert node.outputs == outputs
-
     assert node.label == label
-
     assert node.project_id == project_id
 
 
@@ -58,5 +58,8 @@ def test_predict_model_initialization():
     assert node.node_name == "PredictModel"
     assert node.model == model
     assert node.dataset == dataset
+    assert node.config == config
+    assert node.inputs == inputs
+    assert node.outputs == outputs
     assert node.label == label
     assert node.project_id == project_id
