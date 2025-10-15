@@ -3,6 +3,7 @@ from uncertainty_engine_types import Handle, S3Storage
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
     PredictModel,
+    Recommend,
     TrainModel,
 )
 
@@ -80,5 +81,30 @@ def test_predict_model_initialization():
     assert node.node_name == "PredictModel"
     assert node.model == model
     assert node.dataset == dataset
+    assert node.label == label
+    assert node.project_id == project_id
+
+
+def test_recommend_initialization():
+    """Test the initialization of the Recommend node."""
+
+    model = Handle(node_name="TrainModelNode", node_handle="model")
+    number_of_points = 10
+    acquisition_function = "ExpectedImprovement"
+    label = "Test Recommend"
+    project_id = "projectid-123"
+
+    node = Recommend(
+        model=model,
+        number_of_points=number_of_points,
+        acquisition_function=acquisition_function,
+        label=label,
+        project_id=project_id,
+    )
+
+    assert node.node_name == "Recommend"
+    assert node.model == model
+    assert node.number_of_points == number_of_points
+    assert node.acquisition_function == acquisition_function
     assert node.label == label
     assert node.project_id == project_id

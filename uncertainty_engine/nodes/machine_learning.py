@@ -190,3 +190,68 @@ class PredictModel(Node):
             dataset=dataset,
             project_id=project_id,
         )
+
+@typechecked
+class Recommend(Node):
+    """
+    Draw recommended data points from a trained model using the Uncertainty Engine.
+
+    Args:
+        model: A reference to the trained machine-learning model.
+        number_of_points: The number of points to recommend.
+        acquisition_function: The acquisition function to use for recommending points.
+        label: A human-readable label for the node. This should be unique to all
+               other node labels in a workflow. Defaults to "Recommend".
+        project_id: The ID of the project to associate with this node.
+    """
+
+    node_name: str = "Recommend"
+    """The node ID."""
+
+    label: str = "Recommend"
+    """A human-readable label for the node."""
+
+    model: HandleUnion[S3Storage]
+    """A reference to the trained machine-learning model."""
+
+    number_of_points: int
+    """The number of points to recommend."""
+
+    acquisition_function: Literal[
+        "ExpectedImprovement",
+        "LogExpectedImprovement",
+        "PosteriorMean",
+        "PosteriorStandardDeviation",
+        "MonteCarloExpectedImprovement",
+        "MonteCarloLogExpectedImprovement",
+        "MonteCarloNegativeIntegratedPosteriorVariance"
+    ]
+    """The acquisition function to use for recommending points."""
+
+    project_id: Optional[str] = None
+    """The ID of the project to associate with this node."""
+
+    def __init__(
+        self,
+        model: HandleUnion[S3Storage],
+        number_of_points: int,
+        acquisition_function: Literal[
+            "ExpectedImprovement",
+            "LogExpectedImprovement",
+            "PosteriorMean",
+            "PosteriorStandardDeviation",
+            "MonteCarloExpectedImprovement",
+            "MonteCarloLogExpectedImprovement",
+            "MonteCarloNegativeIntegratedPosteriorVariance"
+        ],
+        label: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label or self.label,
+            model=model,
+            number_of_points=number_of_points,
+            acquisition_function=acquisition_function,
+            project_id=project_id,
+        )
