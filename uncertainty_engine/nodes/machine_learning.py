@@ -191,6 +191,7 @@ class PredictModel(Node):
             project_id=project_id,
         )
 
+
 @typechecked
 class Recommend(Node):
     """
@@ -224,7 +225,7 @@ class Recommend(Node):
         "PosteriorStandardDeviation",
         "MonteCarloExpectedImprovement",
         "MonteCarloLogExpectedImprovement",
-        "MonteCarloNegativeIntegratedPosteriorVariance"
+        "MonteCarloNegativeIntegratedPosteriorVariance",
     ]
     """The acquisition function to use for recommending points."""
 
@@ -242,7 +243,7 @@ class Recommend(Node):
             "PosteriorStandardDeviation",
             "MonteCarloExpectedImprovement",
             "MonteCarloLogExpectedImprovement",
-            "MonteCarloNegativeIntegratedPosteriorVariance"
+            "MonteCarloNegativeIntegratedPosteriorVariance",
         ],
         label: Optional[str] = None,
         project_id: Optional[str] = None,
