@@ -84,7 +84,7 @@ class PredictModel(Node):
 
     model: HandleUnion[S3Storage]
     """
-    A reference to the trained machine-learning model to use for 
+    A reference to the trained machine-learning model to use for
     prediction.
     """
 
