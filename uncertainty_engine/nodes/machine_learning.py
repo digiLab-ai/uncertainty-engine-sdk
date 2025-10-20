@@ -25,7 +25,7 @@ class TrainModel(Node):
     node_name: str = "TrainModel"
     """The node ID."""
 
-    label: str = "Train Model"
+    label: str | None
     """A human-readable label for the node."""
 
     config: HandleUnion[ModelConfig]
@@ -50,7 +50,7 @@ class TrainModel(Node):
     ):
         super().__init__(
             node_name=self.node_name,
-            label=label or self.label,
+            label=label,
             config=config,
             inputs=inputs,
             outputs=outputs,
@@ -76,7 +76,7 @@ class PredictModel(Node):
     node_name: str = "PredictModel"
     """The node ID."""
 
-    label: str = "Predict Model"
+    label: str | None
     """A human-readable label for the node."""
 
     model: HandleUnion[S3Storage]
@@ -100,7 +100,7 @@ class PredictModel(Node):
     ):
         super().__init__(
             node_name=self.node_name,
-            label=label or self.label,
+            label=label,
             model=model,
             dataset=dataset,
             project_id=project_id,
