@@ -19,8 +19,7 @@ class TrainModel(Node):
         outputs: A reference to the output dataset for training the
             model.
         label: A human-readable label for the node. This should be
-            unique to all other node labels in a workflow. Defaults to
-            "Train Model".
+            unique to all other node labels in a workflow.
         project_id: The ID of the project to associate with this node.
     """
 
@@ -71,8 +70,7 @@ class PredictModel(Node):
             for prediction.
         inputs: A reference to the input dataset for making predictions.
         label: A human-readable label for the node. This should be
-            unique to all other node labels in a workflow. Defaults to
-            "Predict Model".
+            unique to all other node labels in a workflow.
         project_id: The ID of the project to associate with this node.
     """
 
