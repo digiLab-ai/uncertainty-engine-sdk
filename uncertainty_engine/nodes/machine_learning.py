@@ -13,8 +13,7 @@ class TrainModel(Node):
     Train a Gaussian Process model using the Uncertainty Engine.
 
     Args:
-        config: A reference to the model configuration to use for
-            training.
+        config: A `ModelConfig` for a machine learning model.
         inputs: A reference to the input dataset for training the model.
         outputs: A reference to the output dataset for training the
             model.
@@ -30,7 +29,7 @@ class TrainModel(Node):
     """A human-readable label for the node."""
 
     config: HandleUnion[ModelConfig]
-    """A reference to the model configuration to use for training."""
+    """A `ModelConfig` for a machine learning model."""
 
     inputs: HandleUnion[S3Storage]
     """A reference to the input dataset for training the model."""
