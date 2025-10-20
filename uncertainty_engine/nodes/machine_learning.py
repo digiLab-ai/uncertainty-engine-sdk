@@ -13,11 +13,14 @@ class TrainModel(Node):
     Train a Gaussian Process model using the Uncertainty Engine.
 
     Args:
-        config: A reference to the model configuration to use for training.
+        config: A reference to the model configuration to use for
+            training.
         inputs: A reference to the input dataset for training the model.
-        outputs: A reference to the output dataset for training the model.
-        label: A human-readable label for the node. This should be unique to all
-               other node labels in a workflow. Defaults to "Train Model".
+        outputs: A reference to the output dataset for training the
+            model.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow. Defaults to
+            "Train Model".
         project_id: The ID of the project to associate with this node.
     """
 
@@ -60,13 +63,16 @@ class TrainModel(Node):
 @typechecked
 class PredictModel(Node):
     """
-    Run predictions using a trained machine-learning model in the Uncertainty Engine.
+    Run predictions using a trained machine-learning model in the
+    Uncertainty Engine.
 
     Args:
-        model: A reference to the trained machine-learning model to use for prediction.
+        model: A reference to the trained machine-learning model to use
+            for prediction.
         inputs: A reference to the input dataset for making predictions.
-        label: A human-readable label for the node. This should be unique to all
-               other node labels in a workflow. Defaults to "Predict Model".
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow. Defaults to
+            "Predict Model".
         project_id: The ID of the project to associate with this node.
     """
 
@@ -77,7 +83,10 @@ class PredictModel(Node):
     """A human-readable label for the node."""
 
     model: HandleUnion[S3Storage]
-    """A reference to the trained machine-learning model to use for prediction."""
+    """
+    A reference to the trained machine-learning model to use for 
+    prediction.
+    """
 
     dataset: HandleUnion[S3Storage]
     """A reference to the input dataset for making predictions."""
