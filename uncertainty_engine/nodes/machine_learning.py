@@ -13,15 +13,20 @@ class ModelConfig(Node):
     Config for a machine learning model.
 
     Args:
-        input_variance: Percentage of variance to retain in the input data.
-        input_retained_dimensions: Number of dimensions to retain in the input data.
-        output_variance: Percentage of variance to retain in the output data.
-        output_retained_dimensions: Number of dimensions to retain in the output data.
+        input_variance: Percentage of variance to retain in the input
+            data.
+        input_retained_dimensions: Number of dimensions to retain in the
+            input data.
+        output_variance: Percentage of variance to retain in the output
+            data.
+        output_retained_dimensions: Number of dimensions to retain in
+            the output data.
         model_type: Type of model to use.
         kernel: Type of kernel to use for the model.
         warp_inputs: Whether to warp the inputs for the model.
         seed: Seed for reproducible training.
-        label: A human-readable label for the node. This should be unique to all other node labels in a workflow.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
         project_id: The ID of the project to associate with this node.
     """
 
