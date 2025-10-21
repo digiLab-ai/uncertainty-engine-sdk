@@ -66,9 +66,6 @@ class ModelConfig(Node):
     seed: Optional[int] = None
     """Seed for reproducible training."""
 
-    project_id: Optional[str] = None
-    """The ID of the project to associate with this node."""
-
     def __init__(
         self,
         input_variance: Optional[float] = None,
@@ -86,7 +83,6 @@ class ModelConfig(Node):
         warp_inputs: bool = False,
         seed: Optional[int] = None,
         label: Optional[str] = None,
-        project_id: Optional[str] = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -99,7 +95,6 @@ class ModelConfig(Node):
             kernel=kernel,
             warp_inputs=warp_inputs,
             seed=seed,
-            project_id=project_id,
         )
 
 

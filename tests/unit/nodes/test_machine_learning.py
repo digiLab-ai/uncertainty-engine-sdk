@@ -19,7 +19,6 @@ def test_model_config_initialization():
         kernel="RBF",
         warp_inputs=True,
         seed=42,
-        project_id="projectid-789",
         label="Model Config",
     )
 
@@ -33,7 +32,6 @@ def test_model_config_initialization():
     assert node.warp_inputs is True
     assert node.seed == 42
     assert node.label == "Model Config"
-    assert node.project_id == "projectid-789"
 
 
 def test_train_model_initialization():
