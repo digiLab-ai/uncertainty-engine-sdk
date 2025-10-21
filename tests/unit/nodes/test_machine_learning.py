@@ -1,4 +1,6 @@
-from uncertainty_engine_types import Handle, S3Storage
+from uncertainty_engine_types import Handle
+from uncertainty_engine_types import ModelConfig as ModelConfigType
+from uncertainty_engine_types import S3Storage
 
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
@@ -38,7 +40,7 @@ def test_train_model_initialization():
     """Test the initialization of the TrainModel node."""
 
     # Example values, test with handles and direct objects
-    config = ModelConfig()
+    config = ModelConfigType()
     inputs = S3Storage(bucket="my-bucket", key="input.csv")
     outputs = Handle(node_name="OutputNode", node_handle="outputs")
     label = "Test Train Model"

@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 
 from typeguard import typechecked
+from uncertainty_engine_types import ModelConfig as ModelConfigType
 from uncertainty_engine_types import S3Storage
 
 from uncertainty_engine.nodes.base import Node
@@ -119,7 +120,7 @@ class TrainModel(Node):
     label: str | None
     """A human-readable label for the node."""
 
-    config: HandleUnion[ModelConfig]
+    config: HandleUnion[ModelConfigType]
     """A `ModelConfig` for a machine learning model."""
 
     inputs: HandleUnion[S3Storage]
@@ -133,7 +134,7 @@ class TrainModel(Node):
 
     def __init__(
         self,
-        config: HandleUnion[ModelConfig],
+        config: HandleUnion[ModelConfigType],
         inputs: HandleUnion[S3Storage],
         outputs: HandleUnion[S3Storage],
         label: Optional[str] = None,
