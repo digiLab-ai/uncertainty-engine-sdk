@@ -33,7 +33,7 @@ class ModelConfig(Node):
     node_name: str = "ModelConfig"
     """The node ID."""
 
-    label: str = "Model Config"
+    label: str | None
     """A human-readable label for the node."""
 
     input_variance: Optional[float] = None
@@ -90,7 +90,7 @@ class ModelConfig(Node):
     ):
         super().__init__(
             node_name=self.node_name,
-            label=label or self.label,
+            label=label,
             input_variance=input_variance,
             input_retained_dimensions=input_retained_dimensions,
             output_variance=output_variance,
