@@ -20,6 +20,7 @@ def test_model_config_initialization():
         warp_inputs=True,
         seed=42,
         project_id="projectid-789",
+        label="Model Config",
     )
 
     assert node.node_name == "ModelConfig"
