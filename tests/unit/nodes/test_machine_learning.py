@@ -4,6 +4,7 @@ from uncertainty_engine_types import ModelConfig as ModelConfigType
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
     PredictModel,
+    PredictPosteriorConditioning,
     Recommend,
     TrainModel,
 )
@@ -52,6 +53,23 @@ def test_predict_model_initialization(mock_handle: Handle):
     assert node.model == mock_handle
     assert node.dataset == mock_handle
     assert node.label == label
+
+
+def test_predict_posterior_conditioning_initialization(mock_handle: Handle):
+    """Test the initialization of the PredictPosteriorConditioning node."""
+
+    node = PredictPosteriorConditioning(
+        conditioning_inputs=mock_handle,
+        conditioning_outputs=mock_handle,
+        model=mock_handle,
+        prediction_inputs=mock_handle,
+    )
+
+    assert node.node_name == "PredictPosteriorConditioning"
+    assert node.conditioning_inputs == mock_handle
+    assert node.conditioning_outputs == mock_handle
+    assert node.model == mock_handle
+    assert node.prediction_inputs == mock_handle
 
 
 def test_recommend_initialization(mock_handle: Handle):

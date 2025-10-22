@@ -153,6 +153,64 @@ class PredictModel(Node):
 
 
 @typechecked
+class PredictPosteriorConditioning(Node):
+    """
+    Make predictions with a trained Gaussian process model whilst
+    incorporating information from new data with posterior conditioning.
+
+    Args:
+        conditioning_inputs: A reference to the input dataset for
+            conditioning.
+        conditioning_outputs: A reference to the output dataset for
+            conditioning.
+        model: A reference to the trained machine-learning model to use
+            for prediction.
+        prediction_inputs: A reference to the input dataset for making
+            predictions.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    conditioning_inputs: HandleUnion[S3Storage]
+    """A reference to the input dataset for conditioning."""
+
+    conditioning_outputs: HandleUnion[S3Storage]
+    """A reference to the output dataset for conditioning."""
+
+    model: HandleUnion[S3Storage]
+    """
+    A reference to the trained machine-learning model to use for
+    prediction.
+    """
+
+    prediction_inputs: HandleUnion[S3Storage]
+    """A reference to the input dataset for making predictions."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    node_name: str = "PredictPosteriorConditioning"
+    """The node ID."""
+
+    def __init__(
+        self,
+        conditioning_inputs: HandleUnion[S3Storage],
+        conditioning_outputs: HandleUnion[S3Storage],
+        model: HandleUnion[S3Storage],
+        prediction_inputs: HandleUnion[S3Storage],
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            conditioning_inputs=conditioning_inputs,
+            conditioning_outputs=conditioning_outputs,
+            model=model,
+            prediction_inputs=prediction_inputs,
+        )
+
+
+@typechecked
 class Recommend(Node):
     """
     Draw recommended data points from a trained model.
