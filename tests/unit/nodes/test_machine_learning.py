@@ -5,6 +5,7 @@ from uncertainty_engine_types import S3Storage
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
     PredictModel,
+    Recommend,
     TrainModel,
 )
 
@@ -36,11 +37,56 @@ def test_model_config_initialization():
     assert node.label == "Model Config"
 
 
+def test_predict_model_initialization():
+    """Test the initialization of the PredictModel node."""
+
+    # Example values, test with handles and direct objects
+    # TODO: Use a fixture for common test values
+    model = Handle(node_name="TrainModelNode", node_handle="model")
+    dataset = S3Storage(bucket="my-bucket", key="predict_input.csv")
+    label = "Test Predict Model"
+    project_id = "projectid-456"
+
+    node = PredictModel(
+        model=model,
+        dataset=dataset,
+        label=label,
+        project_id=project_id,  # TODO: Remove
+    )
+
+    assert node.node_name == "PredictModel"
+    assert node.model == model
+    assert node.dataset == dataset
+    assert node.label == label
+    assert node.project_id == project_id
+
+
+def test_recommend_initialization():
+    """Test the initialization of the Recommend node."""
+
+    num_of_points = 10
+    acquisition_function = "ExpectedImprovement"
+    # TODO: Use a fixture for common test values
+    model = Handle(node_name="TrainModelNode", node_handle="model")
+
+    node = Recommend(
+        model=model,
+        acquisition_function=acquisition_function,
+        num_of_points=num_of_points,
+    )
+
+    assert node.node_name == "Recommend"
+    assert node.model == model
+    assert node.acquisition_function == acquisition_function
+    assert node.num_of_points == num_of_points
+
+
 def test_train_model_initialization():
     """Test the initialization of the TrainModel node."""
 
     # Example values, test with handles and direct objects
     config = ModelConfigType()
+    # TODO: Use a fixture for common test values
     inputs = S3Storage(bucket="my-bucket", key="input.csv")
     outputs = Handle(node_name="OutputNode", node_handle="outputs")
     label = "Test Train Model"
@@ -51,35 +97,12 @@ def test_train_model_initialization():
         inputs=inputs,
         outputs=outputs,
         label=label,
-        project_id=project_id,
+        project_id=project_id,  # TODO: Remove
     )
 
     assert node.node_name == "TrainModel"
     assert node.config == config
     assert node.inputs == inputs
     assert node.outputs == outputs
-    assert node.label == label
-    assert node.project_id == project_id
-
-
-def test_predict_model_initialization():
-    """Test the initialization of the PredictModel node."""
-
-    # Example values, test with handles and direct objects
-    model = Handle(node_name="TrainModelNode", node_handle="model")
-    dataset = S3Storage(bucket="my-bucket", key="predict_input.csv")
-    label = "Test Predict Model"
-    project_id = "projectid-456"
-
-    node = PredictModel(
-        model=model,
-        dataset=dataset,
-        label=label,
-        project_id=project_id,
-    )
-
-    assert node.node_name == "PredictModel"
-    assert node.model == model
-    assert node.dataset == dataset
     assert node.label == label
     assert node.project_id == project_id

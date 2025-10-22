@@ -8,6 +8,17 @@ from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
 
 
+AvailableAcquisitions = Literal[
+    "ExpectedImprovement",
+    "LogExpectedImprovement",
+    "PosteriorMean",
+    "PosteriorStandardDeviation",
+    "MonteCarloExpectedImprovement",
+    "MonteCarloLogExpectedImprovement",
+    "MonteCarloNegativeIntegratedPosteriorVariance",
+]
+
+
 @typechecked
 class ModelConfig(Node):
     """
@@ -100,57 +111,6 @@ class ModelConfig(Node):
 
 
 @typechecked
-class TrainModel(Node):
-    """
-    Train a Gaussian Process model using the Uncertainty Engine.
-
-    Args:
-        config: A `ModelConfig` for a machine learning model.
-        inputs: A reference to the input dataset for training the model.
-        outputs: A reference to the output dataset for training the
-            model.
-        label: A human-readable label for the node. This should be
-            unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
-    """
-
-    node_name: str = "TrainModel"
-    """The node ID."""
-
-    label: str | None
-    """A human-readable label for the node."""
-
-    config: HandleUnion[ModelConfigType]
-    """A `ModelConfig` for a machine learning model."""
-
-    inputs: HandleUnion[S3Storage]
-    """A reference to the input dataset for training the model."""
-
-    outputs: HandleUnion[S3Storage]
-    """A reference to the output dataset for training the model."""
-
-    project_id: Optional[str] = None
-    """The ID of the project to associate with this node."""
-
-    def __init__(
-        self,
-        config: HandleUnion[ModelConfigType],
-        inputs: HandleUnion[S3Storage],
-        outputs: HandleUnion[S3Storage],
-        label: Optional[str] = None,
-        project_id: Optional[str] = None,
-    ):
-        super().__init__(
-            node_name=self.node_name,
-            label=label,
-            config=config,
-            inputs=inputs,
-            outputs=outputs,
-            project_id=project_id,
-        )
-
-
-@typechecked
 class PredictModel(Node):
     """
     Run predictions using a trained machine-learning model in the
@@ -180,7 +140,7 @@ class PredictModel(Node):
     dataset: HandleUnion[S3Storage]
     """A reference to the input dataset for making predictions."""
 
-    project_id: Optional[str] = None
+    project_id: Optional[str] = None  # TODO: Remove
     """The ID of the project to associate with this node."""
 
     def __init__(
@@ -195,5 +155,105 @@ class PredictModel(Node):
             label=label,
             model=model,
             dataset=dataset,
+            project_id=project_id,
+        )
+
+
+@typechecked
+class Recommend(Node):
+    """
+    Draw recommended data points from a trained model.
+
+    Args:
+        acquisition_function: The acquisition function to use for
+            recommending points.
+        model: A reference to the trained machine-learning model to use
+            for recommendation.
+        num_of_points: The number of points to recommend.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    acquisition_function: AvailableAcquisitions
+    """The acquisition function to use for recommending points."""
+
+    model: HandleUnion[S3Storage]
+    """
+    A reference to the trained machine-learning model to use for
+    recommendation.
+    """
+
+    node_name: str = "Recommend"
+    """The node ID."""
+
+    num_of_points: int
+    """The number of points to recommend."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    def __init__(
+        self,
+        acquisition_function: AvailableAcquisitions,
+        model: HandleUnion[S3Storage],
+        num_of_points: int,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            acquisition_function=acquisition_function,
+            model=model,
+            num_of_points=num_of_points,
+            label=label,
+        )
+
+
+@typechecked
+class TrainModel(Node):
+    """
+    Train a Gaussian Process model using the Uncertainty Engine.
+
+    Args:
+        config: A `ModelConfig` for a machine learning model.
+        inputs: A reference to the input dataset for training the model.
+        outputs: A reference to the output dataset for training the
+            model.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+        project_id: The ID of the project to associate with this node.
+    """
+
+    node_name: str = "TrainModel"
+    """The node ID."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    config: HandleUnion[ModelConfigType]
+    """A `ModelConfig` for a machine learning model."""
+
+    inputs: HandleUnion[S3Storage]
+    """A reference to the input dataset for training the model."""
+
+    outputs: HandleUnion[S3Storage]
+    """A reference to the output dataset for training the model."""
+
+    project_id: Optional[str] = None  # TODO: Remove
+    """The ID of the project to associate with this node."""
+
+    def __init__(
+        self,
+        config: HandleUnion[ModelConfigType],
+        inputs: HandleUnion[S3Storage],
+        outputs: HandleUnion[S3Storage],
+        label: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            config=config,
+            inputs=inputs,
+            outputs=outputs,
             project_id=project_id,
         )
