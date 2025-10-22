@@ -39,7 +39,6 @@ class ModelConfig(Node):
         seed: Seed for reproducible training.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
     """
 
     node_name: str = "ModelConfig"
@@ -122,7 +121,6 @@ class PredictModel(Node):
         inputs: A reference to the input dataset for making predictions.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
     """
 
     node_name: str = "PredictModel"
@@ -215,7 +213,6 @@ class TrainModel(Node):
             model.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
     """
 
     node_name: str = "TrainModel"
