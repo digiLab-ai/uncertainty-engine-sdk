@@ -55,7 +55,7 @@ class Graph:
 
             node_input_dict = dict()
             for ki, vi in node.__dict__.items():
-                if ki not in ["node_name", "label"]:
+                if ki not in ["node_name", "label", "tool_metadata"]:
                     if isinstance(vi, Handle):
                         node_input_dict[ki] = vi.model_dump()
                     else:
@@ -118,10 +118,14 @@ class Graph:
         print("Processing metadata")
         if hasattr(node, "tool_metadata"):
             if "tool_inputs" in node.tool_metadata.keys():
-                self.tool_metadata["inputs"][node.label] = node.tool_metadata[
-                    "tool_inputs"
-                ]
+                # Ensure inputs are serialized
+                self.tool_metadata["inputs"][node.label] = {
+                    key: value.model_dump() if hasattr(value, "model_dump") else value
+                    for key, value in node.tool_metadata["tool_inputs"].items()
+                }
             if "tool_outputs" in node.tool_metadata.keys():
-                self.tool_metadata["outputs"][node.label] = node.tool_metadata[
-                    "tool_outputs"
-                ]
+                # Ensure outputs are serialized
+                self.tool_metadata["outputs"][node.label] = {
+                    key: value.model_dump() if hasattr(value, "model_dump") else value
+                    for key, value in node.tool_metadata["tool_outputs"].items()
+                }
