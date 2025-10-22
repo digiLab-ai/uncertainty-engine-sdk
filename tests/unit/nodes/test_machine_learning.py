@@ -5,6 +5,7 @@ from uncertainty_engine_types import S3Storage
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
     PredictModel,
+    Recommend,
     TrainModel,
 )
 
@@ -57,6 +58,26 @@ def test_predict_model_initialization():
     assert node.dataset == dataset
     assert node.label == label
     assert node.project_id == project_id
+
+
+def test_recommend_initialization():
+    """Test the initialization of the Recommend node."""
+
+    num_of_points = 10
+    acquisition_function = "ExpectedImprovement"
+    # TODO: Use a fixture for common test values
+    model = Handle(node_name="TrainModelNode", node_handle="model")
+
+    node = Recommend(
+        model=model,
+        acquisition_function=acquisition_function,
+        num_of_points=num_of_points,
+    )
+
+    assert node.node_name == "Recommend"
+    assert node.model == model
+    assert node.acquisition_function == acquisition_function
+    assert node.num_of_points == num_of_points
 
 
 def test_train_model_initialization():
