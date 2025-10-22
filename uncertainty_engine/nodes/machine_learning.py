@@ -140,22 +140,17 @@ class PredictModel(Node):
     dataset: HandleUnion[S3Storage]
     """A reference to the input dataset for making predictions."""
 
-    project_id: Optional[str] = None  # TODO: Remove
-    """The ID of the project to associate with this node."""
-
     def __init__(
         self,
         model: HandleUnion[S3Storage],
         dataset: HandleUnion[S3Storage],
         label: Optional[str] = None,
-        project_id: Optional[str] = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
             model=model,
             dataset=dataset,
-            project_id=project_id,
         )
 
 
@@ -238,16 +233,12 @@ class TrainModel(Node):
     outputs: HandleUnion[S3Storage]
     """A reference to the output dataset for training the model."""
 
-    project_id: Optional[str] = None  # TODO: Remove
-    """The ID of the project to associate with this node."""
-
     def __init__(
         self,
         config: HandleUnion[ModelConfigType],
         inputs: HandleUnion[S3Storage],
         outputs: HandleUnion[S3Storage],
         label: Optional[str] = None,
-        project_id: Optional[str] = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -255,5 +246,4 @@ class TrainModel(Node):
             config=config,
             inputs=inputs,
             outputs=outputs,
-            project_id=project_id,
         )
