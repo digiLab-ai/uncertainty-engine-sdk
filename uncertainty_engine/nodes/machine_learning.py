@@ -8,6 +8,17 @@ from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
 
 
+AvailableAcquisitions = Literal[
+    "ExpectedImprovement",
+    "LogExpectedImprovement",
+    "PosteriorMean",
+    "PosteriorStandardDeviation",
+    "MonteCarloExpectedImprovement",
+    "MonteCarloLogExpectedImprovement",
+    "MonteCarloNegativeIntegratedPosteriorVariance",
+]
+
+
 @typechecked
 class ModelConfig(Node):
     """
@@ -145,6 +156,55 @@ class PredictModel(Node):
             model=model,
             dataset=dataset,
             project_id=project_id,
+        )
+
+
+@typechecked
+class Recommend(Node):
+    """
+    Draw recommended data points from a trained model.
+
+    Args:
+        acquisition_function: The acquisition function to use for
+            recommending points.
+        model: A reference to the trained machine-learning model to use
+            for recommendation.
+        num_of_points: The number of points to recommend.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    acquisition_function: AvailableAcquisitions
+    """The acquisition function to use for recommending points."""
+
+    model: HandleUnion[S3Storage]
+    """
+    A reference to the trained machine-learning model to use for
+    recommendation.
+    """
+
+    node_name: str = "Recommend"
+    """The node ID."""
+
+    num_of_points: int
+    """The number of points to recommend."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    def __init__(
+        self,
+        acquisition_function: AvailableAcquisitions,
+        model: HandleUnion[S3Storage],
+        num_of_points: int,
+        label: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            acquisition_function=acquisition_function,
+            model=model,
+            num_of_points=num_of_points,
+            label=label,
         )
 
 
