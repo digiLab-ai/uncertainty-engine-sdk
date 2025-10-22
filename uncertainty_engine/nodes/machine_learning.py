@@ -100,6 +100,55 @@ class ModelConfig(Node):
 
 
 @typechecked
+class PredictModel(Node):
+    """
+    Run predictions using a trained machine-learning model in the
+    Uncertainty Engine.
+
+    Args:
+        model: A reference to the trained machine-learning model to use
+            for prediction.
+        inputs: A reference to the input dataset for making predictions.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+        project_id: The ID of the project to associate with this node.
+    """
+
+    node_name: str = "PredictModel"
+    """The node ID."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    model: HandleUnion[S3Storage]
+    """
+    A reference to the trained machine-learning model to use for
+    prediction.
+    """
+
+    dataset: HandleUnion[S3Storage]
+    """A reference to the input dataset for making predictions."""
+
+    project_id: Optional[str] = None
+    """The ID of the project to associate with this node."""
+
+    def __init__(
+        self,
+        model: HandleUnion[S3Storage],
+        dataset: HandleUnion[S3Storage],
+        label: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            model=model,
+            dataset=dataset,
+            project_id=project_id,
+        )
+
+
+@typechecked
 class TrainModel(Node):
     """
     Train a Gaussian Process model using the Uncertainty Engine.
@@ -146,54 +195,5 @@ class TrainModel(Node):
             config=config,
             inputs=inputs,
             outputs=outputs,
-            project_id=project_id,
-        )
-
-
-@typechecked
-class PredictModel(Node):
-    """
-    Run predictions using a trained machine-learning model in the
-    Uncertainty Engine.
-
-    Args:
-        model: A reference to the trained machine-learning model to use
-            for prediction.
-        inputs: A reference to the input dataset for making predictions.
-        label: A human-readable label for the node. This should be
-            unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
-    """
-
-    node_name: str = "PredictModel"
-    """The node ID."""
-
-    label: str | None
-    """A human-readable label for the node."""
-
-    model: HandleUnion[S3Storage]
-    """
-    A reference to the trained machine-learning model to use for
-    prediction.
-    """
-
-    dataset: HandleUnion[S3Storage]
-    """A reference to the input dataset for making predictions."""
-
-    project_id: Optional[str] = None
-    """The ID of the project to associate with this node."""
-
-    def __init__(
-        self,
-        model: HandleUnion[S3Storage],
-        dataset: HandleUnion[S3Storage],
-        label: Optional[str] = None,
-        project_id: Optional[str] = None,
-    ):
-        super().__init__(
-            node_name=self.node_name,
-            label=label,
-            model=model,
-            dataset=dataset,
             project_id=project_id,
         )
