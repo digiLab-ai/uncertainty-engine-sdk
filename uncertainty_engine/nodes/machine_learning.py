@@ -39,7 +39,6 @@ class ModelConfig(Node):
         seed: Seed for reproducible training.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
     """
 
     node_name: str = "ModelConfig"
@@ -122,7 +121,6 @@ class PredictModel(Node):
         inputs: A reference to the input dataset for making predictions.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
     """
 
     node_name: str = "PredictModel"
@@ -140,22 +138,17 @@ class PredictModel(Node):
     dataset: HandleUnion[S3Storage]
     """A reference to the input dataset for making predictions."""
 
-    project_id: Optional[str] = None  # TODO: Remove
-    """The ID of the project to associate with this node."""
-
     def __init__(
         self,
         model: HandleUnion[S3Storage],
         dataset: HandleUnion[S3Storage],
         label: Optional[str] = None,
-        project_id: Optional[str] = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
             model=model,
             dataset=dataset,
-            project_id=project_id,
         )
 
 
@@ -220,7 +213,6 @@ class TrainModel(Node):
             model.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
-        project_id: The ID of the project to associate with this node.
     """
 
     node_name: str = "TrainModel"
@@ -238,16 +230,12 @@ class TrainModel(Node):
     outputs: HandleUnion[S3Storage]
     """A reference to the output dataset for training the model."""
 
-    project_id: Optional[str] = None  # TODO: Remove
-    """The ID of the project to associate with this node."""
-
     def __init__(
         self,
         config: HandleUnion[ModelConfigType],
         inputs: HandleUnion[S3Storage],
         outputs: HandleUnion[S3Storage],
         label: Optional[str] = None,
-        project_id: Optional[str] = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -255,5 +243,4 @@ class TrainModel(Node):
             config=config,
             inputs=inputs,
             outputs=outputs,
-            project_id=project_id,
         )

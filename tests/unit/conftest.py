@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 import boto3
 import jwt
 import pytest
+from uncertainty_engine_types import Handle
 
 from uncertainty_engine.auth_service import (
     AUTH_CACHE_ID_TOKEN,
@@ -250,3 +251,9 @@ def auth_service_no_file(
         auth_service._save_to_file = lambda: None
 
         yield auth_service
+
+
+@pytest.fixture
+def mock_handle() -> Handle:
+    """Returns a mock Handle object."""
+    return Handle(node_name="MockNode", node_handle="mock_handle")
