@@ -140,7 +140,7 @@ class PredictModel(Node):
     dataset: HandleUnion[S3Storage]
     """A reference to the input dataset for making predictions."""
 
-    project_id: Optional[str] = None
+    project_id: Optional[str] = None  # TODO: Remove
     """The ID of the project to associate with this node."""
 
     def __init__(
@@ -238,7 +238,7 @@ class TrainModel(Node):
     outputs: HandleUnion[S3Storage]
     """A reference to the output dataset for training the model."""
 
-    project_id: Optional[str] = None
+    project_id: Optional[str] = None  # TODO: Remove
     """The ID of the project to associate with this node."""
 
     def __init__(

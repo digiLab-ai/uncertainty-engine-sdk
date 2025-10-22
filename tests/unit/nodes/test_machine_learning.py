@@ -41,6 +41,7 @@ def test_predict_model_initialization():
     """Test the initialization of the PredictModel node."""
 
     # Example values, test with handles and direct objects
+    # TODO: Use a fixture for common test values
     model = Handle(node_name="TrainModelNode", node_handle="model")
     dataset = S3Storage(bucket="my-bucket", key="predict_input.csv")
     label = "Test Predict Model"
@@ -50,7 +51,7 @@ def test_predict_model_initialization():
         model=model,
         dataset=dataset,
         label=label,
-        project_id=project_id,
+        project_id=project_id,  # TODO: Remove
     )
 
     assert node.node_name == "PredictModel"
@@ -85,6 +86,7 @@ def test_train_model_initialization():
 
     # Example values, test with handles and direct objects
     config = ModelConfigType()
+    # TODO: Use a fixture for common test values
     inputs = S3Storage(bucket="my-bucket", key="input.csv")
     outputs = Handle(node_name="OutputNode", node_handle="outputs")
     label = "Test Train Model"
@@ -95,7 +97,7 @@ def test_train_model_initialization():
         inputs=inputs,
         outputs=outputs,
         label=label,
-        project_id=project_id,
+        project_id=project_id,  # TODO: Remove
     )
 
     assert node.node_name == "TrainModel"
