@@ -1,6 +1,5 @@
 from uncertainty_engine_types import Handle
 from uncertainty_engine_types import ModelConfig as ModelConfigType
-from uncertainty_engine_types import S3Storage
 
 from uncertainty_engine.nodes.machine_learning import (
     ModelConfig,
@@ -37,66 +36,58 @@ def test_model_config_initialization():
     assert node.label == "Model Config"
 
 
-def test_predict_model_initialization():
+def test_predict_model_initialization(mock_handle: Handle):
     """Test the initialization of the PredictModel node."""
 
     # Example values, test with handles and direct objects
-    # TODO: Use a fixture for common test values
-    model = Handle(node_name="TrainModelNode", node_handle="model")
-    dataset = S3Storage(bucket="my-bucket", key="predict_input.csv")
     label = "Test Predict Model"
 
     node = PredictModel(
-        model=model,
-        dataset=dataset,
+        model=mock_handle,
+        dataset=mock_handle,
         label=label,
     )
 
     assert node.node_name == "PredictModel"
-    assert node.model == model
-    assert node.dataset == dataset
+    assert node.model == mock_handle
+    assert node.dataset == mock_handle
     assert node.label == label
 
 
-def test_recommend_initialization():
+def test_recommend_initialization(mock_handle: Handle):
     """Test the initialization of the Recommend node."""
 
     num_of_points = 10
     acquisition_function = "ExpectedImprovement"
-    # TODO: Use a fixture for common test values
-    model = Handle(node_name="TrainModelNode", node_handle="model")
 
     node = Recommend(
-        model=model,
+        model=mock_handle,
         acquisition_function=acquisition_function,
         num_of_points=num_of_points,
     )
 
     assert node.node_name == "Recommend"
-    assert node.model == model
+    assert node.model == mock_handle
     assert node.acquisition_function == acquisition_function
     assert node.num_of_points == num_of_points
 
 
-def test_train_model_initialization():
+def test_train_model_initialization(mock_handle: Handle):
     """Test the initialization of the TrainModel node."""
 
     # Example values, test with handles and direct objects
     config = ModelConfigType()
-    # TODO: Use a fixture for common test values
-    inputs = S3Storage(bucket="my-bucket", key="input.csv")
-    outputs = Handle(node_name="OutputNode", node_handle="outputs")
     label = "Test Train Model"
 
     node = TrainModel(
         config=config,
-        inputs=inputs,
-        outputs=outputs,
+        inputs=mock_handle,
+        outputs=mock_handle,
         label=label,
     )
 
     assert node.node_name == "TrainModel"
     assert node.config == config
-    assert node.inputs == inputs
-    assert node.outputs == outputs
+    assert node.inputs == mock_handle
+    assert node.outputs == mock_handle
     assert node.label == label
