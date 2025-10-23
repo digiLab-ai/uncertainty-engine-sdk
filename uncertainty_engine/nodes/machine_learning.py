@@ -7,7 +7,6 @@ from uncertainty_engine_types import S3Storage
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
 
-
 AvailableAcquisitions = Literal[
     "ExpectedImprovement",
     "LogExpectedImprovement",
@@ -16,6 +15,13 @@ AvailableAcquisitions = Literal[
     "MonteCarloExpectedImprovement",
     "MonteCarloLogExpectedImprovement",
     "MonteCarloNegativeIntegratedPosteriorVariance",
+]
+
+AvailableScoreMetrics = Literal[
+    "MSE",
+    "RMSE",
+    "R2",
+    "MSLL",
 ]
 
 
@@ -301,4 +307,71 @@ class TrainModel(Node):
             config=config,
             inputs=inputs,
             outputs=outputs,
+        )
+
+
+class ScoreModel(Node):
+    """
+    Score a machine-learning model using your specified metrics.
+
+    Args:
+        predictions: Dataset containing predicted values for scoring the
+            model.
+        truth: Dataset containing actual values for scoring the model.
+        predictions_uncertainty: Standard deviation of predicted output
+            data. Only required for MSLL metric.
+        train_outputs: Target output data used for training. Only
+            required for MSLL metric.
+        metrics: A list of metrics to be used when scoring the model. Will default to
+            MSE, RMSE and R2.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    node_name: str = "ScoreModel"
+    """The node ID."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    predictions: HandleUnion[S3Storage]
+    """Dataset containing predicted values for scoring the model."""
+
+    truth: HandleUnion[S3Storage]
+    """Dataset containing actual values for scoring the model."""
+
+    predictions_uncertainty: HandleUnion[S3Storage] | None
+    """
+    Standard deviation of predicted output data. Only required for MSLL
+    metric.
+    """
+
+    train_outputs: HandleUnion[S3Storage] | None
+    """
+    Target output data used for training. Only required for MSLL metric.
+    """
+
+    metrics: list[AvailableScoreMetrics] | None
+    """
+    A list of metrics to be used when scoring the model. Will default to
+    MSE, RMSE and R2.
+    """
+
+    def __init__(
+        self,
+        predictions: HandleUnion[S3Storage],
+        truth: HandleUnion[S3Storage],
+        predictions_uncertainty: HandleUnion[S3Storage] | None = None,
+        train_outputs: HandleUnion[S3Storage] | None = None,
+        metrics: list[AvailableScoreMetrics] | None = None,
+        label: str | None = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            predictions=predictions,
+            truth=truth,
+            predictions_uncertainty=predictions_uncertainty,
+            train_outputs=train_outputs,
+            metrics=metrics,
         )
