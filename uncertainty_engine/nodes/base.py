@@ -49,6 +49,10 @@ class Node:
             for key in self.__dict__
             if key not in ["node_name", "label"]
         }
+
+        if "tool_metadata" in input and not input["tool_metadata"]:
+            del input["tool_metadata"]
+
         return self.node_name, input
 
     def make_handle(self, output_name: str) -> Handle:
