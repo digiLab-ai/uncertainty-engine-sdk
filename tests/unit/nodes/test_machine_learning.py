@@ -6,8 +6,8 @@ from uncertainty_engine.nodes.machine_learning import (
     PredictModel,
     PredictPosteriorConditioning,
     Recommend,
-    TrainModel,
     ScoreModel,
+    TrainModel,
 )
 
 
@@ -117,7 +117,11 @@ def test_score_model_initialization(mock_handle: Handle):
 
     label = "Test Score Model"
 
-    node = ScoreModel(predictions=mock_handle, truth=mock_handle, label=label)
+    node = ScoreModel(
+        predictions=mock_handle,
+        truth=mock_handle,
+        label=label,
+    )
 
     assert node.node_name == "ScoreModel"
     assert node.predictions == mock_handle
