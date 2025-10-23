@@ -117,13 +117,11 @@ class Graph:
 
     def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
         """
-        Process and serialize metadata for a given node.
+        Process metadata for a given node.
 
         This function extracts metadata from the `tool_metadata` attribute of
-        the node, if it exists, and serializes the `tool_inputs` and
+        the node, if it exists, and directly assigns the `tool_inputs` and
         `tool_outputs` into the `tool_metadata` dictionary of the graph.
-        If the values in `tool_inputs` or `tool_outputs` have a `model_dump`
-        method, it is used for serialization; otherwise, the raw value is stored.
 
         Args:
             node: The node whose metadata is to be processed.
@@ -132,15 +130,13 @@ class Graph:
 
         if hasattr(node, "tool_metadata"):
             if "tool_inputs" in node.tool_metadata.keys():
-                # ensure to serialize inputs
-                self.tool_metadata["inputs"][node.label] = {
-                    key: value.model_dump() if hasattr(value, "model_dump") else value
-                    for key, value in node.tool_metadata["tool_inputs"].items()
-                }
+                # directly assign inputs
+                self.tool_metadata["inputs"][node.label] = node.tool_metadata[
+                    "tool_inputs"
+                ]
 
             if "tool_outputs" in node.tool_metadata.keys():
-                # ensure to serialize outputs
-                self.tool_metadata["outputs"][node.label] = {
-                    key: value.model_dump() if hasattr(value, "model_dump") else value
-                    for key, value in node.tool_metadata["tool_outputs"].items()
-                }
+                # directly assign outputs
+                self.tool_metadata["outputs"][node.label] = node.tool_metadata[
+                    "tool_outputs"
+                ]
