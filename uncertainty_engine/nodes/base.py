@@ -1,7 +1,12 @@
-from typing import Optional
+from typing import Optional, TypedDict, cast
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+
+
+class ToolMetadata(TypedDict, total=False):
+    tool_inputs: dict[str, NodeInputInfo]
+    tool_outputs: dict[str, NodeOutputInfo]
 
 
 @typechecked
@@ -27,7 +32,7 @@ class Node:
     def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):
         self.node_name = node_name
         self.label = label
-        self.tool_metadata = {}
+        self.tool_metadata: ToolMetadata = {}
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -93,7 +98,9 @@ class Node:
         if "tool_inputs" not in self.tool_metadata:
             self.tool_metadata["tool_inputs"] = {}
 
-        self.tool_metadata["tool_inputs"][handle_name] = node_input.model_dump()
+        self.tool_metadata["tool_inputs"][handle_name] = cast(
+            NodeInputInfo, node_input.model_dump()
+        )
 
     def add_tool_output(self, handle_name: str, node_info: NodeInfo) -> None:
         """
@@ -127,4 +134,6 @@ class Node:
         if "tool_outputs" not in self.tool_metadata:
             self.tool_metadata["tool_outputs"] = {}
 
-        self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
+        self.tool_metadata["tool_outputs"][handle_name] = cast(
+            NodeOutputInfo, node_output.model_dump()
+        )
