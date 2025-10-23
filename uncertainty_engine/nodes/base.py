@@ -126,7 +126,7 @@ class Node:
 
         if handle_name not in node_info.outputs:
             raise KeyError(
-                f"Input handle '{handle_name}' does not exist on outputs: {node_info.outputs}"
+                f"Output handle '{handle_name}' does not exist on outputs: {node_info.outputs}"
             )
 
         node_output: NodeOutputInfo = node_info.outputs[handle_name]
