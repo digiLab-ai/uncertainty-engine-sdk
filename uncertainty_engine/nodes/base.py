@@ -121,7 +121,7 @@ class Node:
         ...     rhs=2,
         ... )
         >>> add_node_info = client.get_node_info("Add")
-        >>> add_node.add_tool_input("ans", add_node_info)
+        >>> add_node.add_tool_output("ans", add_node_info)
         """
 
         if handle_name not in node_info.outputs:
