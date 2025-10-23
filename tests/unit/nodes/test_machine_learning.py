@@ -7,6 +7,7 @@ from uncertainty_engine.nodes.machine_learning import (
     PredictPosteriorConditioning,
     Recommend,
     TrainModel,
+    ScoreModel,
 )
 
 
@@ -108,4 +109,20 @@ def test_train_model_initialization(mock_handle: Handle):
     assert node.config == config
     assert node.inputs == mock_handle
     assert node.outputs == mock_handle
+    assert node.label == label
+
+
+def test_score_model_initialization(mock_handle: Handle):
+    """Test the initialization of the ScoreModel node."""
+
+    label = "Test Score Model"
+
+    node = ScoreModel(predictions=mock_handle, truth=mock_handle, label=label)
+
+    assert node.node_name == "ScoreModel"
+    assert node.predictions == mock_handle
+    assert node.truth == mock_handle
+    assert node.predictions_uncertainty == None
+    assert node.train_outputs == None
+    assert node.metrics == ["MSE", "RMSE", "R2"]
     assert node.label == label

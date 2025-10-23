@@ -351,7 +351,7 @@ class ScoreModel(Node):
     Target output data used for training. Only required for MSLL metric.
     """
 
-    metrics: list[AvailableScoreMetrics] | None
+    metrics: list[AvailableScoreMetrics]
     """
     A list of metrics to be used when scoring the model. Will default to
     MSE, RMSE and R2.
@@ -363,7 +363,7 @@ class ScoreModel(Node):
         truth: HandleUnion[S3Storage],
         predictions_uncertainty: HandleUnion[S3Storage] | None = None,
         train_outputs: HandleUnion[S3Storage] | None = None,
-        metrics: list[AvailableScoreMetrics] | None = None,
+        metrics: list[AvailableScoreMetrics] = ["MSE", "RMSE", "R2"],
         label: str | None = None,
     ):
         super().__init__(
