@@ -72,3 +72,44 @@ class Workflow(Node):
             requested_output=requested_output,
             tool_metadata=tool_metadata,
         )
+
+    @classmethod
+    def from_graph(cls, graph_obj, requested_output=None):
+        """
+        Create a Workflow from a graph object, automatically setting parameters.
+
+        Args:
+            graph_obj: The graph object with required attributes.
+            requested_output: Optional requested output dict.
+        Returns:
+            Workflow instance
+        """
+        return cls(
+            graph=graph_obj.nodes,
+            inputs=graph_obj.external_input,
+            external_input_id=getattr(graph_obj, "external_input_id", "_"),
+            tool_metadata=getattr(graph_obj, "tool_metadata", None),
+            requested_output=requested_output,
+        )
+
+
+class ToolWorkflow(Workflow):
+    node_name: str = "ToolWorkflow"
+
+    def __init__(
+        self,
+        graph: dict[str, Any],
+        inputs: dict[str, Any] | None = None,
+        requested_output: dict[str, Any] | None = None,
+        external_input_id: str = "_",
+        input: dict[str, Any] | None = None,
+        tool_metadata: ToolMetadata | None = None,
+    ):
+        super().__init__(
+            graph=graph,
+            inputs=inputs,
+            requested_output=requested_output,
+            external_input_id=external_input_id,
+            input=input,
+        )
+        self.tool_metadata = tool_metadata

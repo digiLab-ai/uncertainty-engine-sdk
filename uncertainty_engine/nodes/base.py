@@ -28,6 +28,7 @@ class Node:
         self,
         node_name: str,
         label: Optional[str] = None,
+        client=None,
         **kwargs,
     ):
         self.node_name = node_name
@@ -35,6 +36,22 @@ class Node:
         self.tool_metadata = {}
         for key, value in kwargs.items():
             setattr(self, key, value)
+        self.node_info = client.get_node_info(self.node_name) if client else None
+        self.validate()  # Automatically validate on instantiation
+
+    def validate(self):
+        if not hasattr(self, "node_info") or self.node_info is None:
+            raise ValueError("Node info is not available for validation.")
+
+        missing_inputs = []
+        for input_name in self.node_info.inputs:
+            if not hasattr(self, input_name):
+                missing_inputs.append(input_name)
+
+        if missing_inputs:
+            raise ValueError(
+                f"Missing required inputs for node '{self.node_name}': {missing_inputs}"
+            )
 
     def __call__(self) -> tuple[str, dict]:
         """
