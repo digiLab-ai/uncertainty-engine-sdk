@@ -31,6 +31,7 @@ class Graph:
         self.nodes = {"nodes": dict()}
         self.external_input_id = external_input_id
         self.external_input = dict()
+        self.tool_metadata = {"inputs": {}, "outputs": {}}
 
     def add_node(
         self, node: Union[Node, Type[Node]], label: Optional[str] = None
@@ -43,6 +44,10 @@ class Graph:
             label: The label of the node. This must be unique. If not provided must be an attribute of the node.
                 Defaults to None.
         """
+
+        # add tool_metadata
+        self._process_metadata(node)
+
         if isinstance(node, Node):
             if label is None and node.label is None:
                 raise ValueError("Nodes must have a non-None label.")
@@ -109,3 +114,20 @@ class Graph:
             value: The value of the input.
         """
         self.external_input[key] = value
+
+    def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
+
+        if hasattr(node, "tool_metadata"):
+            if "tool_inputs" in node.tool_metadata.keys():
+                # ensure to serialize inputs
+                self.tool_metadata["inputs"][node.label] = {
+                    key: value.model_dump() if hasattr(value, "model_dump") else value
+                    for key, value in node.tool_metadata["tool_inputs"].items()
+                }
+
+            if "tool_outputs" in node.tool_metadata.keys():
+                # ensure to serialize outputs
+                self.tool_metadata["outputs"][node.label] = {
+                    key: value.model_dump() if hasattr(value, "model_dump") else value
+                    for key, value in node.tool_metadata["tool_outputs"].items()
+                }
