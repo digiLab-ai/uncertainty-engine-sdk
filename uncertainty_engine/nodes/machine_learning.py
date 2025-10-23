@@ -26,6 +26,55 @@ AvailableScoreMetrics = Literal[
 
 
 @typechecked
+class ExportTorchScript(Node):
+    """
+    Export to a TorchScript file so you can download your optimised
+    model.
+
+    Args:
+        model: The model to export to TorchScript.
+        validation_inputs: Sample input data to validate the exported
+            model's predictions.
+        observation_noise: Whether to include observation noise.
+            Defaults to `False`.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    node_name: str = "ExportTorchScript"
+    """The node ID."""
+
+    model: HandleUnion[S3Storage]
+    """The model to export to TorchScript."""
+
+    validation_inputs: HandleUnion[S3Storage]
+    """
+    Sample input data to validate the exported model's predictions.
+    """
+
+    observation_noise: bool
+    """Whether to include observation noise."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    def __init__(
+        self,
+        model: HandleUnion[S3Storage],
+        validation_inputs: HandleUnion[S3Storage],
+        observation_noise: bool = True,
+        label: str | None = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            model=model,
+            validation_inputs=validation_inputs,
+            observation_noise=observation_noise,
+            label=label,
+        )
+
+
+@typechecked
 class ModelConfig(Node):
     """
     Config for a machine learning model.
