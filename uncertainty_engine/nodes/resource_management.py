@@ -193,7 +193,7 @@ class LoadModel(Node):
     file_id: dict[str, str]
     """The ID of the model to load, as a serialised `ResourceID`."""
 
-    label: str | None = None
+    label: str | None
     """
     A human-readable label for the node. This should be unique to all
     other node labels in a workflow.
