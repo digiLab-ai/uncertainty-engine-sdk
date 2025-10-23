@@ -1,8 +1,8 @@
 import pytest
+from typeguard import TypeCheckError
 from uncertainty_engine_types import Handle
 
 from uncertainty_engine.nodes.base import Node
-from typeguard import TypeCheckError
 
 
 def test_node():
@@ -14,7 +14,7 @@ def test_node():
     assert node.a == 1
     assert node.b == 2
     assert node.label is None
-    assert node() == ("test_node", {"a": 1, "b": 2})
+    assert node() == ("test_node", {"tool_metadata": {}, "a": 1, "b": 2})
 
 
 def test_node_no_inputs():
@@ -23,7 +23,7 @@ def test_node_no_inputs():
     """
     node = Node("test_node")
     assert node.node_name == "test_node"
-    assert node() == ("test_node", {})
+    assert node() == ("test_node", {"tool_metadata": {}})
 
 
 def test_node_name_type():
