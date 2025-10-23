@@ -5,26 +5,6 @@ from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutput
 from uncertainty_engine.nodes.base import Node
 
 
-@pytest.fixture
-def default_node_info():
-    """
-    Provide a default NodeInfo object for tests.
-    """
-    return NodeInfo(
-        id="default_id",
-        label="default_label",
-        category="default_category",
-        description="default_description",
-        long_description="default_long_description",
-        image_name="default_image",
-        cost=0,
-        version_base_image=1,
-        version_node=1,
-        inputs={},
-        outputs={},
-    )
-
-
 def test_node():
     """
     Verify result for arbitrary test node.
