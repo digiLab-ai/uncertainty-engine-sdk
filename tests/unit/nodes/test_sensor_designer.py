@@ -46,6 +46,7 @@ def test_build_sensor_designer():
     assert node() == (
         "BuildSensorDesigner",
         {
+            "tool_metadata": {},
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": {"csv": "qoi_1,qoi_2\n7,10\n8,11\n"},
             "sigma": sigma,
@@ -75,6 +76,7 @@ def test_build_sensor_designer_no_sigma():
     assert node() == (
         "BuildSensorDesigner",
         {
+            "tool_metadata": {},
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": {"csv": "qoi_1,qoi_2\n7,10\n8,11\n"},
             "sigma": None,
@@ -99,6 +101,7 @@ def test_build_sensor_designer_no_qoi():
     assert node() == (
         "BuildSensorDesigner",
         {
+            "tool_metadata": {},
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": None,
             "sigma": sigma,
@@ -123,6 +126,7 @@ def test_build_sensor_designer_list_sigma():
     assert node() == (
         "BuildSensorDesigner",
         {
+            "tool_metadata": {},
             "sensor_data": {"csv": "sensor_1,sensor_2\n1,4\n2,5\n"},
             "quantities_of_interest_data": None,
             "sigma": sigma,
@@ -145,6 +149,7 @@ def test_suggest_sensor_design(mock_sensor_designer):
     assert node() == (
         "SuggestSensorDesign",
         {
+            "tool_metadata": {},
             "sensor_designer": mock_sensor_designer,
             "num_sensors": num_sensors,
             "num_eval": num_eval,
@@ -164,6 +169,7 @@ def test_score_sensor_design(mock_sensor_designer):
     assert node() == (
         "ScoreSensorDesign",
         {
+            "tool_metadata": {},
             "sensor_designer": mock_sensor_designer,
             "design": design,
         },
