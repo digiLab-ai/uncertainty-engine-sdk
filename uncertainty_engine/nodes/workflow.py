@@ -1,9 +1,14 @@
-from typing import Any
+from typing import Any, TypedDict
 
 from typeguard import typechecked
 
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import handle_input_deprecation
+
+
+class ToolMetadata(TypedDict):
+    inputs: dict[str, Any]
+    outputs: dict[str, Any]
 
 
 @typechecked
@@ -44,6 +49,7 @@ class Workflow(Node):
         requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
         input: dict[str, Any] | None = None,
+        tool_metadata: ToolMetadata | None = None,
     ):
         # TODO: Remove once `input` is removed and make `inputs` required
         final_inputs = handle_input_deprecation(input, inputs)
@@ -56,6 +62,7 @@ class Workflow(Node):
         self.requested_output = requested_output
         self.external_input_id = external_input_id
         self.inputs = final_inputs
+        self.tool_metadata = tool_metadata
 
         super().__init__(
             node_name=self.node_name,
@@ -63,4 +70,5 @@ class Workflow(Node):
             graph=graph,
             inputs=final_inputs,
             requested_output=requested_output,
+            tool_metadata=tool_metadata,
         )
