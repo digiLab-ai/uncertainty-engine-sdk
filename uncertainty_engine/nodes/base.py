@@ -69,6 +69,9 @@ class Node:
             handle_name: The name of the handle (input) to mark as a tool input
             node_info: The NodeInfo of the node
 
+        Raises:
+            KeyError: If the handle_name does not exist on the inputs of the node
+
 
         Example:
         >>> add_node = Node(
@@ -79,6 +82,11 @@ class Node:
         >>> add_node_info = client.get_node_info("Add")
         >>> add_node.add_tool_input("lhs", add_node_info)
         """
+
+        if handle_name not in node_info.inputs:
+            raise KeyError(
+                f"Input handle '{handle_name}' does not exist on inputs: {node_info.inputs}"
+            )
 
         node_input: NodeInputInfo = node_info.inputs[handle_name]
 
@@ -95,6 +103,9 @@ class Node:
             handle_name: The name of the handle (output) to mark as a tool output
             node_info: The NodeInfo of the node
 
+        Raises:
+            KeyError: If the handle_name does not exist on the outputs of the node
+
 
         Example:
         >>> add_node = Node(
@@ -105,6 +116,11 @@ class Node:
         >>> add_node_info = client.get_node_info("Add")
         >>> add_node.add_tool_input("ans", add_node_info)
         """
+
+        if handle_name not in node_info.outputs:
+            raise KeyError(
+                f"Input handle '{handle_name}' does not exist on outputs: {node_info.outputs}"
+            )
 
         node_output: NodeOutputInfo = node_info.outputs[handle_name]
 
