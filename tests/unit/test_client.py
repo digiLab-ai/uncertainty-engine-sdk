@@ -156,7 +156,7 @@ class TestClientMethods:
                 "/nodes/queue",
                 expect_body={
                     "node_id": mock_job.node_id,
-                    "inputs": {"key": "value", "tool_metadata": {}},
+                    "inputs": {"key": "value"},
                 },
                 response=mock_job.job_id,
             )
