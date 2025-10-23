@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from uncertainty_engine_types import NodeInfo
 
 from uncertainty_engine import Client, Environment
 from uncertainty_engine.client import Job
@@ -71,3 +72,23 @@ def mock_job():
     A mock Job.
     """
     return Job(node_id="node_a", job_id="job_a")
+
+
+@pytest.fixture
+def default_node_info() -> NodeInfo:
+    """
+    Provide a default NodeInfo object for tests.
+    """
+    return NodeInfo(
+        id="default_id",
+        label="default_label",
+        category="default_category",
+        description="default_description",
+        long_description="default_long_description",
+        image_name="default_image",
+        cost=0,
+        version_base_image=1,
+        version_node=1,
+        inputs={},
+        outputs={},
+    )
