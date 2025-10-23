@@ -116,6 +116,19 @@ class Graph:
         self.external_input[key] = value
 
     def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
+        """
+        Process and serialize metadata for a given node.
+
+        This function extracts metadata from the `tool_metadata` attribute of
+        the node, if it exists, and serializes the `tool_inputs` and
+        `tool_outputs` into the `tool_metadata` dictionary of the graph.
+        If the values in `tool_inputs` or `tool_outputs` have a `model_dump`
+        method, it is used for serialization; otherwise, the raw value is stored.
+
+        Args:
+            node: The node whose metadata is to be processed.
+
+        """
 
         if hasattr(node, "tool_metadata"):
             if "tool_inputs" in node.tool_metadata.keys():
