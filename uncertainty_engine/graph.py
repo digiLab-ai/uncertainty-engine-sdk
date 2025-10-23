@@ -129,13 +129,13 @@ class Graph:
         """
 
         if hasattr(node, "tool_metadata"):
-            if "tool_inputs" in node.tool_metadata.keys():
+            if "tool_inputs" in node.tool_metadata:
                 # directly assign inputs
                 self.tool_metadata["inputs"][node.label] = node.tool_metadata[
                     "tool_inputs"
                 ]
 
-            if "tool_outputs" in node.tool_metadata.keys():
+            if "tool_outputs" in node.tool_metadata:
                 # directly assign outputs
                 self.tool_metadata["outputs"][node.label] = node.tool_metadata[
                     "tool_outputs"
