@@ -2,6 +2,7 @@ from uncertainty_engine_types import Handle
 from uncertainty_engine_types import ModelConfig as ModelConfigType
 
 from uncertainty_engine.nodes.machine_learning import (
+    ExportTorchScript,
     ModelConfig,
     PredictModel,
     PredictPosteriorConditioning,
@@ -9,6 +10,24 @@ from uncertainty_engine.nodes.machine_learning import (
     ScoreModel,
     TrainModel,
 )
+
+
+def test_export_torch_script_initialization(mock_handle: Handle):
+    """Test the initialization of the ExportTorchScript node."""
+
+    label = "Test Export Torch Script"
+
+    node = ExportTorchScript(
+        model=mock_handle,
+        validation_inputs=mock_handle,
+        label=label,
+    )
+
+    assert node.node_name == "ExportTorchScript"
+    assert node.model == mock_handle
+    assert node.validation_inputs == mock_handle
+    assert node.observation_noise == True
+    assert node.label == label
 
 
 def test_model_config_initialization():
