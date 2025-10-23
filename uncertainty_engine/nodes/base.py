@@ -1,7 +1,7 @@
 from typing import Optional
 
 from typeguard import typechecked
-from uncertainty_engine_types import Handle
+from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo
 
 
 @typechecked
@@ -27,6 +27,7 @@ class Node:
     def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):
         self.node_name = node_name
         self.label = label
+        self.tool_metadata = {}
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -59,3 +60,29 @@ class Node:
             raise ValueError("Nodes must have a label to make a handle.")
 
         return Handle(f"{self.label}.{output_name}")
+
+    def add_tool_input(self, handle_name: str, node_info: NodeInfo) -> None:
+        """
+        Mark an input on a node as to be used as a tool input
+
+        Args:
+            handle_name: The name of the handle (input) to mark as a tool input
+            node_info: The NodeInfo of the node
+
+
+        Example:
+        >>> add_node = Node(
+        ...     node_name="Add",
+        ...     lhs=1,
+        ...     rhs=2,
+        ... )
+        >>> add_node_info = client.get_node_info("Add")
+        >>> add_node.add_tool_input("lhs", add_node_info)
+        """
+
+        node_input: NodeInputInfo = node_info.inputs[handle_name]
+
+        if "tool_inputs" not in self.tool_metadata:
+            self.tool_metadata["tool_inputs"] = {}
+
+        self.tool_metadata["tool_inputs"][handle_name] = node_input
