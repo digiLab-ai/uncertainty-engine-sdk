@@ -76,7 +76,9 @@ class Workflow(Node):
 
     @classmethod
     def from_graph(
-        cls, graph_obj: Graph, requested_output: dict[str, Any] | None = None
+        cls,
+        graph_obj: Graph,
+        requested_output: dict[str, Any] | None = None,
     ):
         """
         Create a Workflow from a graph object, automatically setting parameters.

@@ -125,7 +125,6 @@ class Graph:
 
         Args:
             node: The node whose metadata is to be processed.
-
         """
 
         if hasattr(node, "tool_metadata"):
