@@ -353,8 +353,7 @@ class ScoreModel(Node):
 
     metrics: list[AvailableScoreMetrics]
     """
-    A list of metrics to be used when scoring the model. Will default to
-    MSE, RMSE and R2.
+    A list of metrics to be used when scoring the model.
     """
 
     def __init__(
