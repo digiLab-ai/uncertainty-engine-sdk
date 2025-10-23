@@ -126,7 +126,7 @@ def test_score_model_initialization(mock_handle: Handle):
     assert node.node_name == "ScoreModel"
     assert node.predictions == mock_handle
     assert node.truth == mock_handle
-    assert node.predictions_uncertainty == None
-    assert node.train_outputs == None
+    assert node.predictions_uncertainty is None
+    assert node.train_outputs is None
     assert node.metrics == ["MSE", "RMSE", "R2"]
     assert node.label == label
