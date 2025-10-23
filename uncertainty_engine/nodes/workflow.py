@@ -2,6 +2,7 @@ from typing import Any, TypedDict
 
 from typeguard import typechecked
 
+from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import handle_input_deprecation
 
@@ -71,4 +72,32 @@ class Workflow(Node):
             inputs=final_inputs,
             requested_output=requested_output,
             tool_metadata=tool_metadata,
+        )
+
+    @classmethod
+    def from_graph(
+        cls, graph_obj: Graph, requested_output: dict[str, Any] | None = None
+    ):
+        """
+        Create a Workflow from a graph object, automatically setting parameters.
+
+        Args:
+            graph_obj: The graph object with required attributes.
+            requested_output: Optional requested output dict.
+
+        Returns:
+            Workflow instance
+        """
+        tool_metadata = getattr(graph_obj, "tool_metadata", None)
+
+        # Check if tool_metadata is empty and set it to None if so
+        if tool_metadata == {"inputs": {}, "outputs": {}}:
+            tool_metadata = None
+
+        return cls(
+            graph=graph_obj.nodes,
+            inputs=graph_obj.external_input,
+            external_input_id=getattr(graph_obj, "external_input_id", "_"),
+            tool_metadata=tool_metadata,
+            requested_output=requested_output,
         )
