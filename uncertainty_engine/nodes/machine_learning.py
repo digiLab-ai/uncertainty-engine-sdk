@@ -310,6 +310,7 @@ class TrainModel(Node):
         )
 
 
+@typechecked
 class ScoreModel(Node):
     """
     Score a machine-learning model using your specified metrics.
