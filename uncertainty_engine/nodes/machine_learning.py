@@ -36,7 +36,7 @@ class ExportTorchScript(Node):
         validation_inputs: Sample input data to validate the exported
             model's predictions.
         observation_noise: Whether to include observation noise.
-            Defaults to `False`.
+            Defaults to `True`.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
     """
