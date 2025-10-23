@@ -17,6 +17,12 @@ AvailableAcquisitions = Literal[
     "MonteCarloNegativeIntegratedPosteriorVariance",
 ]
 
+AvailableModelTypes = Literal[
+    "BernoulliClassificationGPTorch",
+    "SingleTaskGPTorch",
+    "SingleTaskVariationalGPTorch",
+]
+
 AvailableScoreMetrics = Literal[
     "MSE",
     "RMSE",
@@ -102,53 +108,41 @@ class ModelConfig(Node):
     label: str | None
     """A human-readable label for the node."""
 
-    input_variance: Optional[float] = None
+    input_variance: float | None
     """Percentage of variance to retain in the input data."""
 
-    input_retained_dimensions: Optional[int] = None
+    input_retained_dimensions: int | None
     """Number of dimensions to retain in the input data."""
 
-    output_variance: Optional[float] = None
+    output_variance: float | None
     """Percentage of variance to retain in the output data."""
 
-    output_retained_dimensions: Optional[int] = None
+    output_retained_dimensions: int | None
     """Number of dimensions to retain in the output data."""
 
-    model_type: Optional[
-        Literal[
-            "BernoulliClassificationGPTorch",
-            "SingleTaskGPTorch",
-            "SingleTaskVariationalGPTorch",
-        ]
-    ] = "SingleTaskGPTorch"
+    model_type: AvailableModelTypes
     """Type of model to use."""
 
-    kernel: Optional[str] = None
+    kernel: str | None
     """Type of kernel to use for the model."""
 
-    warp_inputs: bool = False
+    warp_inputs: bool
     """Whether to warp the inputs for the model."""
 
-    seed: Optional[int] = None
+    seed: int | None
     """Seed for reproducible training."""
 
     def __init__(
         self,
-        input_variance: Optional[float] = None,
-        input_retained_dimensions: Optional[int] = None,
-        output_variance: Optional[float] = None,
-        output_retained_dimensions: Optional[int] = None,
-        model_type: Optional[
-            Literal[
-                "BernoulliClassificationGPTorch",
-                "SingleTaskGPTorch",
-                "SingleTaskVariationalGPTorch",
-            ]
-        ] = "SingleTaskGPTorch",
-        kernel: Optional[str] = None,
+        input_variance: float | None = None,
+        input_retained_dimensions: int | None = None,
+        output_variance: float | None = None,
+        output_retained_dimensions: int | None = None,
+        model_type: AvailableModelTypes = "SingleTaskGPTorch",
+        kernel: str | None = None,
         warp_inputs: bool = False,
-        seed: Optional[int] = None,
-        label: Optional[str] = None,
+        seed: int | None = None,
+        label: str | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
