@@ -26,7 +26,7 @@ def test_export_torch_script_initialization(mock_handle: Handle):
     assert node.node_name == "ExportTorchScript"
     assert node.model == mock_handle
     assert node.validation_inputs == mock_handle
-    assert node.observation_noise == True
+    assert node.observation_noise is True
     assert node.label == label
 
 
