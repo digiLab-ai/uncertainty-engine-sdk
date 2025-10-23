@@ -7,7 +7,6 @@ from uncertainty_engine_types import S3Storage
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
 
-
 AvailableAcquisitions = Literal[
     "ExpectedImprovement",
     "LogExpectedImprovement",
@@ -17,6 +16,68 @@ AvailableAcquisitions = Literal[
     "MonteCarloLogExpectedImprovement",
     "MonteCarloNegativeIntegratedPosteriorVariance",
 ]
+
+AvailableModelTypes = Literal[
+    "BernoulliClassificationGPTorch",
+    "SingleTaskGPTorch",
+    "SingleTaskVariationalGPTorch",
+]
+
+AvailableScoreMetrics = Literal[
+    "MSE",
+    "RMSE",
+    "R2",
+    "MSLL",
+]
+
+
+@typechecked
+class ExportTorchScript(Node):
+    """
+    Export to a TorchScript file so you can download your optimised
+    model.
+
+    Args:
+        model: The model to export to TorchScript.
+        validation_inputs: Sample input data to validate the exported
+            model's predictions.
+        observation_noise: Whether to include observation noise.
+            Defaults to `True`.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    node_name: str = "ExportTorchScript"
+    """The node ID."""
+
+    model: HandleUnion[S3Storage]
+    """The model to export to TorchScript."""
+
+    validation_inputs: HandleUnion[S3Storage]
+    """
+    Sample input data to validate the exported model's predictions.
+    """
+
+    observation_noise: bool
+    """Whether to include observation noise."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    def __init__(
+        self,
+        model: HandleUnion[S3Storage],
+        validation_inputs: HandleUnion[S3Storage],
+        observation_noise: bool = True,
+        label: str | None = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            model=model,
+            validation_inputs=validation_inputs,
+            observation_noise=observation_noise,
+            label=label,
+        )
 
 
 @typechecked
@@ -47,53 +108,41 @@ class ModelConfig(Node):
     label: str | None
     """A human-readable label for the node."""
 
-    input_variance: Optional[float] = None
+    input_variance: float | None
     """Percentage of variance to retain in the input data."""
 
-    input_retained_dimensions: Optional[int] = None
+    input_retained_dimensions: int | None
     """Number of dimensions to retain in the input data."""
 
-    output_variance: Optional[float] = None
+    output_variance: float | None
     """Percentage of variance to retain in the output data."""
 
-    output_retained_dimensions: Optional[int] = None
+    output_retained_dimensions: int | None
     """Number of dimensions to retain in the output data."""
 
-    model_type: Optional[
-        Literal[
-            "BernoulliClassificationGPTorch",
-            "SingleTaskGPTorch",
-            "SingleTaskVariationalGPTorch",
-        ]
-    ] = "SingleTaskGPTorch"
+    model_type: AvailableModelTypes
     """Type of model to use."""
 
-    kernel: Optional[str] = None
+    kernel: str | None
     """Type of kernel to use for the model."""
 
-    warp_inputs: bool = False
+    warp_inputs: bool
     """Whether to warp the inputs for the model."""
 
-    seed: Optional[int] = None
+    seed: int | None
     """Seed for reproducible training."""
 
     def __init__(
         self,
-        input_variance: Optional[float] = None,
-        input_retained_dimensions: Optional[int] = None,
-        output_variance: Optional[float] = None,
-        output_retained_dimensions: Optional[int] = None,
-        model_type: Optional[
-            Literal[
-                "BernoulliClassificationGPTorch",
-                "SingleTaskGPTorch",
-                "SingleTaskVariationalGPTorch",
-            ]
-        ] = "SingleTaskGPTorch",
-        kernel: Optional[str] = None,
+        input_variance: float | None = None,
+        input_retained_dimensions: int | None = None,
+        output_variance: float | None = None,
+        output_retained_dimensions: int | None = None,
+        model_type: AvailableModelTypes = "SingleTaskGPTorch",
+        kernel: str | None = None,
         warp_inputs: bool = False,
-        seed: Optional[int] = None,
-        label: Optional[str] = None,
+        seed: int | None = None,
+        label: str | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -301,4 +350,71 @@ class TrainModel(Node):
             config=config,
             inputs=inputs,
             outputs=outputs,
+        )
+
+
+@typechecked
+class ScoreModel(Node):
+    """
+    Score a machine-learning model using your specified metrics.
+
+    Args:
+        predictions: Dataset containing predicted values for scoring the
+            model.
+        truth: Dataset containing actual values for scoring the model.
+        predictions_uncertainty: Standard deviation of predicted output
+            data. Only required for MSLL metric.
+        train_outputs: Target output data used for training. Only
+            required for MSLL metric.
+        metrics: A list of metrics to be used when scoring the model.
+            Will default to MSE, RMSE and R2.
+        label: A human-readable label for the node. This should be
+            unique to all other node labels in a workflow.
+    """
+
+    node_name: str = "ScoreModel"
+    """The node ID."""
+
+    label: str | None
+    """A human-readable label for the node."""
+
+    predictions: HandleUnion[S3Storage]
+    """Dataset containing predicted values for scoring the model."""
+
+    truth: HandleUnion[S3Storage]
+    """Dataset containing actual values for scoring the model."""
+
+    predictions_uncertainty: HandleUnion[S3Storage] | None
+    """
+    Standard deviation of predicted output data. Only required for MSLL
+    metric.
+    """
+
+    train_outputs: HandleUnion[S3Storage] | None
+    """
+    Target output data used for training. Only required for MSLL metric.
+    """
+
+    metrics: list[AvailableScoreMetrics]
+    """
+    A list of metrics to be used when scoring the model.
+    """
+
+    def __init__(
+        self,
+        predictions: HandleUnion[S3Storage],
+        truth: HandleUnion[S3Storage],
+        predictions_uncertainty: HandleUnion[S3Storage] | None = None,
+        train_outputs: HandleUnion[S3Storage] | None = None,
+        metrics: list[AvailableScoreMetrics] = ["MSE", "RMSE", "R2"],
+        label: str | None = None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            predictions=predictions,
+            truth=truth,
+            predictions_uncertainty=predictions_uncertainty,
+            train_outputs=train_outputs,
+            metrics=metrics,
         )
