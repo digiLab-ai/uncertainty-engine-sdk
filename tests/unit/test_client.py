@@ -314,3 +314,151 @@ class TestClientMethods:
             api.expect_get(f"/nodes/{node_id}", node_info_dict)
 
             client.get_node_info(node_id)
+
+    def test_queue_workflow_basic(self, client: Client):
+        """
+        Verify that the queue_workflow method pokes the correct endpoint with basic parameters.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": [],
+                    "outputs": [],
+                },
+                response=expected_job_id,
+            )
+
+            response = client.queue_workflow(
+                project_id=project_id,
+                workflow_id=workflow_id,
+            )
+
+            expected_job = Job(node_id="Workflow", job_id=expected_job_id)
+            assert response == expected_job
+
+    def test_queue_workflow_with_inputs(self, client: Client):
+        """
+        Verify that the queue_workflow method handles input overrides correctly.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": override_inputs,
+                    "outputs": [],
+                },
+                response=expected_job_id,
+            )
+
+            response = client.queue_workflow(
+                project_id=project_id,
+                workflow_id=workflow_id,
+                inputs=override_inputs,
+            )
+
+            expected_job = Job(node_id="Workflow", job_id=expected_job_id)
+            assert response == expected_job
+
+    def test_queue_workflow_with_outputs(self, client: Client):
+        """
+        Verify that the queue_workflow method handles output overrides correctly.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": [],
+                    "outputs": override_outputs,
+                },
+                response=expected_job_id,
+            )
+
+            response = client.queue_workflow(
+                project_id=project_id,
+                workflow_id=workflow_id,
+                outputs=override_outputs,
+            )
+
+            expected_job = Job(node_id="Workflow", job_id=expected_job_id)
+            assert response == expected_job
+
+    def test_queue_workflow_with_inputs_and_outputs(self, client: Client):
+        """
+        Verify that the queue_workflow method handles both input and output overrides correctly.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": override_inputs,
+                    "outputs": override_outputs,
+                },
+                response=expected_job_id,
+            )
+
+            response = client.queue_workflow(
+                project_id=project_id,
+                workflow_id=workflow_id,
+                inputs=override_inputs,
+                outputs=override_outputs,
+            )
+
+            expected_job = Job(node_id="Workflow", job_id=expected_job_id)
+            assert response == expected_job
