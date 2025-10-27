@@ -94,3 +94,14 @@ class ProjectsProvider(ApiProviderBase):
             raise Exception(f"Failed to fetch project records: {format_api_error(e)}")
         except (ValidationError, Exception) as e:
             raise Exception(f"Error listing project records: {str(e)}")
+
+    def get_project_id_by_name(self, name: str) -> str:
+        """
+        Return the project ID for a given project name in your account.
+        """
+        return self.get_id_by_name(
+            lambda: self.list_projects(),
+            name,
+            name_field="name",
+            id_field="id",
+        )

@@ -420,3 +420,16 @@ class ResourceProvider(ApiProviderBase):
         logger.info(
             f"Resource {resource_id} deleted successfully from project {project_id}."
         )
+
+    def get_resource_id_by_name(
+        self, project_id: str, resource_type: str, name: str
+    ) -> str:
+        """
+        Return the resource ID for a given resource name in a project.
+        """
+        return self.get_id_by_name(
+            lambda: self.list_resources(project_id, resource_type),
+            name,
+            name_field="name",
+            id_field="id",
+        )

@@ -41,3 +41,13 @@ class ApiProviderBase:
         This method should update the authorization header in the api client.
         """
         raise NotImplementedError("Subclasses must implement update_api_authentication")
+
+    def get_id_by_name(self, list_func, name, name_field="name", id_field="id"):
+        """
+        Generic helper to get an object's ID by its name using a list function.
+        """
+        items = list_func()
+        for item in items:
+            if getattr(item, name_field) == name:
+                return getattr(item, id_field)
+        raise ValueError(f"No item found with name: {name}")

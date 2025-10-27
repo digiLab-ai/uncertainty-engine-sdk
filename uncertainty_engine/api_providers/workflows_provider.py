@@ -251,6 +251,17 @@ class WorkflowsProvider(ApiProviderBase):
         )
         return workflow_id
 
+    def get_workflow_id_by_name(self, project_id: str, name: str) -> str:
+        """
+        Return the workflow ID for a given workflow name in a project.
+        """
+        return self.get_id_by_name(
+            lambda: self.list_workflows(project_id),
+            name,
+            name_field="name",
+            id_field="id",
+        )
+
 
 class RecordManager:
     """
