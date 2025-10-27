@@ -231,6 +231,71 @@ class Client:
 
         return Job(node_id=node, job_id=job_id)
 
+    def queue_workflow(
+        self,
+        project_id: str,
+        workflow_id: str,
+        inputs: Optional[list[dict[str, str]]] = None,
+        outputs: Optional[list[dict[str, str]]] = None,
+    ) -> Job:
+        """
+        Queue a workflow for execution
+
+        Args:
+            project_id: The ID of the project where the workflow is saved
+            workflow_id: The ID of the workflow you want to run
+            inputs: Optional list of inputs to override within the workflow
+            outputs: Optional list of outputs to override. If passed previous outputs are overridden
+
+        Returns:
+            A Job object representing the queued job.
+
+        Example:
+            >>> # Basic workflow execution
+            >>> job = client.queue_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id"
+            ... )
+
+            >>> # With input overrides
+            >>> override_inputs = [
+            ...     {
+            ...         "node_label": "input_node_label",
+            ...         "input_handle": "input_parameter_name",
+            ...         "value": "new_value"
+            ...     }
+            ... ]
+            >>> job = client.queue_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     inputs=override_inputs
+            ... )
+
+            >>> # With output overrides
+            >>> override_outputs = [
+            ...     {
+            ...         "node_label": "output_node_label",
+            ...         "output_handle": "output_parameter_name",
+            ...         "output_label": "custom_output_name"
+            ...     }
+            ... ]
+            >>> job = client.queue_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     outputs=override_outputs
+            ... )
+        """
+        payload = {
+            "inputs": inputs if inputs is not None else [],
+            "outputs": outputs if outputs is not None else [],
+        }
+
+        job_id = self.core_api.post(
+            f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+            payload,
+        )
+        return Job(node_id="Workflow", job_id=job_id)
+
     def run_node(
         self,
         node: Union[str, Node],
