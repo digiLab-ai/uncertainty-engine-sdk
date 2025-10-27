@@ -249,6 +249,41 @@ class Client:
 
         Returns:
             A Job object representing the queued job.
+
+        Example:
+            >>> # Basic workflow execution
+            >>> job = client.queue_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id"
+            ... )
+
+            >>> # With input overrides
+            >>> override_inputs = [
+            ...     {
+            ...         "node_label": "input_node_label",
+            ...         "input_handle": "input_parameter_name",
+            ...         "value": "new_value"
+            ...     }
+            ... ]
+            >>> job = client.queue_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     inputs=override_inputs
+            ... )
+
+            >>> # With output overrides
+            >>> override_outputs = [
+            ...     {
+            ...         "node_label": "output_node_label",
+            ...         "output_handle": "output_parameter_name",
+            ...         "output_label": "custom_output_name"
+            ...     }
+            ... ]
+            >>> job = client.queue_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     outputs=override_outputs
+            ... )
         """
         payload = {
             "inputs": inputs if inputs is not None else [],
