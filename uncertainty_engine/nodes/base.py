@@ -83,8 +83,8 @@ class Node:
 
 
         Example:
-        >>> add_node = Node(
-        ...     node_name="Add",
+        >>> add_node = Add(
+        ...     label="Add node",
         ...     lhs=1,
         ...     rhs=2,
         ... )
@@ -117,8 +117,8 @@ class Node:
 
 
         Example:
-        >>> add_node = Node(
-        ...     node_name="Add",
+        >>> add_node = Add(
+        ...     label="Add node",
         ...     lhs=1,
         ...     rhs=2,
         ... )
