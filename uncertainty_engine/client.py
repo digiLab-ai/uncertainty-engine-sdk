@@ -231,6 +231,36 @@ class Client:
 
         return Job(node_id=node, job_id=job_id)
 
+    def queue_workflow(
+        self,
+        project_id: str,
+        workflow_id: str,
+        inputs: Optional[list[dict[str, str]]] = None,
+        outputs: Optional[list[dict[str, str]]] = None,
+    ) -> Job:
+        """
+        Queue a workflow for execution
+
+        Args:
+            project_id: The ID of the project where the workflow is saved
+            workflow_id: The ID of the workflow you want to run
+            inputs: Optional list of inputs to override within the workflow
+            outputs: Optional list of outputs to override. If passed previous outputs are overridden
+
+        Returns:
+            A Job object representing the queued job.
+        """
+        payload = {
+            "inputs": inputs if inputs is not None else [],
+            "outputs": outputs if outputs is not None else [],
+        }
+
+        job_id = self.core_api.post(
+            f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+            payload,
+        )
+        return Job(node_id="Workflow", job_id=job_id)
+
     def run_node(
         self,
         node: Union[str, Node],
