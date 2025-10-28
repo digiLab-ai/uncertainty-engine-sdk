@@ -3,6 +3,10 @@ import time
 from uncertainty_engine_types import JobStatus
 
 from uncertainty_engine.client import Client
+from uncertainty_engine.graph import Graph
+from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.nodes.basic import Add
+from uncertainty_engine.nodes.workflow import Workflow
 
 
 class TestClientMethods:
@@ -90,3 +94,17 @@ class TestClientMethods:
         assert node_info.id == "Add"
         assert node_info.inputs
         assert node_info.outputs
+
+    def test_queue_workflow_basic(
+        self, e2e_client: Client, test_project_id: str, test_workflow_id: str
+    ) -> None:
+        job_id = e2e_client.queue_workflow(
+            project_id=test_project_id,
+            workflow_id=test_workflow_id,
+        )
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
