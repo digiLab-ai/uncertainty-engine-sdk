@@ -264,7 +264,6 @@ def test_upload_excel_file_dataset_error(
     )
 
     # The upload method should raise a ValueError for Excel files
-    # We'll patch os.path.splitext to return .xlsx and let the real upload method run
     error_msg = "Invalid filetype: Only .csv files are supported for dataset uploads."
 
     with pytest.raises(ValueError, match=error_msg):
