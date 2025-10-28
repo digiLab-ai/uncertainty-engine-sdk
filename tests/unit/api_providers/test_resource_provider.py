@@ -267,14 +267,13 @@ def test_upload_excel_file_dataset_error(
     # We'll patch os.path.splitext to return .xlsx and let the real upload method run
     error_msg = "Invalid filetype: Only .csv files are supported for dataset uploads."
 
-    with patch("os.path.splitext", return_value=("test_file", ".xlsx")):
-        with pytest.raises(ValueError, match=error_msg):
-            resource_provider.upload(
-                project_id,
-                name,
-                resource_type,
-                file_path,
-            )
+    with pytest.raises(ValueError, match=error_msg):
+        resource_provider.upload(
+            project_id,
+            name,
+            resource_type,
+            file_path,
+        )
 
 
 def test_download_success_with_filepath(
