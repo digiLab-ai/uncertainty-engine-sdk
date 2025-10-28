@@ -119,7 +119,14 @@ class ResourceProvider(ApiProviderBase):
         if not self.account_id:
             raise ValueError("Authentication required before uploading resources")
 
-        file_extension = os.path.splitext(file_path)[1].lstrip(".")
+        file_extension = os.path.splitext(file_path)[1].lstrip(".").lower()
+
+        if resource_type == "dataset" and file_extension != "csv":
+            # Ensure the user can only upload CSV files for dataset resources
+            raise ValueError(
+                "Invalid filetype: Only .csv files are supported for "
+                "dataset uploads.",
+            )
 
         # Create the resource record
         resource_record = ResourceRecordInput(
