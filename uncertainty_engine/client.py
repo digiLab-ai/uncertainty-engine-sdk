@@ -321,6 +321,64 @@ class Client:
         job_id = self.queue_node(node, final_inputs)
         return self._wait_for_job(job_id)
 
+    def run_workflow(
+        self,
+        project_id: str,
+        workflow_id: str,
+        inputs: Optional[list[dict[str, str]]] = None,
+        outputs: Optional[list[dict[str, str]]] = None,
+    ) -> JobInfo:
+        """
+        Run a workflow synchronously.
+
+        Args:
+            project_id: The ID of the project where the workflow is saved
+            workflow_id: The ID of the workflow you want to run
+            inputs: Optional list of inputs to override within the workflow
+            outputs: Optional list of outputs to override. If passed previous outputs are overridden
+
+        Returns:
+            A JobInfo object containing the response data of the job.
+
+        Example:
+            >>> # Basic workflow execution
+            >>> job_info = client.run_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id"
+            ... )
+
+            >>> # With input overrides
+            >>> override_inputs = [
+            ...     {
+            ...         "node_label": "input_node_label",
+            ...         "input_handle": "input_parameter_name",
+            ...         "value": "new_value"
+            ...     }
+            ... ]
+            >>> job_info = client.run_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     inputs=override_inputs
+            ... )
+
+            >>> # With output overrides
+            >>> override_outputs = [
+            ...     {
+            ...         "node_label": "output_node_label",
+            ...         "output_handle": "output_parameter_name",
+            ...         "output_label": "custom_output_name"
+            ...     }
+            ... ]
+            >>> job_info = client.run_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     outputs=override_outputs
+            ... )
+        """
+        job = self.queue_workflow(project_id, workflow_id, inputs, outputs)
+
+        return self._wait_for_job(job)
+
     def job_status(self, job: Job) -> JobInfo:
         """
         Check the status of a job.
