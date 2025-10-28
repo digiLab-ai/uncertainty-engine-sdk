@@ -462,3 +462,169 @@ class TestClientMethods:
 
             expected_job = Job(node_id="Workflow", job_id=expected_job_id)
             assert response == expected_job
+
+    def test_run_workflow(self, client: Client):
+        """
+        Verify that the run_workflow method queues a workflow and waits for it to complete.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        mock_job = Job(node_id="Workflow", job_id="test_job_id")
+
+        with patch(
+            "uncertainty_engine.client.Client.queue_workflow"
+        ) as mock_queue_workflow, patch(
+            "uncertainty_engine.client.Client._wait_for_job"
+        ) as mock_wait_for_job:
+            mock_queue_workflow.return_value = mock_job
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Workflow completed",
+                inputs={},
+                outputs={"result": 42},
+            )
+
+            result = client.run_workflow(project_id=project_id, workflow_id=workflow_id)
+
+            mock_queue_workflow.assert_called_once_with(
+                project_id, workflow_id, None, None
+            )
+            mock_wait_for_job.assert_called_once_with(mock_job)
+            assert result.status == JobStatus.COMPLETED
+            assert result.outputs == {"result": 42}
+
+    def test_run_workflow_with_inputs(self, client: Client):
+        """
+        Verify that the run_workflow method handles input overrides correctly.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+        mock_job = Job(node_id="Workflow", job_id="test_job_id")
+
+        with patch(
+            "uncertainty_engine.client.Client.queue_workflow"
+        ) as mock_queue_workflow, patch(
+            "uncertainty_engine.client.Client._wait_for_job"
+        ) as mock_wait_for_job:
+            mock_queue_workflow.return_value = mock_job
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Workflow completed",
+                inputs={"input_parameter_name": "new_value"},
+                outputs={"result": "success"},
+            )
+
+            result = client.run_workflow(
+                project_id=project_id, workflow_id=workflow_id, inputs=override_inputs
+            )
+
+            mock_queue_workflow.assert_called_once_with(
+                project_id, workflow_id, override_inputs, None
+            )
+            mock_wait_for_job.assert_called_once_with(mock_job)
+            assert result.status == JobStatus.COMPLETED
+
+    def test_run_workflow_with_outputs(self, client: Client):
+        """
+        Verify that the run_workflow method handles output overrides correctly.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+        mock_job = Job(node_id="Workflow", job_id="test_job_id")
+
+        with patch(
+            "uncertainty_engine.client.Client.queue_workflow"
+        ) as mock_queue_workflow, patch(
+            "uncertainty_engine.client.Client._wait_for_job"
+        ) as mock_wait_for_job:
+            mock_queue_workflow.return_value = mock_job
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Workflow completed",
+                inputs={},
+                outputs={"custom_output_name": "success"},
+            )
+
+            result = client.run_workflow(
+                project_id=project_id, workflow_id=workflow_id, outputs=override_outputs
+            )
+
+            mock_queue_workflow.assert_called_once_with(
+                project_id, workflow_id, None, override_outputs
+            )
+            mock_wait_for_job.assert_called_once_with(mock_job)
+            assert result.status == JobStatus.COMPLETED
+
+    def test_run_workflow_with_inputs_and_outputs(self, client: Client):
+        """
+        Verify that the run_workflow method handles both input and output overrides correctly.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+        mock_job = Job(node_id="Workflow", job_id="test_job_id")
+
+        with patch(
+            "uncertainty_engine.client.Client.queue_workflow"
+        ) as mock_queue_workflow, patch(
+            "uncertainty_engine.client.Client._wait_for_job"
+        ) as mock_wait_for_job:
+            mock_queue_workflow.return_value = mock_job
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Workflow completed",
+                inputs={"input_parameter_name": "new_value"},
+                outputs={"custom_output_name": "success"},
+            )
+
+            result = client.run_workflow(
+                project_id=project_id,
+                workflow_id=workflow_id,
+                inputs=override_inputs,
+                outputs=override_outputs,
+            )
+
+            mock_queue_workflow.assert_called_once_with(
+                project_id, workflow_id, override_inputs, override_outputs
+            )
+            mock_wait_for_job.assert_called_once_with(mock_job)
+            assert result.status == JobStatus.COMPLETED
