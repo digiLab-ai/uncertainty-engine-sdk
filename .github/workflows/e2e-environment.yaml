@@ -51,6 +51,15 @@ on:
         description: Uncertainty Engine user username.
         required: true
 
+      ue-project-id:
+        description: project id for running e2e tests for queue_workflow and
+          run_workflow
+        required: true
+
+      ue-workflow-id:
+        description: workflow id for the workflow queue_workflow and
+          run_workflow to execute
+        required: true
 jobs:
   e2e:
     runs-on: ubuntu-latest
@@ -110,4 +119,6 @@ jobs:
           UE_REGION: ${{ secrets.ue-region }}
           UE_RESOURCE_API: ${{ secrets.ue-resource-api }}
           UE_USERNAME: ${{ secrets.ue-username }}
+          UE_PROJECT_ID: ${{ secrets.ue-project-id }}
+          UE_WORKFLOW_ID: ${{ secrets.ue-workflow-id}}
         run: sh CI/run_tests_e2e.sh
