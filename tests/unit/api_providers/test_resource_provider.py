@@ -246,6 +246,37 @@ def test_upload_failed_completion(
             resource_provider.upload("project-id", "name", "type", "path/to/file.txt")
 
 
+def test_upload_excel_file_dataset_error(
+    resource_provider: ResourceProvider,
+):
+    """Test error message when uploading an Excel file as a dataset."""
+
+    project_id = "test-project"
+    name = "Test Excel Dataset"
+    resource_type = "dataset"
+    file_path = "path/to/test_file.xlsx"
+
+    # Simulate authentication
+    resource_provider.auth_service = MagicMock(
+        is_authenticated=True,
+        account_id="user-1",
+        token="token",
+    )
+
+    # The upload method should raise a ValueError for Excel files
+    # We'll patch os.path.splitext to return .xlsx and let the real upload method run
+    error_msg = "Invalid filetype: Only .csv files are supported for dataset uploads."
+
+    with patch("os.path.splitext", return_value=("test_file", ".xlsx")):
+        with pytest.raises(ValueError, match=error_msg):
+            resource_provider.upload(
+                project_id,
+                name,
+                resource_type,
+                file_path,
+            )
+
+
 def test_download_success_with_filepath(
     resource_provider: ResourceProvider,
     mock_file: MagicMock,
