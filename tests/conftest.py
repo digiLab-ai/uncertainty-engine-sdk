@@ -71,3 +71,29 @@ def mock_job():
     A mock Job.
     """
     return Job(node_id="node_a", job_id="job_a")
+
+
+@pytest.fixture(scope="session")
+def test_project_id():
+    """
+    Test project ID for e2e tests.
+
+    You must set UE_TEST_PROJECT_ID environment variable.
+    """
+    project_id = os.environ.get("UE_TEST_PROJECT_ID")
+    if not project_id:
+        raise ValueError("UE_TEST_PROJECT_ID environment variable must be set")
+    return project_id
+
+
+@pytest.fixture(scope="session")
+def test_workflow_id():
+    """
+    Test workflow ID for e2e tests.
+
+    You must set UE_TEST_WORKFLOW_ID environment variable.
+    """
+    workflow_id = os.environ.get("UE_TEST_WORKFLOW_ID")
+    if not workflow_id:
+        raise ValueError("UE_TEST_WORKFLOW_ID environment variable must be set")
+    return workflow_id
