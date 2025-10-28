@@ -144,3 +144,32 @@ class TestClientMethods:
         assert status == JobStatus.COMPLETED.value
 
         assert response.outputs["outputs"]["add result"] == 24.0
+
+    def test_queue_workflow_with_outputs(
+        self,
+        e2e_client: Client,
+        test_project_id: str,
+        test_workflow_id: str,
+    ) -> None:
+
+        override_outputs = [
+            {
+                "node_label": "num node",
+                "output_handle": "value",
+                "output_label": "number node output",
+            }
+        ]
+
+        job_id = e2e_client.queue_workflow(
+            project_id=test_project_id,
+            workflow_id=test_workflow_id,
+            outputs=override_outputs,
+        )
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+
+        assert response.outputs["outputs"]["number node output"] == 5.0
