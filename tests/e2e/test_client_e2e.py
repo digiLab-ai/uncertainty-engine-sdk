@@ -97,6 +97,16 @@ class TestClientMethods:
         test_project_id: str,
         test_workflow_id: str,
     ) -> None:
+        """
+        Test that a basic workflow can be queued and completed successfully,
+        and that the output is as expected.
+
+        Args:
+            e2e_client: A Client instance.
+            test_project_id: The ID of the test project.
+            test_workflow_id: The ID of the test workflow.
+        """
+
         job_id = e2e_client.queue_workflow(
             project_id=test_project_id,
             workflow_id=test_workflow_id,
@@ -116,6 +126,16 @@ class TestClientMethods:
         test_project_id: str,
         test_workflow_id: str,
     ) -> None:
+        """
+        Verify that a workflow can be queued with overridden inputs and
+        produces the expected output.
+
+        Args:
+            e2e_client: A Client instance.
+            test_project_id: The ID of the test project.
+            test_workflow_id: The ID of the test workflow.
+        """
+
         override_inputs = [
             {
                 "node_label": "num node",
@@ -149,6 +169,14 @@ class TestClientMethods:
         test_project_id: str,
         test_workflow_id: str,
     ) -> None:
+        """
+        Verify that workflows can be queued with overridden outputs.
+
+        Args:
+            e2e_client: A Client instance.
+            test_project_id: The ID of the test project.
+            test_workflow_id: The ID of the test workflow.
+        """
 
         override_outputs = [
             {
@@ -178,6 +206,15 @@ class TestClientMethods:
         test_project_id: str,
         test_workflow_id: str,
     ) -> None:
+        """
+        Verify that a workflow can be queued with both input
+        and output overrides.
+
+        Args:
+            e2e_client: A Client instance.
+            test_project_id: The project ID to use for the workflow.
+            test_workflow_id: The workflow ID to queue.
+        """
 
         override_inputs = [
             {
