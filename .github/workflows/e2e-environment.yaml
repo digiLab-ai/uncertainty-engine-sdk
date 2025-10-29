@@ -120,5 +120,5 @@ jobs:
           UE_RESOURCE_API: ${{ secrets.ue-resource-api }}
           UE_USERNAME: ${{ secrets.ue-username }}
           UE_PROJECT_ID: ${{ secrets.ue-project-id }}
-          UE_WORKFLOW_ID: ${{ secrets.ue-workflow-id}}
+          UE_WORKFLOW_ID: ${{ secrets.ue-workflow-id }}
         run: sh CI/run_tests_e2e.sh
