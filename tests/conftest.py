@@ -75,7 +75,7 @@ def mock_job():
 
 
 @pytest.fixture(scope="session")
-def test_project_id():
+def project_id():
     """
     Test project ID for e2e tests.
 
@@ -88,7 +88,7 @@ def test_project_id():
 
 
 @pytest.fixture(scope="session")
-def test_workflow_id():
+def workflow_id():
     """
     Test workflow ID for e2e tests.
 

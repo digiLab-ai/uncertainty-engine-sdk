@@ -94,8 +94,8 @@ class TestClientMethods:
     def test_queue_workflow_basic(
         self,
         e2e_client: Client,
-        test_project_id: str,
-        test_workflow_id: str,
+        project_id: str,
+        workflow_id: str,
     ) -> None:
         """
         Test that a basic workflow can be queued and completed successfully,
@@ -108,8 +108,8 @@ class TestClientMethods:
         """
 
         job_id = e2e_client.queue_workflow(
-            project_id=test_project_id,
-            workflow_id=test_workflow_id,
+            project_id=project_id,
+            workflow_id=workflow_id,
         )
 
         response = e2e_client._wait_for_job(job_id)
@@ -123,8 +123,8 @@ class TestClientMethods:
     def test_queue_workflow_with_inputs(
         self,
         e2e_client: Client,
-        test_project_id: str,
-        test_workflow_id: str,
+        project_id: str,
+        workflow_id: str,
     ) -> None:
         """
         Verify that a workflow can be queued with overridden inputs and
@@ -150,8 +150,8 @@ class TestClientMethods:
         ]
 
         job_id = e2e_client.queue_workflow(
-            project_id=test_project_id,
-            workflow_id=test_workflow_id,
+            project_id=project_id,
+            workflow_id=workflow_id,
             inputs=override_inputs,
         )
 
@@ -166,8 +166,8 @@ class TestClientMethods:
     def test_queue_workflow_with_outputs(
         self,
         e2e_client: Client,
-        test_project_id: str,
-        test_workflow_id: str,
+        project_id: str,
+        workflow_id: str,
     ) -> None:
         """
         Verify that workflows can be queued with overridden outputs.
@@ -187,8 +187,8 @@ class TestClientMethods:
         ]
 
         job_id = e2e_client.queue_workflow(
-            project_id=test_project_id,
-            workflow_id=test_workflow_id,
+            project_id=project_id,
+            workflow_id=workflow_id,
             outputs=override_outputs,
         )
 
@@ -203,8 +203,8 @@ class TestClientMethods:
     def test_queue_workflow_with_inputs_and_outputs(
         self,
         e2e_client: Client,
-        test_project_id: str,
-        test_workflow_id: str,
+        project_id: str,
+        workflow_id: str,
     ) -> None:
         """
         Verify that a workflow can be queued with both input
@@ -238,8 +238,8 @@ class TestClientMethods:
         ]
 
         job_id = e2e_client.queue_workflow(
-            project_id=test_project_id,
-            workflow_id=test_workflow_id,
+            project_id=project_id,
+            workflow_id=workflow_id,
             inputs=override_inputs,
             outputs=override_outputs,
         )
