@@ -108,6 +108,8 @@ class TestClientMethods:
 
         assert status == JobStatus.COMPLETED.value
 
+        assert response.outputs["outputs"]["add result"] == 9.0
+
     def test_queue_workflow_with_inputs(
         self,
         e2e_client: Client,
