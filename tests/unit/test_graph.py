@@ -2,6 +2,7 @@ import pytest
 from uncertainty_engine_types import Handle
 
 from uncertainty_engine.graph import Graph
+from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.nodes.basic import Add
 
 
@@ -300,3 +301,85 @@ def test_graph_connect_nodes():
         "node_name": "add1",
         "node_handle": "ans",
     }
+
+
+def test_process_metadata_with_tool_inputs():
+    """
+    Test that _process_metadata correctly processes tool inputs from a node.
+    """
+    # Define a node with tool metadata
+    node = Node("test_node", label="test_label")
+    node.tool_metadata["tool_inputs"] = {
+        "input1": {
+            "type": "int",
+            "label": "Input 1",
+            "description": "Description for input 1",
+        }
+    }
+
+    # Define a graph
+    graph = Graph()
+
+    # Process metadata
+    graph.add_node(node)
+
+    # Verify that tool inputs were added to the graph's metadata
+    assert "test_label" in graph.tool_metadata["inputs"]
+    assert "input1" in graph.tool_metadata["inputs"]["test_label"]
+    assert graph.tool_metadata["inputs"]["test_label"]["input1"]["type"] == "int"
+    assert graph.tool_metadata["inputs"]["test_label"]["input1"]["label"] == "Input 1"
+    assert (
+        graph.tool_metadata["inputs"]["test_label"]["input1"]["description"]
+        == "Description for input 1"
+    )
+
+
+def test_process_metadata_with_tool_outputs():
+    """
+    Test that _process_metadata correctly processes tool outputs from a node.
+    """
+    # Define a node with tool metadata
+    node = Node("test_node", label="test_label")
+    node.tool_metadata["tool_outputs"] = {
+        "output1": {
+            "type": "float",
+            "label": "Output 1",
+            "description": "Description for output 1",
+        }
+    }
+
+    # Define a graph
+    graph = Graph()
+
+    # Process metadata
+    graph.add_node(node)
+
+    # Verify that tool outputs were added to the graph's metadata
+    assert "test_label" in graph.tool_metadata["outputs"]
+    assert "output1" in graph.tool_metadata["outputs"]["test_label"]
+    assert graph.tool_metadata["outputs"]["test_label"]["output1"]["type"] == "float"
+    assert (
+        graph.tool_metadata["outputs"]["test_label"]["output1"]["label"] == "Output 1"
+    )
+    assert (
+        graph.tool_metadata["outputs"]["test_label"]["output1"]["description"]
+        == "Description for output 1"
+    )
+
+
+def test_process_metadata_with_no_tool_metadata():
+    """
+    Test that _process_metadata does nothing if the node has no tool metadata.
+    """
+    # Define a node without tool metadata
+    node = Node("test_node", label="test_label")
+
+    # Define a graph
+    graph = Graph()
+
+    # Process metadata
+    graph.add_node(node)
+
+    # Verify that tool metadata remains empty
+    assert graph.tool_metadata["inputs"] == {}
+    assert graph.tool_metadata["outputs"] == {}

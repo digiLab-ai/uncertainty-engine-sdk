@@ -31,6 +31,7 @@ class Graph:
         self.nodes = {"nodes": dict()}
         self.external_input_id = external_input_id
         self.external_input = dict()
+        self.tool_metadata = {"inputs": {}, "outputs": {}}
 
     def add_node(
         self, node: Union[Node, Type[Node]], label: Optional[str] = None
@@ -43,6 +44,10 @@ class Graph:
             label: The label of the node. This must be unique. If not provided must be an attribute of the node.
                 Defaults to None.
         """
+
+        # add tool_metadata
+        self._process_metadata(node)
+
         if isinstance(node, Node):
             if label is None and node.label is None:
                 raise ValueError("Nodes must have a non-None label.")
@@ -51,7 +56,7 @@ class Graph:
 
             node_input_dict = dict()
             for ki, vi in node.__dict__.items():
-                if ki not in ["node_name", "label"]:
+                if ki not in ["node_name", "label", "tool_metadata"]:
                     if isinstance(vi, Handle):
                         node_input_dict[ki] = vi.model_dump()
                     else:
@@ -109,3 +114,28 @@ class Graph:
             value: The value of the input.
         """
         self.external_input[key] = value
+
+    def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
+        """
+        Process metadata for a given node.
+
+        This function extracts metadata from the `tool_metadata` attribute of
+        the node, if it exists, and directly assigns the `tool_inputs` and
+        `tool_outputs` into the `tool_metadata` dictionary of the graph.
+
+        Args:
+            node: The node whose metadata is to be processed.
+        """
+
+        if hasattr(node, "tool_metadata"):
+            if "tool_inputs" in node.tool_metadata:
+                # directly assign inputs
+                self.tool_metadata["inputs"][node.label] = node.tool_metadata[
+                    "tool_inputs"
+                ]
+
+            if "tool_outputs" in node.tool_metadata:
+                # directly assign outputs
+                self.tool_metadata["outputs"][node.label] = node.tool_metadata[
+                    "tool_outputs"
+                ]
