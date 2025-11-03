@@ -18,7 +18,10 @@ class Node:
     Args:
         node_name: The name of the node.
         label: A human-readable label for the node. Defaults to None.
-        **kwargs: Arbitrary keyword arguments representing the input parameters of the node.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
+        **kwargs: Arbitrary keyword arguments representing the input
+            parameters of the node.
 
     Example:
         >>> add_node = Node(
