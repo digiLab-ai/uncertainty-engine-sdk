@@ -47,7 +47,7 @@ class Node:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        if self.client is None:
+        if client is None:
             print(
                 "Warning: A `client` is required to get node info and perform validation."
             )
@@ -63,7 +63,7 @@ class Node:
         input = {
             key: getattr(self, key)
             for key in self.__dict__
-            if key not in ["node_name", "label"]
+            if key not in ["node_name", "label", "client"]
         }
 
         if "tool_metadata" in input and not input["tool_metadata"]:
