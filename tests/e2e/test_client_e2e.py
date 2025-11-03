@@ -90,3 +90,148 @@ class TestClientMethods:
         assert node_info.id == "Add"
         assert node_info.inputs
         assert node_info.outputs
+
+    def test_queue_workflow_basic(
+        self,
+        e2e_client: Client,
+        project_id: str,
+        workflow_id: str,
+    ) -> None:
+        """
+        Test that a basic workflow can be queued and completed successfully,
+        and that the output is as expected.
+
+        """
+
+        job_id = e2e_client.queue_workflow(
+            project_id=project_id,
+            workflow_id=workflow_id,
+        )
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+
+        assert response.outputs["outputs"]["add result"] == 9.0
+
+    def test_queue_workflow_with_inputs(
+        self,
+        e2e_client: Client,
+        project_id: str,
+        workflow_id: str,
+    ) -> None:
+        """
+        Verify that a workflow can be queued with overridden inputs and
+        produces the expected output.
+
+        """
+
+        override_inputs = [
+            {
+                "node_label": "num node",
+                "input_handle": "value",
+                "value": "12",
+            },
+            {
+                "node_label": "add node",
+                "input_handle": "lhs",
+                "value": "12",
+            },
+        ]
+
+        job_id = e2e_client.queue_workflow(
+            project_id=project_id,
+            workflow_id=workflow_id,
+            inputs=override_inputs,
+        )
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+
+        assert response.outputs["outputs"]["add result"] == 24.0
+
+    def test_queue_workflow_with_outputs(
+        self,
+        e2e_client: Client,
+        project_id: str,
+        workflow_id: str,
+    ) -> None:
+        """
+        Verify that workflows can be queued with overridden outputs.
+
+        """
+
+        override_outputs = [
+            {
+                "node_label": "num node",
+                "output_handle": "value",
+                "output_label": "number node output",
+            }
+        ]
+
+        job_id = e2e_client.queue_workflow(
+            project_id=project_id,
+            workflow_id=workflow_id,
+            outputs=override_outputs,
+        )
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+
+        assert response.outputs["outputs"]["number node output"] == 5.0
+
+    def test_queue_workflow_with_inputs_and_outputs(
+        self,
+        e2e_client: Client,
+        project_id: str,
+        workflow_id: str,
+    ) -> None:
+        """
+        Verify that a workflow can be queued with both input
+        and output overrides.
+
+        """
+
+        override_inputs = [
+            {
+                "node_label": "num node",
+                "input_handle": "value",
+                "value": "6",
+            },
+            {
+                "node_label": "add node",
+                "input_handle": "lhs",
+                "value": "6",
+            },
+        ]
+
+        override_outputs = [
+            {
+                "node_label": "add node",
+                "output_handle": "ans",
+                "output_label": "add output override",
+            }
+        ]
+
+        job_id = e2e_client.queue_workflow(
+            project_id=project_id,
+            workflow_id=workflow_id,
+            inputs=override_inputs,
+            outputs=override_outputs,
+        )
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+
+        assert response.outputs["outputs"]["add output override"] == 12.0

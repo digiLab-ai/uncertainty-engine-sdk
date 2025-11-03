@@ -15,6 +15,8 @@ jobs:
     secrets:
       ue-password: ${{ secrets.UE_DEV_PASSWORD }}
       ue-username: ${{ secrets.UE_DEV_USERNAME }}
+      ue-project-id: ${{ secrets.UE_DEV_PROJECT_ID }}
+      ue-workflow-id: ${{ secrets.UE_DEV_WORKFLOW_ID }}
 
   prod-committed:
     # If the tests were triggered by a PR then test this bleeding-edge
@@ -28,6 +30,8 @@ jobs:
     secrets:
       ue-password: ${{ secrets.UE_PROD_PASSWORD }}
       ue-username: ${{ secrets.UE_PROD_USERNAME }}
+      ue-project-id: ${{ secrets.UE_PROD_PROJECT_ID }}
+      ue-workflow-id: ${{ secrets.UE_PROD_WORKFLOW_ID }}
 
   prod-released:
     # If the tests were triggered by a schedule then test the latest
@@ -44,3 +48,5 @@ jobs:
     secrets:
       ue-password: ${{ secrets.UE_PROD_PASSWORD }}
       ue-username: ${{ secrets.UE_PROD_USERNAME }}
+      ue-project-id: ${{ secrets.UE_PROD_PROJECT_ID }}
+      ue-workflow-id: ${{ secrets.UE_PROD_WORKFLOW_ID }}
