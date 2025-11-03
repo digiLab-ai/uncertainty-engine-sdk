@@ -1,7 +1,9 @@
-from typing import Any, Optional, TypedDict
+from typing import Any, TypedDict
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+
+from uncertainty_engine.client import Client
 
 
 class ToolMetadata(TypedDict, total=False):
@@ -29,12 +31,24 @@ class Node:
         ('Add', {'lhs': 1, 'rhs': 2})
     """
 
-    def __init__(self, node_name: str, label: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        node_name: str,
+        label: str | None = None,
+        client: Client | None = None,
+        **kwargs: Any,
+    ):
         self.node_name = node_name
         self.label = label
+        self.client = client
         self.tool_metadata: ToolMetadata = {}
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+        if client is None:
+            print(
+                "Warning: A `client` is required to get node info and perform validation."
+            )
 
     def __call__(self) -> tuple[str, dict]:
         """
@@ -136,4 +150,5 @@ class Node:
         if "tool_outputs" not in self.tool_metadata:
             self.tool_metadata["tool_outputs"] = {}
 
+        self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
         self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
