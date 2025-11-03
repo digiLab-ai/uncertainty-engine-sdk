@@ -56,7 +56,7 @@ class Graph:
 
             node_input_dict = dict()
             for ki, vi in node.__dict__.items():
-                if ki not in ["node_name", "label", "tool_metadata"]:
+                if ki not in ["node_name", "label", "client", "tool_metadata"]:
                     if isinstance(vi, Handle):
                         node_input_dict[ki] = vi.model_dump()
                     else:
