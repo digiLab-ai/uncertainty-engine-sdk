@@ -153,6 +153,3 @@ class Node:
             self.tool_metadata["tool_outputs"] = {}
 
         self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
-        self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
-        self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
-        self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
