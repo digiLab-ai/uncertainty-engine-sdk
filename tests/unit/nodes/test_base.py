@@ -138,4 +138,3 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
 
     with pytest.raises(KeyError, match="Output handle 'output2' does not exist"):
         node.add_tool_output("output2", default_node_info)
-        node.add_tool_output("output2", default_node_info)
