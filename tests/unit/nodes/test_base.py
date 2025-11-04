@@ -14,7 +14,7 @@ def test_node():
     """
     node = Node("test_node", a=1, b=2)
     assert node.node_name == "test_node"
-    assert node.client == None
+    assert node.client is None
     assert node.a == 1
     assert node.b == 2
     assert node.label is None
