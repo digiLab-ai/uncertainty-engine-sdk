@@ -31,7 +31,7 @@ class Client(Protocol):
         Get information about a specific node.
 
         Args:
-            node: The ID of the node to get information about.
+            node_name: The ID of the node to get information about.
 
         Returns:
             Information about the node as a NodeInfo object.
