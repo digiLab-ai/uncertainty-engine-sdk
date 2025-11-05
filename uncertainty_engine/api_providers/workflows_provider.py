@@ -251,6 +251,40 @@ class WorkflowsProvider(ApiProviderBase):
         )
         return workflow_id
 
+    def get_workflow_id_by_name(self, project_id: str, name: str) -> str:
+        """
+        Get the unique workflow ID for a workflow by its name within a project.
+
+        This is a convenience method that searches through all workflows in the
+        specified project to find one with the specified name and returns its ID.
+        This is useful when you know the workflow name but need the ID for other
+        operations like loading or updating the workflow.
+
+        Args:
+            project_id: Your project's unique identifier
+            name: The exact name of the workflow you're looking for
+
+        Returns:
+            The unique workflow ID string
+
+        Raises:
+            Exception: If no workflow with the given name is found in the project
+
+        Example:
+            >>> workflow_id = client.get_workflow_id_by_name(
+            ...     project_id="proj-123",
+            ...     name="Data Processing Pipeline"
+            ... )
+            >>> print(f"Found workflow ID: {workflow_id}")
+        """
+        return self.get_id_by_name(
+            lambda: self.list_workflows(project_id),
+            name,
+            resource_type="workflow",
+            name_field="name",
+            id_field="id",
+        )
+
 
 class RecordManager:
     """

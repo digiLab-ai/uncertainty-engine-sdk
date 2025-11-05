@@ -113,3 +113,36 @@ def mock_version_response():
     response.url = "https://upload-url.com"
     response.pending_record_id = "test-pending-id"
     return response
+
+
+# Mock classes for testing different field structures
+class MockResource:
+    def __init__(self, id: str, name: str):
+        self.id = id
+        self.name = name
+
+
+class MockResourceCustomFields:
+    def __init__(self, _id: str, other_name: str):
+        self._id = _id
+        self.other_name = other_name
+
+
+@pytest.fixture
+def mock_resources() -> list[MockResource]:
+    """Fixture returning list of resources with standard id/name fields"""
+    return [
+        MockResource("1", "resource_one"),
+        MockResource("2", "resource_two"),
+        MockResource("3", "resource_three"),
+    ]
+
+
+@pytest.fixture
+def mock_resources_custom_fields() -> list[MockResourceCustomFields]:
+    """Fixture returning list of resources with custom _id/other_name fields"""
+    return [
+        MockResourceCustomFields("101", "custom_one"),
+        MockResourceCustomFields("102", "custom_two"),
+        MockResourceCustomFields("103", "custom_three"),
+    ]
