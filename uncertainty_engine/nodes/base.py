@@ -177,7 +177,7 @@ class Node:
         - Check all required inputs are assigned a value or handle.
         - Check all the given input names exist in the node info.
 
-        A warning is raised to the user if  either of these checks fail.
+        A warning is raised to the user if either of these checks fail.
         """
         if not self.node_info:
             raise ValueError("Node info is not available for validation.")
