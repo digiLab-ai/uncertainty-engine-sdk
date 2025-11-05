@@ -179,25 +179,25 @@ class Node:
 
         A warning is raised to the user if  either of these checks fail.
         """
-        if not hasattr(self, "node_info") or self.node_info is None:
+        if not self.node_info:
             raise ValueError("Node info is not available for validation.")
 
         # Get current node inputs
         _, node_input_dict = self()
 
         # Check required inputs
-        missing_inputs = []
-        for input_name, input_info in self.node_info.inputs.items():
-            if input_info.required and not input_name in node_input_dict:
-                missing_inputs.append(input_name)
+        required_inputs = [
+            name for name, info in self.node_info.inputs.items() if info.required
+        ]
+        missing_inputs = list(required_inputs - node_input_dict.keys())
 
         if len(missing_inputs) > 0:
             warn(f"Missing required inputs: {missing_inputs}", stacklevel=2)
 
         # Check input names
-        invalid_input_names = [
-            attr for attr in node_input_dict if attr not in self.node_info.inputs
-        ]
+        invalid_input_names = list(
+            node_input_dict.keys() - self.node_info.inputs.keys()
+        )
 
         if len(invalid_input_names) > 0:
             warn(f"Invalid input names: {invalid_input_names}", stacklevel=2)
