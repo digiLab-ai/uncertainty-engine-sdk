@@ -43,6 +43,7 @@ class Node:
         self.node_name = node_name
         self.label = label
         self.client = client
+        self.node_info = client.get_node_info(self.node_name) if client else None
         self.tool_metadata: ToolMetadata = {}
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -63,7 +64,9 @@ class Node:
         input = {
             key: getattr(self, key)
             for key in self.__dict__
-            if key not in ["node_name", "label", "client"]
+            # NOTE: Currently any attribute names that are not input
+            # parameters should be added here.
+            if key not in ["node_name", "label", "client", "node_info"]
         }
 
         if "tool_metadata" in input and not input["tool_metadata"]:
