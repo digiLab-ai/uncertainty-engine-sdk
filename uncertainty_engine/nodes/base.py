@@ -192,15 +192,13 @@ class Node:
         required_inputs = [
             name for name, info in self.node_info.inputs.items() if info.required
         ]
-        missing_inputs = list(required_inputs - node_input_dict.keys())
+        missing_inputs = list(set(required_inputs) - set(node_input_dict))
 
         if len(missing_inputs) > 0:
             warn(f"Missing required inputs: {missing_inputs}", stacklevel=2)
 
         # Check input names
-        invalid_input_names = list(
-            node_input_dict.keys() - self.node_info.inputs.keys()
-        )
+        invalid_input_names = list(set(node_input_dict) - set(self.node_info.inputs))
 
         if len(invalid_input_names) > 0:
             warn(f"Invalid input names: {invalid_input_names}", stacklevel=2)
