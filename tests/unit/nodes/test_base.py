@@ -15,6 +15,7 @@ def test_node():
     node = Node("test_node", a=1, b=2)
     assert node.node_name == "test_node"
     assert node.client is None
+    assert node.node_info is None
     assert node.a == 1
     assert node.b == 2
     assert node.label is None
@@ -30,11 +31,19 @@ def test_node_no_inputs():
     assert node() == ("test_node", {})
 
 
-def test_node_with_client():
+def test_node_with_client(default_node_info: NodeInfo):
+    """
+    Assert `Node` initialisation sets the correct attributes when a
+    `client` argument is present.
+    """
     test_client = MagicMock(spec=Client)
+    test_client.get_node_info = MagicMock(return_value=default_node_info)
     node = Node("test_node", client=test_client, a=1, b=2)
     assert node.node_name == "test_node"
     assert node.client == test_client
+    assert node.node_info == default_node_info
+    # Assert `get_node_info` is called with correct args.
+    test_client.get_node_info.assert_called_once_with("test_node")
     assert node.a == 1
     assert node.b == 2
     assert node.label is None
