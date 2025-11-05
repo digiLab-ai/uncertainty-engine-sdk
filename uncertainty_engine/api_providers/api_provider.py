@@ -46,7 +46,7 @@ class ApiProviderBase:
         self,
         list_func: Callable[[], list[T]],
         name: str,
-        resource_type: str = "",
+        resource_type: str = "item",
         name_field: str = "name",
         id_field: str = "id",
     ) -> str:
