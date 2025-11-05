@@ -427,3 +427,41 @@ class ResourceProvider(ApiProviderBase):
         logger.info(
             f"Resource {resource_id} deleted successfully from project {project_id}."
         )
+
+    def get_resource_id_by_name(
+        self, project_id: str, resource_type: str, name: str
+    ) -> str:
+        """
+        Get the unique resource ID for a resource by its name.
+
+        This is a convenience method that searches through all resources of a given type
+        in your project to find one with the specified name and returns its ID. This is
+        useful when you know the resource name but need the ID for other operations.
+
+        Args:
+            project_id: Your project's unique identifier
+            resource_type: The category of the resource (e.g., "dataset", "model", "document")
+            name: The exact name of the resource you're looking for
+
+        Returns:
+            The unique resource ID string
+
+        Raises:
+            Exception: If no resource with the given name is found, or if multiple
+                      resources have the same name
+
+        Example:
+            >>> resource_id = client.get_resource_id_by_name(
+            ...     project_id="your-project-123",
+            ...     resource_type="model",
+            ...     name="flow_GP"
+            ... )
+            >>> print(f"Found resource ID: {resource_id}")
+        """
+        return self.get_id_by_name(
+            lambda: self.list_resources(project_id, resource_type),
+            name,
+            resource_type=resource_type,
+            name_field="name",
+            id_field="id",
+        )
