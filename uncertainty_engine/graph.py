@@ -58,8 +58,8 @@ class Graph:
 
             # Calling the node will return a dictionary containing the
             # node inputs and their assigned value (which could be a
-            # `Handle`) which is then remapped so that the values are
-            # contained under the `external_input` key.
+            # `Handle`), which is then remapped so that non-Handle values
+            # are stored in the `self.external_input` dictionary.
             _, node_inputs = node()
             for ki, vi in node_inputs.items():
                 if isinstance(vi, Handle):
