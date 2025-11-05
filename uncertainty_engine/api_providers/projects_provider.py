@@ -94,3 +94,34 @@ class ProjectsProvider(ApiProviderBase):
             raise Exception(f"Failed to fetch project records: {format_api_error(e)}")
         except (ValidationError, Exception) as e:
             raise Exception(f"Error listing project records: {str(e)}")
+
+    def get_project_id_by_name(self, name: str) -> str:
+        """
+        Get the unique project ID for a project by its name.
+
+        This is a convenience method that searches through all projects to find
+        one with the specified name and returns its ID. This is useful when you
+        know the project name but need the ID for other operations.
+
+        Args:
+            name: The exact name of the project you're looking for
+
+        Returns:
+            The unique project ID string
+
+        Raises:
+            Exception: If no project with the given name is found
+
+        Example:
+            >>> project_id = client.get_project_id_by_name(
+            ...     name="Personal"
+            ... )
+            >>> print(f"Found project ID: {project_id}")
+        """
+        return self.get_id_by_name(
+            lambda: self.list_projects(),
+            name,
+            resource_type="project",
+            name_field="name",
+            id_field="id",
+        )

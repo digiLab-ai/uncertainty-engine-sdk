@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from uncertainty_engine_resource_client.exceptions import UnauthorizedException
 
+from tests.unit.api_providers.conftest import MockResource, MockResourceCustomFields
 from uncertainty_engine.api_providers.api_provider import ApiProviderBase
 from uncertainty_engine.auth_service import AuthService
 
@@ -96,3 +97,78 @@ def test_update_api_authentication_not_implemented():
 def test_strips_endpoint(mock_auth_service: AuthService) -> None:
     base_provider = ApiProviderBase("test-deployment/", mock_auth_service)
     assert base_provider.deployment == "test-deployment"
+
+
+def test_get_id_by_name_success(
+    mock_auth_service: AuthService,
+    mock_resources: list[MockResource],
+):
+    """Test successful ID retrieval with default field names"""
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
+
+    def list_func() -> list[MockResource]:
+        return mock_resources
+
+    result = provider.get_id_by_name(list_func, "resource_two", "resource")
+
+    assert result == "2"
+
+
+def test_get_id_by_name_with_custom_fields(
+    mock_auth_service: AuthService,
+    mock_resources_custom_fields: list[MockResourceCustomFields],
+):
+    """Test successful ID retrieval with custom field names"""
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
+
+    def list_func():
+        return mock_resources_custom_fields
+
+    result = provider.get_id_by_name(
+        list_func,
+        "custom_two",
+        "custom_resource",
+        name_field="other_name",
+        id_field="_id",
+    )
+
+    assert result == "102"
+
+
+def test_get_id_by_name_not_found(
+    mock_auth_service: AuthService,
+    mock_resources: list[MockResource],
+):
+    """Test ValueError when resource name is not found"""
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
+
+    def list_func():
+        return mock_resources
+
+    with pytest.raises(ValueError, match="No resource found with name: nonexistent"):
+        provider.get_id_by_name(list_func, "nonexistent", "resource")
+
+
+def test_get_id_by_name_empty_list(mock_auth_service: AuthService):
+    """Test ValueError when list is empty"""
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
+
+    def list_func() -> list[MockResource]:
+        return []
+
+    with pytest.raises(ValueError, match="No resource found with name: any_name"):
+        provider.get_id_by_name(list_func, "any_name", "resource")
+
+
+def test_get_id_by_name_no_resource_type(
+    mock_auth_service: AuthService,
+    mock_resources: list[MockResource],
+):
+    """Test error message when resource_type is empty"""
+    provider = ApiProviderTestClass("test-deployment", mock_auth_service)
+
+    def list_func():
+        return mock_resources
+
+    with pytest.raises(ValueError, match="No item found with name: nonexistent"):
+        provider.get_id_by_name(list_func, "nonexistent")
