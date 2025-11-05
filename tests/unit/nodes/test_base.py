@@ -215,7 +215,7 @@ def test_validate_warnings(
     expected_warnings: list[str],
 ):
     """
-    Assert `validate` raises the correct warnings given different input
+    Assert `validate` displays the correct warnings given different input
     combinations.
     """
     default_node_info.inputs = node_info_inputs
@@ -223,12 +223,15 @@ def test_validate_warnings(
     test_client.get_node_info = MagicMock(return_value=default_node_info)
     node = Node(node_name="test_node", client=test_client, **node_inputs)
 
-    with catch_warnings(record=True) as w:
+    with catch_warnings(record=True) as warnings:
+        # Set so python always shows warning
         simplefilter("always")
-        node.validate()
-        # Convert captured warnings to strings
-        warning_messages = [str(warn_.message) for warn_ in w]
 
+        # Run validate and collect warning messages
+        node.validate()
+        warning_messages = [str(w.message) for w in warnings]
+
+        # Check that each expected warning matches a received warning
         for expected in expected_warnings:
             assert any(expected in msg for msg in warning_messages)
 
@@ -237,6 +240,10 @@ def test_validate_warnings(
 
 
 def test_validate_raises_without_node_info():
+    """
+    Assert that `validate` raises a `ValueError` when `self.node_info`
+    is `None`.
+    """
     node = Node(node_name="test_node", node_info=None, a=1)
 
     with raises(ValueError, match="Node info is not available for validation."):
