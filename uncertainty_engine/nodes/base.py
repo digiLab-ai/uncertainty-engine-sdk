@@ -1,7 +1,9 @@
 from typing import Any, TypedDict
+from warnings import warn
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+
 from uncertainty_engine.protocols import Client
 
 
@@ -166,3 +168,36 @@ class Node:
             self.tool_metadata["tool_outputs"] = {}
 
         self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
+
+    def validate(self) -> None:
+        """
+        Validates the node parameters are correct according to the
+        `node_info`. The following checks are made:
+
+        - Check all required inputs are assigned a value or handle.
+        - Check all the given input names exist in the node info.
+
+        A warning is raised to the user if  either of these checks fail.
+        """
+        if not hasattr(self, "node_info") or self.node_info is None:
+            raise ValueError("Node info is not available for validation.")
+
+        # Get current node inputs
+        _, node_input_dict = self()
+
+        # Check required inputs
+        missing_inputs = []
+        for input_name, input_info in self.node_info.inputs.items():
+            if input_info.required and not input_name in node_input_dict:
+                missing_inputs.append(input_name)
+
+        if len(missing_inputs) > 0:
+            warn(f"Missing required inputs: {missing_inputs}", stacklevel=2)
+
+        # Check input names
+        invalid_input_names = [
+            attr for attr in node_input_dict if attr not in self.node_info.inputs
+        ]
+
+        if len(invalid_input_names) > 0:
+            warn(f"Invalid input names: {invalid_input_names}", stacklevel=2)
