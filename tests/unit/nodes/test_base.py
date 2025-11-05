@@ -244,7 +244,7 @@ def test_validate_raises_without_node_info():
     Assert that `validate` raises a `ValueError` when `self.node_info`
     is `None`.
     """
-    node = Node(node_name="test_node", node_info=None, a=1)
+    node = Node(node_name="test_node", a=1)
 
     with raises(ValueError, match="Node info is not available for validation."):
         node.validate()
