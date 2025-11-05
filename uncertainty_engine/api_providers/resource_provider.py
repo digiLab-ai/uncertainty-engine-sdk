@@ -440,7 +440,7 @@ class ResourceProvider(ApiProviderBase):
 
         Args:
             project_id: Your project's unique identifier
-            resource_type: The category of the resource (e.g., "dataset", "model", "document")
+            resource_type: The category of the resource (e.g., "dataset", "model", "document", "chat_history")
             name: The exact name of the resource you're looking for
 
         Returns:
