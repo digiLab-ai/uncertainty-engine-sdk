@@ -55,16 +55,21 @@ class Graph:
                 label = node.label
 
             node_input_dict = dict()
-            for ki, vi in node.__dict__.items():
-                if ki not in ["node_name", "label", "client", "tool_metadata"]:
-                    if isinstance(vi, Handle):
-                        node_input_dict[ki] = vi.model_dump()
-                    else:
-                        node_input_dict[ki] = {
-                            "node_name": self.external_input_id,
-                            "node_handle": f"{label}_{ki}",
-                        }
-                        self.external_input[f"{label}_{ki}"] = vi
+
+            # Calling the node will return a dictionary containing the
+            # node inputs and their assigned value (which could be a
+            # `Handle`), which is then remapped so that non-Handle values
+            # are stored in the `self.external_input` dictionary.
+            _, node_inputs = node()
+            for ki, vi in node_inputs.items():
+                if isinstance(vi, Handle):
+                    node_input_dict[ki] = vi.model_dump()
+                else:
+                    node_input_dict[ki] = {
+                        "node_name": self.external_input_id,
+                        "node_handle": f"{label}_{ki}",
+                    }
+                    self.external_input[f"{label}_{ki}"] = vi
 
         else:
             if label is None:

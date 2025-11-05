@@ -1,8 +1,9 @@
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from uncertainty_engine_types import NodeInfo
 
 
+@runtime_checkable
 class Client(Protocol):
     """
     A client for interacting with the Uncertainty Engine.
@@ -26,12 +27,12 @@ class Client(Protocol):
         "<job-id>"
     """
 
-    def get_node_info(self, node_name: str) -> NodeInfo:
+    def get_node_info(self, node: str) -> NodeInfo:
         """
         Get information about a specific node.
 
         Args:
-            node_name: The ID of the node to get information about.
+            node: The ID of the node to get information about.
 
         Returns:
             Information about the node as a NodeInfo object.

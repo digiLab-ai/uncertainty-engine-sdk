@@ -41,9 +41,20 @@ class Node:
         **kwargs: Any,
     ):
         self.node_name = node_name
+        """The name of the node."""
+
         self.label = label
+        """A human-readable label for the node."""
+
         self.client = client
+        """The Uncertainty Engine client."""
+
+        self.node_info = client.get_node_info(self.node_name) if client else None
+        """The node information. This includes the input parameters."""
+
         self.tool_metadata: ToolMetadata = {}
+        """The node input and output handles to be used as tools."""
+
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -63,7 +74,9 @@ class Node:
         input = {
             key: getattr(self, key)
             for key in self.__dict__
-            if key not in ["node_name", "label", "client"]
+            # NOTE: Currently any attribute names that are not input
+            # parameters should be added here.
+            if key not in ["node_name", "label", "client", "node_info"]
         }
 
         if "tool_metadata" in input and not input["tool_metadata"]:
