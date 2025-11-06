@@ -26,10 +26,12 @@ class Node:
             parameters of the node.
 
     Example:
+        >>> client = Client()
         >>> add_node = Node(
         ...     node_name="Add",
         ...     lhs=1,
         ...     rhs=2,
+        ...     client=client,
         ... )
         >>> add_node()
         ('Add', {'lhs': 1, 'rhs': 2})
@@ -60,10 +62,14 @@ class Node:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        if client is None:
-            print(
-                "Warning: A `client` is required to get node info and perform validation."
+        if not client:
+            warn(
+                "A `client` is required to get node info and perform validation.",
+                stacklevel=2,
             )
+            return
+
+        self.validate()
 
     def __call__(self) -> tuple[str, dict]:
         """

@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from warnings import catch_warnings, simplefilter
 
 import pytest
@@ -34,23 +34,61 @@ def test_node_no_inputs():
     assert node() == ("test_node", {})
 
 
+def test_node_no_client_warnings():
+    """
+    Assert that when no `client` is given a warning is raised.
+    """
+    with catch_warnings(record=True) as warnings:
+        # Set so python always shows warning
+        simplefilter("always")
+
+        # Patch validate (before creating `Node` instance)
+        # We mock it to make sure no calls are made
+        with patch.object(Node, "validate") as mock_validate:
+            node = Node(node_name="test_node")
+
+        assert node.client is None
+        assert node.node_info is None
+
+        # Assert warning only shows once
+        assert len(warnings) == 1
+
+        # Assert warning is correct
+        assert (
+            str(warnings[0].message)
+            == "A `client` is required to get node info and perform validation."
+        )
+
+        # Assert `validate` is not called
+        mock_validate.assert_not_called()
+
+
 def test_node_with_client(default_node_info: NodeInfo):
     """
-    Assert `Node` initialisation sets the correct attributes when a
-    `client` argument is present.
+    Assert `Node` initialisation sets the correct attributes and calls
+    `validate` when a `client` argument is present.
     """
+    # Mock client
     test_client = MagicMock(spec=Client)
     test_client.get_node_info = MagicMock(return_value=default_node_info)
-    node = Node("test_node", client=test_client, a=1, b=2)
+
+    # Patch validate (before creating `Node` instance)
+    with patch.object(Node, "validate") as mock_validate:
+        node = Node("test_node", client=test_client, a=1, b=2)
+
     assert node.node_name == "test_node"
     assert node.client == test_client
     assert node.node_info == default_node_info
-    # Assert `get_node_info` is called with correct args.
-    test_client.get_node_info.assert_called_once_with("test_node")
     assert node.a == 1
     assert node.b == 2
     assert node.label is None
     assert node() == ("test_node", {"a": 1, "b": 2})
+
+    # Assert `get_node_info` is called with correct args.
+    test_client.get_node_info.assert_called_once_with("test_node")
+
+    # Assert `validate` is called once
+    mock_validate.assert_called_once()
 
 
 def test_node_name_type():
