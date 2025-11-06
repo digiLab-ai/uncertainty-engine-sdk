@@ -78,7 +78,7 @@ class Graph:
             node_input_dict = {
                 ki: None
                 for ki in inspect.signature(node.__init__).parameters.keys()
-                if ki not in ["self", "label"]
+                if ki not in ["self", "label", "client"]
             }
 
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
