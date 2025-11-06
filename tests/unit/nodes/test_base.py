@@ -162,7 +162,7 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
                 "a": NodeInputInfo(type="", label="", description="", required=True),
                 "b": NodeInputInfo(type="", label="", description="", required=False),
             },
-            ["Missing required inputs"],
+            ["Missing required inputs: ['a']"],
         ),
         # Missing required input included as value but not as key
         (
@@ -171,7 +171,7 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
                 "a": NodeInputInfo(type="", label="", description="", required=True),
                 "b": NodeInputInfo(type="", label="", description="", required=True),
             },
-            ["Missing required inputs"],
+            ["Missing required inputs: ['a']"],
         ),
         # Invalid input name
         (
@@ -179,7 +179,7 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
             {
                 "a": NodeInputInfo(type="", label="", description="", required=True),
             },
-            ["Invalid input names"],
+            ["Invalid input names: ['x']"],
         ),
         # Both missing and invalid inputs
         (
@@ -187,7 +187,7 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
             {
                 "a": NodeInputInfo(type="", label="", description="", required=True),
             },
-            ["Missing required inputs", "Invalid input names"],
+            ["Missing required inputs: ['a']", "Invalid input names: ['y']"],
         ),
         # No warnings
         (
@@ -233,7 +233,10 @@ def test_validate_warnings(
 
         # Check that each expected warning matches a received warning
         for expected in expected_warnings:
-            assert any(expected in msg for msg in warning_messages)
+            assert any(expected in msg for msg in warning_messages), (
+                f"Expected warning containing '{expected}' not found in received warnings:\n"
+                f"{warning_messages}"
+            )
 
         # Ensure no unexpected warnings
         assert len(warning_messages) == len(expected_warnings)
