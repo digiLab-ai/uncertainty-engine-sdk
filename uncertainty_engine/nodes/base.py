@@ -26,10 +26,12 @@ class Node:
             parameters of the node.
 
     Example:
+        >>> client = Client()
         >>> add_node = Node(
         ...     node_name="Add",
         ...     lhs=1,
         ...     rhs=2,
+        ...     client=client,
         ... )
         >>> add_node()
         ('Add', {'lhs': 1, 'rhs': 2})
