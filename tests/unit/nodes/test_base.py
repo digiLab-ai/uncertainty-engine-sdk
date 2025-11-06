@@ -42,9 +42,11 @@ def test_node_no_client_warnings():
         # Set so python always shows warning
         simplefilter("always")
 
-        # Instantiate `Node` and make sure `client` related attributes
-        # aren't set
-        node = Node(node_name="test_node")
+        # Patch validate (before creating `Node` instance)
+        # We mock it to make sure no calls are made
+        with patch.object(Node, "validate") as mock_validate:
+            node = Node(node_name="test_node")
+
         assert node.client is None
         assert node.node_info is None
 
@@ -56,6 +58,9 @@ def test_node_no_client_warnings():
             str(warnings[0].message)
             == "A `client` is required to get node info and perform validation."
         )
+
+        # Assert `validate` is not called
+        mock_validate.assert_not_called()
 
 
 def test_node_with_client(default_node_info: NodeInfo):
