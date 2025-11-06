@@ -45,8 +45,8 @@ def test_node_no_client_warnings():
         # Instantiate `Node` and make sure `client` related attributes
         # aren't set
         node = Node(node_name="test_node")
-        assert node.client == None
-        assert node.node_info == None
+        assert node.client is None
+        assert node.node_info is None
 
         # Assert warning only shows once
         assert len(warnings) == 1
