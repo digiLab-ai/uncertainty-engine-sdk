@@ -6,7 +6,6 @@ from uncertainty_engine.nodes.basic import Add
 
 def test_add_initialization(mock_client: Client, mock_handle: Handle):
     """Test the initialization of the `Add` node."""
-
     label = "Test Add"
     node = Add(
         lhs=mock_handle,
