@@ -45,6 +45,8 @@ class ExportTorchScript(Node):
             Defaults to `True`.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "ExportTorchScript"
@@ -100,6 +102,8 @@ class ModelConfig(Node):
         seed: Seed for reproducible training.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "ModelConfig"
@@ -170,6 +174,8 @@ class PredictModel(Node):
         inputs: A reference to the input dataset for making predictions.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "PredictModel"
@@ -218,6 +224,8 @@ class PredictPosteriorConditioning(Node):
             predictions.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     conditioning_inputs: HandleUnion[S3Storage]
@@ -272,6 +280,8 @@ class Recommend(Node):
         num_of_points: The number of points to recommend.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     acquisition_function: AvailableAcquisitions
@@ -320,6 +330,8 @@ class TrainModel(Node):
             model.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "TrainModel"
@@ -370,6 +382,8 @@ class ScoreModel(Node):
             Will default to MSE, RMSE and R2.
         label: A human-readable label for the node. This should be
             unique to all other node labels in a workflow.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "ScoreModel"
