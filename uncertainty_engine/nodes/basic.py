@@ -27,9 +27,6 @@ class Add(Node):
     rhs: HandleUnion[float]
     """The right-hand side number."""
 
-    label: str | None
-    """A human-readable label for the node."""
-
     def __init__(
         self,
         lhs: HandleUnion[float],
