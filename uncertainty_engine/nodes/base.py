@@ -60,13 +60,14 @@ class Node:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        if client is None:
+        if not client:
             warn(
                 "A `client` is required to get node info and perform validation.",
                 stacklevel=2,
             )
-        else:
-            self.validate()
+            return
+
+        self.validate()
 
     def __call__(self) -> tuple[str, dict]:
         """
