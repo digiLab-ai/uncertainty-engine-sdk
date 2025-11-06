@@ -34,6 +34,30 @@ def test_node_no_inputs():
     assert node() == ("test_node", {})
 
 
+def test_node_no_client_warnings():
+    """
+    Assert that when no `client` is given a warning is raised.
+    """
+    with catch_warnings(record=True) as warnings:
+        # Set so python always shows warning
+        simplefilter("always")
+
+        # Instantiate `Node` and make sure `client` related attributes
+        # aren't set
+        node = Node(node_name="test_node")
+        assert node.client == None
+        assert node.node_info == None
+
+        # Assert warning only shows once
+        assert len(warnings) == 1
+
+        # Assert warning is correct
+        assert (
+            str(warnings[0].message)
+            == "A `client` is required to get node info and perform validation."
+        )
+
+
 def test_node_with_client(default_node_info: NodeInfo):
     """
     Assert `Node` initialisation sets the correct attributes when a

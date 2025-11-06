@@ -61,9 +61,12 @@ class Node:
             setattr(self, key, value)
 
         if client is None:
-            print(
-                "Warning: A `client` is required to get node info and perform validation."
+            warn(
+                "A `client` is required to get node info and perform validation.",
+                stacklevel=2,
             )
+        else:
+            self.validate()
 
     def __call__(self) -> tuple[str, dict]:
         """
