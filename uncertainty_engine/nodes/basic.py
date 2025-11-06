@@ -30,9 +30,6 @@ class Add(Node):
     label: str | None
     """A human-readable label for the node."""
 
-    client: Client | None
-    """An instance of the client (required for validation)."""
-
     def __init__(
         self,
         lhs: HandleUnion[float],
