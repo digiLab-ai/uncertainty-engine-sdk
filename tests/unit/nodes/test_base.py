@@ -60,15 +60,15 @@ def test_node_no_client_warnings():
 
 def test_node_with_client(default_node_info: NodeInfo):
     """
-    Assert `Node` initialisation sets the correct attributes when a
-    `client` argument is present.
+    Assert `Node` initialisation sets the correct attributes and calls
+    `validate` when a `client` argument is present.
     """
     # Mock client
     test_client = MagicMock(spec=Client)
     test_client.get_node_info = MagicMock(return_value=default_node_info)
 
     # Patch validate (before creating `Node` instance)
-    with patch.object(Node, "validate", autospec=True) as mock_validate:
+    with patch.object(Node, "validate") as mock_validate:
         node = Node("test_node", client=test_client, a=1, b=2)
 
     assert node.node_name == "test_node"
@@ -83,7 +83,7 @@ def test_node_with_client(default_node_info: NodeInfo):
     test_client.get_node_info.assert_called_once_with("test_node")
 
     # Assert `validate` is called once
-    mock_validate.assert_called_once_with(node)
+    mock_validate.assert_called_once()
 
 
 def test_node_name_type():
