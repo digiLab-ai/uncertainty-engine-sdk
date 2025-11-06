@@ -14,6 +14,8 @@ class Add(Node):
         lhs: The left-hand side number.
         rhs: The right-hand side number.
         label: A human-readable label for the node. Defaults to None.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "Add"
@@ -29,6 +31,7 @@ class Add(Node):
     """A human-readable label for the node."""
 
     client: Client | None
+    """An instance of the client (required for validation)."""
 
     def __init__(
         self,
