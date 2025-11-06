@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from warnings import catch_warnings, simplefilter
 
 import pytest
@@ -67,10 +67,10 @@ def test_node_with_client(default_node_info: NodeInfo):
     test_client = MagicMock(spec=Client)
     test_client.get_node_info = MagicMock(return_value=default_node_info)
 
-    # Mock validate method
-    Node.validate = MagicMock()
+    # Patch validate (before creating `Node` instance)
+    with patch.object(Node, "validate", autospec=True) as mock_validate:
+        node = Node("test_node", client=test_client, a=1, b=2)
 
-    node = Node("test_node", client=test_client, a=1, b=2)
     assert node.node_name == "test_node"
     assert node.client == test_client
     assert node.node_info == default_node_info
@@ -83,7 +83,7 @@ def test_node_with_client(default_node_info: NodeInfo):
     test_client.get_node_info.assert_called_once_with("test_node")
 
     # Assert `validate` is called once
-    Node.validate.assert_called_once_with(node)
+    mock_validate.assert_called_once_with(node)
 
 
 def test_node_name_type():
