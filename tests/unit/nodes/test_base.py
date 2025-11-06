@@ -254,7 +254,6 @@ def test_validate_warnings(
     default_node_info.inputs = node_info_inputs
     test_client = MagicMock(spec=Client)
     test_client.get_node_info = MagicMock(return_value=default_node_info)
-
     node = Node(node_name="test_node", client=test_client, **node_inputs)
 
     with catch_warnings(record=True) as warnings:
