@@ -13,8 +13,15 @@ from uncertainty_engine.auth_service import (
     AUTH_CACHE_RESOURCE_TOKEN,
     AuthService,
 )
+from uncertainty_engine.client import Client
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
+
+
+@pytest.fixture
+def mock_client():
+    """Creates a mock `client` instance."""
+    return MagicMock(spec=Client)
 
 
 # Token values as fixtures
