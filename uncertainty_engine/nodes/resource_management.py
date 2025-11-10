@@ -2,7 +2,7 @@ from typing import Optional
 
 from typeguard import typechecked
 from uncertainty_engine_types import ResourceID, S3Storage
-
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import HandleUnion
 
@@ -43,6 +43,7 @@ class LoadChatHistory(Node):
         project_id: str,
         file_id: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -86,6 +87,7 @@ class LoadDataset(Node):
         project_id: str,
         file_id: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -129,6 +131,7 @@ class LoadDocument(Node):
         project_id: str,
         file_id: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -179,6 +182,7 @@ class LoadMultiple(Node):
         file_ids: list[str],
         file_type: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -222,6 +226,7 @@ class LoadModel(Node):
         project_id: str,
         file_id: str,
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -281,6 +286,7 @@ class Save(Node):
         file_name: str,
         project_id: str,
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -326,5 +332,6 @@ class Download(Node):
         self,
         file: HandleUnion[S3Storage],
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(node_name=self.node_name, label=label, file=file)
