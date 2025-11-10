@@ -106,6 +106,11 @@ jobs:
           git fetch --tags
           git checkout "v${sdk_version}" -b "v${sdk_version}_ci"
 
+          # Delete the lock file to prevent conflicts between the
+          # dependencies of the checked-out tests and the installed
+          # SDK.
+          rm -f poetry.lock
+
           # Use the historic rather than latest development (testing)
           # dependencies.
           poetry install --no-root --only dev
