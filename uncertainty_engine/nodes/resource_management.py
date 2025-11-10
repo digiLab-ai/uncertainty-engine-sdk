@@ -4,6 +4,7 @@ from typeguard import typechecked
 from uncertainty_engine_types import ResourceID, S3Storage
 
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import HandleUnion
 
 
@@ -17,6 +18,8 @@ class LoadChatHistory(Node):
        project_id: The ID of the project containing the chat history.
        file_id: The ID of the chat history file to load.
        label: A human-readable label for the node. Defaults to None.
+       client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     file_id: dict[str, str]
@@ -41,10 +44,12 @@ class LoadChatHistory(Node):
         project_id: str,
         file_id: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -60,6 +65,8 @@ class LoadDataset(Node):
        project_id: The ID of the project containing the dataset.
        file_id: The ID of the dataset file to load.
        label: A human-readable label for the node. Defaults to None.
+       client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     file_id: dict[str, str]
@@ -82,10 +89,12 @@ class LoadDataset(Node):
         project_id: str,
         file_id: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -101,6 +110,8 @@ class LoadDocument(Node):
        project_id: The ID of the project containing the document.
        file_id: The ID of the document file to load.
        label: A human-readable label for the node. Defaults to None.
+       client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     file_id: dict[str, str]
@@ -123,10 +134,12 @@ class LoadDocument(Node):
         project_id: str,
         file_id: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -144,6 +157,8 @@ class LoadMultiple(Node):
        file_type: The type of resource to load. One of 'dataset',
             'model', 'chat_history', or 'document'.
        label: A human-readable label for the node. Defaults to None.
+       client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     file_ids: list[dict[str, str]]
@@ -171,10 +186,12 @@ class LoadMultiple(Node):
         file_ids: list[str],
         file_type: str,
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_ids=[ResourceID(id=file_id).model_dump() for file_id in file_ids],
             file_type=file_type,
@@ -185,6 +202,13 @@ class LoadMultiple(Node):
 class LoadModel(Node):
     """
     Load a model from the Uncertainty Engine resource management system.
+
+    Args:
+       project_id: The ID of the project.
+       file_id: The ID of the model to load.
+       label: A human-readable label for the node. Defaults to None.
+       client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     project_id: str
@@ -207,10 +231,12 @@ class LoadModel(Node):
         project_id: str,
         file_id: str,
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -226,6 +252,16 @@ class Save(Node):
     If you wish to upload a file to use in your workflow then you should
     use the resource provider (use `client.resources.upload()` to upload
     a local resource to the Uncertainty Engine).
+
+    Args:
+        data: A reference to the node output data to be saved.
+        file_id: The human-readable name for the saved resource. If a
+            resource of the same type and name already exists, the save node
+            will create a new version of that existing resource.
+        project_id: The ID of the project to save to.
+        label: A human-readable label for the node. Defaults to None.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     data: HandleUnion[S3Storage]
@@ -256,10 +292,12 @@ class Save(Node):
         file_name: str,
         project_id: str,
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             data=data,
             # NOTE: The underlying node input ID for the file name is
             # `file_id`, but we refer to it as `file_name` in this class
@@ -277,6 +315,12 @@ class Download(Node):
 
     Note that this is for downloading resources that are output by a
     node.
+
+    Args:
+        file: The ID of the file to download.
+        label: A human-readable label for the node. Defaults to None.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     file: HandleUnion[S3Storage]
@@ -295,5 +339,11 @@ class Download(Node):
         self,
         file: HandleUnion[S3Storage],
         label: str | None = None,
+        client: Client | None = None,
     ):
-        super().__init__(node_name=self.node_name, label=label, file=file)
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            client=client,
+            file=file,
+        )
