@@ -2,8 +2,9 @@ from typing import Optional
 
 from typeguard import typechecked
 from uncertainty_engine_types import ResourceID, S3Storage
-from uncertainty_engine.protocols import Client
+
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import HandleUnion
 
 
@@ -48,6 +49,7 @@ class LoadChatHistory(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -92,6 +94,7 @@ class LoadDataset(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -136,6 +139,7 @@ class LoadDocument(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -187,6 +191,7 @@ class LoadMultiple(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_ids=[ResourceID(id=file_id).model_dump() for file_id in file_ids],
             file_type=file_type,
@@ -231,6 +236,7 @@ class LoadModel(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             project_id=project_id,
             file_id=ResourceID(id=file_id).model_dump(),
         )
@@ -291,6 +297,7 @@ class Save(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             data=data,
             # NOTE: The underlying node input ID for the file name is
             # `file_id`, but we refer to it as `file_name` in this class
@@ -334,4 +341,9 @@ class Download(Node):
         label: str | None = None,
         client: Client | None = None,
     ):
-        super().__init__(node_name=self.node_name, label=label, file=file)
+        super().__init__(
+            node_name=self.node_name,
+            label=label,
+            client=client,
+            file=file,
+        )
