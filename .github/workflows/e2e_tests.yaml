@@ -23,7 +23,7 @@ jobs:
     # commit in production. We accept that these tests will fail if they
     # use APIs not yet deployed to production. The onus is on the
     # developer to recognise if a test failure is significant.
-    if: github.event_name == 'pull_request'
+    if: github.event_name != 'pull_request'
     uses: ./.github/workflows/e2e-environment.yaml
     with:
       ue-environment: prod
@@ -40,7 +40,7 @@ jobs:
     # of the SDK should always be compatible with the latest production
     # release of the platform, regardless of the state of the latest
     # unreleased commit.
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'pull_request'
     uses: ./.github/workflows/e2e-environment.yaml
     with:
       ue-environment: prod
