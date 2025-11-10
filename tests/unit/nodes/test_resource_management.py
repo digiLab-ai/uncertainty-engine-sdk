@@ -1,4 +1,3 @@
-from pytest import mark
 from uncertainty_engine_types import Handle, ResourceID
 
 from uncertainty_engine.client import Client
