@@ -1,5 +1,7 @@
+from pytest import mark
 from uncertainty_engine_types import Handle, ResourceID
 
+from uncertainty_engine.client import Client
 from uncertainty_engine.nodes.resource_management import (
     Download,
     LoadChatHistory,
@@ -11,9 +13,8 @@ from uncertainty_engine.nodes.resource_management import (
 )
 
 
-def test_loadchathistory_initialization() -> None:
+def test_loadchathistory_initialization(mock_client: Client) -> None:
     """Test the initialization of the LoadChatHistory node."""
-
     # Example values
     project_id = "projectid-123"
     file_id = "fileid-456"
@@ -23,15 +24,17 @@ def test_loadchathistory_initialization() -> None:
         project_id=project_id,
         file_id=file_id,
         label=label,
+        client=mock_client,
     )
 
     assert node.node_name == "LoadChatHistory"
     assert node.project_id == project_id
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
+    assert node.client == mock_client
 
 
-def test_loaddataset_initialization() -> None:
+def test_loaddataset_initialization(mock_client: Client) -> None:
     """Test the initialization of the LoadDataset node."""
 
     # Example values
@@ -43,15 +46,17 @@ def test_loaddataset_initialization() -> None:
         project_id=project_id,
         file_id=file_id,
         label=label,
+        client=mock_client,
     )
 
     assert node.node_name == "LoadDataset"
     assert node.project_id == project_id
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
+    assert node.client == mock_client
 
 
-def test_loaddocument_initialization() -> None:
+def test_loaddocument_initialization(mock_client: Client) -> None:
     """Test the initialization of the LoadDocument node."""
 
     # Example values
@@ -63,15 +68,17 @@ def test_loaddocument_initialization() -> None:
         project_id=project_id,
         file_id=file_id,
         label=label,
+        client=mock_client,
     )
 
     assert node.node_name == "LoadDocument"
     assert node.project_id == project_id
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
+    assert node.client == mock_client
 
 
-def test_load_multiple_initialization():
+def test_load_multiple_initialization(mock_client: Client):
     """
     Test the initialization of the LoadMultiple node.
     """
@@ -85,6 +92,7 @@ def test_load_multiple_initialization():
         file_ids=file_ids,
         file_type=file_type,
         label=label,
+        client=mock_client,
     )
 
     assert node.project_id == project_id
@@ -94,9 +102,10 @@ def test_load_multiple_initialization():
     assert node.file_type == file_type
     assert node.label == label
     assert node.node_name == "LoadMultiple"
+    assert node.client == mock_client
 
 
-def test_load_model_initialization() -> None:
+def test_load_model_initialization(mock_client: Client) -> None:
     """Test the initialisation of the `LoadModel` node."""
     # Example values
     file_id = "resource-456"
@@ -107,15 +116,17 @@ def test_load_model_initialization() -> None:
         label=label,
         file_id=file_id,
         project_id=project_id,
+        client=mock_client,
     )
 
     assert node.node_name == "LoadModel"
     assert node.project_id == project_id
     assert node.file_id == ResourceID(id=file_id).model_dump()
     assert node.label == label
+    assert node.client == mock_client
 
 
-def test_save_initialization() -> None:
+def test_save_initialization(mock_client: Client) -> None:
     """Test the initialization of the `Save` node."""
 
     # Example values
@@ -129,15 +140,17 @@ def test_save_initialization() -> None:
         data=data,
         file_name=file_name,
         project_id=project_id,
+        client=mock_client,
     )
 
     assert node.node_name == "Save"
     assert node.project_id == project_id
     assert node.file_id == file_name
     assert node.label == label
+    assert node.client == mock_client
 
 
-def test_download_initialization() -> None:
+def test_download_initialization(mock_client: Client) -> None:
     """Test the initialization of the `Download` node."""
 
     # Example values
@@ -147,8 +160,10 @@ def test_download_initialization() -> None:
     node = Download(
         file=file_name,
         label=label,
+        client=mock_client,
     )
 
     assert node.node_name == "Download"
     assert node.file == file_name
     assert node.label == label
+    assert node.client == mock_client
