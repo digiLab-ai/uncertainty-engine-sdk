@@ -4,6 +4,7 @@ from typeguard import typechecked
 
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import handle_input_deprecation
 
 
@@ -25,17 +26,23 @@ class Workflow(Node):
             graph. Default is "_".
         input: **DEPRECATED** The inputs to the workflow. Use `inputs` instead.
             Will be removed in a future version.
+        tool_metadata: An optional `ToolMetadata` object containing the
+            node input and output handles to be used as tools.
+        client: An optional instance of the client being used. This is
+            required for performing validation.
 
     Raises:
         ValueError: if both `inputs` and `input` are `None`, or if both are provided.
 
     Example:
+        >>> client = Client()
         >>> workflow = Workflow(
         ...     graph=graph.nodes,
         ...     inputs=graph.external_input,
         ...     requested_output={
         ...         "Result": {"node_name": "Download", "node_handle": "file"}
-        ...     }
+        ...     },
+        ...     client=client,
         ... )
         >>> client.queue_node(workflow)
         "<job_id>"
@@ -51,6 +58,7 @@ class Workflow(Node):
         external_input_id: str = "_",
         input: dict[str, Any] | None = None,
         tool_metadata: ToolMetadata | None = None,
+        client: Client | None = None,
     ):
         # TODO: Remove once `input` is removed and make `inputs` required
         final_inputs = handle_input_deprecation(input, inputs)
@@ -67,6 +75,7 @@ class Workflow(Node):
 
         super().__init__(
             node_name=self.node_name,
+            client=client,
             external_input_id=external_input_id,
             graph=graph,
             inputs=final_inputs,
