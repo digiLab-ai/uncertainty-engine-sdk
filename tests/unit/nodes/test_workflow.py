@@ -29,5 +29,5 @@ def test_workflow_initialization(mock_client: Client, simple_graph: Graph):
             },
         },
     }
-    assert node.inputs == {'add_lhs': 1, 'add_rhs': 2}
+    assert node.inputs == {"add_lhs": 1, "add_rhs": 2}
     assert node.client == mock_client
