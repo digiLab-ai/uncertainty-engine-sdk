@@ -31,7 +31,6 @@ class Workflow(Node):
         client: An optional instance of the client being used. This is
             required for performing validation.
 
-
     Raises:
         ValueError: if both `inputs` and `input` are `None`, or if both are provided.
 
