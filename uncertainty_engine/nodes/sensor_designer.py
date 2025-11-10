@@ -1,9 +1,10 @@
-from typing import Optional, Union
+from typing import Union
 
 from typeguard import typechecked
 from uncertainty_engine_types import CSVDataset, Handle, SensorDesigner
 
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import HandleUnion, dict_to_csv_str
 
 ListDict = dict[str, list[Union[float, int]]]
@@ -19,6 +20,8 @@ class BuildSensorDesigner(Node):
         quantities_of_interest_data: A dictionary of quantities of interest data. Keys are quantities of
             interest names and values are lists of quantities of interest data.
         sigma: The uncertainty of the sensor data. If a float, the same uncertainty is applied to all sensors.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "BuildSensorDesigner"
@@ -26,9 +29,10 @@ class BuildSensorDesigner(Node):
     def __init__(
         self,
         sensor_data: HandleUnion[ListDict],
-        quantities_of_interest_data: Optional[HandleUnion[ListDict]] = None,
-        sigma: Optional[HandleUnion[Union[float, list[float]]]] = None,
-        label: Optional[str] = None,
+        quantities_of_interest_data: HandleUnion[ListDict] | None = None,
+        sigma: HandleUnion[Union[float, list[float]]] | None = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         # Deal with the sensor data.
         if isinstance(sensor_data, Handle):
@@ -52,6 +56,7 @@ class BuildSensorDesigner(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             sensor_data=sensor_data_processed,
             quantities_of_interest_data=quantities_of_interest_data_processed,
             sigma=sigma,
@@ -67,6 +72,8 @@ class SuggestSensorDesign(Node):
         sensor_designer: The sensor designer constructed by the BuildSensorDesigner node.
         num_sensors: The number of sensors to suggest.
         num_eval: The number of evaluations to perform.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "SuggestSensorDesign"
@@ -76,7 +83,8 @@ class SuggestSensorDesign(Node):
         sensor_designer: HandleUnion[dict],
         num_sensors: HandleUnion[int],
         num_eval: HandleUnion[int],
-        label: Optional[str] = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         # Deal with the sensor designer.
         if isinstance(sensor_designer, Handle):
@@ -89,6 +97,7 @@ class SuggestSensorDesign(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             sensor_designer=sensor_designer_processed,
             num_sensors=num_sensors,
             num_eval=num_eval,
@@ -103,6 +112,8 @@ class ScoreSensorDesign(Node):
     Args:
         sensor_designer: The sensor designer constructed by the BuildSensorDesigner node.
         design: A list of sensors that make up the design.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "ScoreSensorDesign"
@@ -111,7 +122,8 @@ class ScoreSensorDesign(Node):
         self,
         sensor_designer: HandleUnion[dict],
         design: HandleUnion[list],
-        label: Optional[str] = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         # Deal with the sensor designer.
         if isinstance(sensor_designer, Handle):
@@ -124,6 +136,7 @@ class ScoreSensorDesign(Node):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             sensor_designer=sensor_designer_processed,
             design=design,
         )

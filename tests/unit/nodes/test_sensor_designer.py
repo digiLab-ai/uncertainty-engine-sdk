@@ -1,5 +1,8 @@
+from typing import Any
+
 import pytest
 
+from uncertainty_engine.client import Client
 from uncertainty_engine.nodes.sensor_designer import (
     BuildSensorDesigner,
     ScoreSensorDesign,
@@ -22,7 +25,7 @@ def mock_sensor_designer():
     return sensor_designer
 
 
-def test_build_sensor_designer():
+def test_build_sensor_designer(mock_client: Client):
     """
     Verify result for arbitrary test input.
     """
@@ -40,7 +43,10 @@ def test_build_sensor_designer():
     sigma = 0.1
 
     node = BuildSensorDesigner(
-        sensor_data=sensor_data, quantities_of_interest_data=qoi_data, sigma=sigma
+        sensor_data=sensor_data,
+        quantities_of_interest_data=qoi_data,
+        sigma=sigma,
+        client=mock_client,
     )
 
     assert node() == (
@@ -51,6 +57,7 @@ def test_build_sensor_designer():
             "sigma": sigma,
         },
     )
+    assert node.client == mock_client
 
 
 def test_build_sensor_designer_no_sigma():
@@ -130,7 +137,9 @@ def test_build_sensor_designer_list_sigma():
     )
 
 
-def test_suggest_sensor_design(mock_sensor_designer):
+def test_suggest_sensor_design(
+    mock_client: Client, mock_sensor_designer: dict[str, Any]
+):
     """
     Verify result for arbitrary test input.
     """
@@ -139,7 +148,10 @@ def test_suggest_sensor_design(mock_sensor_designer):
     num_eval = 4
 
     node = SuggestSensorDesign(
-        sensor_designer=mock_sensor_designer, num_sensors=num_sensors, num_eval=num_eval
+        sensor_designer=mock_sensor_designer,
+        num_sensors=num_sensors,
+        num_eval=num_eval,
+        client=mock_client,
     )
 
     assert node() == (
@@ -150,16 +162,19 @@ def test_suggest_sensor_design(mock_sensor_designer):
             "num_eval": num_eval,
         },
     )
+    assert node.client == mock_client
 
 
-def test_score_sensor_design(mock_sensor_designer):
+def test_score_sensor_design(mock_client: Client, mock_sensor_designer: dict[str, Any]):
     """
     Verify result for arbitrary test input.
     """
 
     design = ["sensor_1", "sensor_2"]
 
-    node = ScoreSensorDesign(sensor_designer=mock_sensor_designer, design=design)
+    node = ScoreSensorDesign(
+        sensor_designer=mock_sensor_designer, design=design, client=mock_client
+    )
 
     assert node() == (
         "ScoreSensorDesign",
@@ -168,3 +183,4 @@ def test_score_sensor_design(mock_sensor_designer):
             "design": design,
         },
     )
+    assert node.client == mock_client
