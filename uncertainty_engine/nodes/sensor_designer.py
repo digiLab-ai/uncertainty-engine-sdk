@@ -1,9 +1,10 @@
-from typing import Optional, Union
+from typing import Union
 
 from typeguard import typechecked
 from uncertainty_engine_types import CSVDataset, Handle, SensorDesigner
 
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import HandleUnion, dict_to_csv_str
 
 ListDict = dict[str, list[Union[float, int]]]
@@ -26,9 +27,10 @@ class BuildSensorDesigner(Node):
     def __init__(
         self,
         sensor_data: HandleUnion[ListDict],
-        quantities_of_interest_data: Optional[HandleUnion[ListDict]] = None,
-        sigma: Optional[HandleUnion[Union[float, list[float]]]] = None,
-        label: Optional[str] = None,
+        quantities_of_interest_data: HandleUnion[ListDict] | None = None,
+        sigma: HandleUnion[Union[float, list[float]]] | None = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         # Deal with the sensor data.
         if isinstance(sensor_data, Handle):
@@ -76,7 +78,8 @@ class SuggestSensorDesign(Node):
         sensor_designer: HandleUnion[dict],
         num_sensors: HandleUnion[int],
         num_eval: HandleUnion[int],
-        label: Optional[str] = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         # Deal with the sensor designer.
         if isinstance(sensor_designer, Handle):
@@ -111,7 +114,8 @@ class ScoreSensorDesign(Node):
         self,
         sensor_designer: HandleUnion[dict],
         design: HandleUnion[list],
-        label: Optional[str] = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         # Deal with the sensor designer.
         if isinstance(sensor_designer, Handle):
