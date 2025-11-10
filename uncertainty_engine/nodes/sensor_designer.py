@@ -20,6 +20,8 @@ class BuildSensorDesigner(Node):
         quantities_of_interest_data: A dictionary of quantities of interest data. Keys are quantities of
             interest names and values are lists of quantities of interest data.
         sigma: The uncertainty of the sensor data. If a float, the same uncertainty is applied to all sensors.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "BuildSensorDesigner"
@@ -70,6 +72,8 @@ class SuggestSensorDesign(Node):
         sensor_designer: The sensor designer constructed by the BuildSensorDesigner node.
         num_sensors: The number of sensors to suggest.
         num_eval: The number of evaluations to perform.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "SuggestSensorDesign"
@@ -108,6 +112,8 @@ class ScoreSensorDesign(Node):
     Args:
         sensor_designer: The sensor designer constructed by the BuildSensorDesigner node.
         design: A list of sensors that make up the design.
+        client: An (optional) instance of the client being used. This is
+            required for performing validation.
     """
 
     node_name: str = "ScoreSensorDesign"
