@@ -5,6 +5,7 @@ from uncertainty_engine_types import ModelConfig as ModelConfigType
 from uncertainty_engine_types import S3Storage
 
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import HandleUnion
 
 AvailableAcquisitions = Literal[
@@ -72,13 +73,15 @@ class ExportTorchScript(Node):
         validation_inputs: HandleUnion[S3Storage],
         observation_noise: bool = True,
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
+            label=label,
+            client=client,
             model=model,
             validation_inputs=validation_inputs,
             observation_noise=observation_noise,
-            label=label,
         )
 
 
@@ -147,10 +150,12 @@ class ModelConfig(Node):
         warp_inputs: bool = False,
         seed: int | None = None,
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             input_variance=input_variance,
             input_retained_dimensions=input_retained_dimensions,
             output_variance=output_variance,
@@ -198,10 +203,12 @@ class PredictModel(Node):
         model: HandleUnion[S3Storage],
         dataset: HandleUnion[S3Storage],
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             model=model,
             dataset=dataset,
         )
@@ -256,10 +263,12 @@ class PredictPosteriorConditioning(Node):
         model: HandleUnion[S3Storage],
         prediction_inputs: HandleUnion[S3Storage],
         label: Optional[str] = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             conditioning_inputs=conditioning_inputs,
             conditioning_outputs=conditioning_outputs,
             model=model,
@@ -307,14 +316,16 @@ class Recommend(Node):
         acquisition_function: AvailableAcquisitions,
         model: HandleUnion[S3Storage],
         num_of_points: int,
-        label: Optional[str] = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
+            label=label,
+            client=client,
             acquisition_function=acquisition_function,
             model=model,
             num_of_points=num_of_points,
-            label=label,
         )
 
 
@@ -354,11 +365,13 @@ class TrainModel(Node):
         config: HandleUnion[ModelConfigType],
         inputs: HandleUnion[S3Storage],
         outputs: HandleUnion[S3Storage],
-        label: Optional[str] = None,
+        label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
             label=label,
+            client=client,
             config=config,
             inputs=inputs,
             outputs=outputs,
@@ -422,6 +435,7 @@ class ScoreModel(Node):
         train_outputs: HandleUnion[S3Storage] | None = None,
         metrics: list[AvailableScoreMetrics] = ["MSE", "RMSE", "R2"],
         label: str | None = None,
+        client: Client | None = None,
     ):
         super().__init__(
             node_name=self.node_name,
@@ -431,4 +445,5 @@ class ScoreModel(Node):
             predictions_uncertainty=predictions_uncertainty,
             train_outputs=train_outputs,
             metrics=metrics,
+            client=client,
         )
