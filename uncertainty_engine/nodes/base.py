@@ -111,6 +111,9 @@ class Node:
             warn("Skipping validation as node info is not available.", stacklevel=2)
             return handle
 
+        # NOTE: If the following condition is true then the node will
+        # fail to run so this could be change to raise an error in a
+        # future release.
         if output_name not in self.node_info.outputs:
             warn(
                 f"Output '{output_name}' does not exist. This will cause node '{self.label}' to fail. "
