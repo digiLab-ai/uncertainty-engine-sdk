@@ -113,7 +113,7 @@ class Node:
 
         available_outputs = list(self.node_info.outputs)
         if output_name not in available_outputs:
-            raise ValueError(
+            warn(
                 f"Output '{output_name}' does not exist please use one of the following: {available_outputs}"
             )
         return handle
