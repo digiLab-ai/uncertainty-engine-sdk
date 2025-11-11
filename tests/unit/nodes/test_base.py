@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from warnings import catch_warnings, simplefilter
 
 import pytest
-from pytest import raises
+from pytest import mark, raises
 from typeguard import TypeCheckError
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
@@ -107,14 +107,6 @@ def test_node_make_handle():
     assert node.make_handle("output") == Handle("test_label.output")
 
 
-def test_node_make_handle_with_node_info():
-    """
-    Verify result for test node with make_handle method.
-    """
-    node = Node("TestAdd", label="test_label", lhs=1, rhs=2)
-    assert node.make_handle("ans") == Handle("test_label.ans")
-
-
 def test_node_make_handle_no_label():
     """
     Verify error is raised if node has no label.
@@ -124,10 +116,28 @@ def test_node_make_handle_no_label():
         node.make_handle("output")
 
 
+def test_node_make_handle_with_node_info(add_node_info: NodeInfo):
+    """
+    Verify result for test node with `make_handle` method when
+    `node_info` is available.
+    """
+    node = Node("TestAdd", label="test_label", lhs=1, rhs=2)
+    node.node_info = add_node_info
+    with catch_warnings(record=True) as warnings:
+        # Set so python always shows warning
+        simplefilter("always")
+
+        # Assert correct result returned
+        assert node.make_handle("ans") == Handle("test_label.ans")
+
+        # Assert no warnings shown
+        assert len(warnings) == 0
+
+
 def test_node_make_handle_no_node_info_warning():
     """
-    Verify result for test node with make_handle method and that correct
-    warnings are shown when node info is not available.
+    Verify result for test node with `make_handle` method and that
+    correct warnings are shown when node info is not available.
     """
     node = Node("TestAdd", label="test_label")
     with catch_warnings(record=True) as warnings:
@@ -143,10 +153,13 @@ def test_node_make_handle_no_node_info_warning():
         )
 
 
-def test_node_make_handle_invalid_handle_warning(add_node_info: NodeInfo):
+@mark.parametrize("output_name", ["a", "output", ""])
+def test_node_make_handle_invalid_handle_warning(
+    add_node_info: NodeInfo, output_name: str
+):
     """
-    Verify result for test node with make_handle method and that correct
-    warnings are shown when node info is not available.
+    Verify result for test node with `make_handle` method and that
+    correct warnings are shown when output name does not exist.
     """
     node = Node("TestAdd", label="test_label")
     node.node_info = add_node_info
@@ -155,11 +168,11 @@ def test_node_make_handle_invalid_handle_warning(add_node_info: NodeInfo):
         simplefilter("always")
 
         # Assert correct warning is shown when validation fails
-        assert node.make_handle("output") == Handle("test_label.output")
+        assert node.make_handle(output_name) == Handle(f"test_label.{output_name}")
         assert len(warnings) == 1
         assert (
             str(warnings[0].message)
-            == f"Output 'output' does not exist please use one of the following: ['ans']"
+            == f"Output '{output_name}' does not exist. This will cause node 'test_label' to fail. Please make a handle using any of the following outputs instead: ['ans']"
         )
 
 

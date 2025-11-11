@@ -114,7 +114,8 @@ class Node:
         available_outputs = list(self.node_info.outputs)
         if output_name not in available_outputs:
             warn(
-                f"Output '{output_name}' does not exist please use one of the following: {available_outputs}"
+                f"Output '{output_name}' does not exist. This will cause node '{self.label}' to fail. "
+                f"Please make a handle using any of the following outputs instead: {available_outputs}"
             )
         return handle
 
