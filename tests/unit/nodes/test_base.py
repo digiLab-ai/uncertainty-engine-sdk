@@ -172,7 +172,7 @@ def test_node_make_handle_invalid_handle_warning(
         assert len(warnings) == 1
         assert (
             str(warnings[0].message)
-            == f"Output '{output_name}' does not exist. This will cause node 'test_label' to fail. Please make a handle using any of the following outputs instead: ['ans']"
+            == f"Output '{output_name}' does not exist. This will cause node 'test_label' to fail. Please make a handle using any of the following outputs instead: ['ans']."
         )
 
 

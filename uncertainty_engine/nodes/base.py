@@ -115,7 +115,8 @@ class Node:
         if output_name not in available_outputs:
             warn(
                 f"Output '{output_name}' does not exist. This will cause node '{self.label}' to fail. "
-                f"Please make a handle using any of the following outputs instead: {available_outputs}"
+                f"Please make a handle using any of the following outputs instead: {available_outputs}.",
+                stacklevel=2,
             )
         return handle
 
