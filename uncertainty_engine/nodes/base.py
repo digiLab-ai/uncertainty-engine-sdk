@@ -105,7 +105,22 @@ class Node:
         if self.label is None:
             raise ValueError("Nodes must have a label to make a handle.")
 
-        return Handle(f"{self.label}.{output_name}")
+        handle = Handle(f"{self.label}.{output_name}")
+
+        if not self.node_info:
+            warn("Skipping validation as node info is not available.", stacklevel=2)
+            return handle
+
+        # NOTE: If the following condition is true then the node will
+        # fail to run so this could be change to raise an error in a
+        # future release.
+        if output_name not in self.node_info.outputs:
+            warn(
+                f"Output '{output_name}' does not exist. This will cause node '{self.label}' to fail. "
+                f"Please make a handle using any of the following outputs instead: {list(self.node_info.outputs)}.",
+                stacklevel=2,
+            )
+        return handle
 
     def add_tool_input(self, handle_name: str, node_info: NodeInfo) -> None:
         """

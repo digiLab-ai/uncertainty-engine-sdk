@@ -1,9 +1,9 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
-from warnings import catch_warnings, simplefilter
+from warnings import catch_warnings
 
 import pytest
-from pytest import raises
+from pytest import mark, raises
 from typeguard import TypeCheckError
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
@@ -39,9 +39,6 @@ def test_node_no_client_warnings():
     Assert that when no `client` is given a warning is raised.
     """
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
         # Patch validate (before creating `Node` instance)
         # We mock it to make sure no calls are made
         with patch.object(Node, "validate") as mock_validate:
@@ -114,6 +111,52 @@ def test_node_make_handle_no_label():
     node = Node("test_node", a=1, b=2)
     with pytest.raises(ValueError):
         node.make_handle("output")
+
+
+def test_node_make_handle_with_node_info(add_node_info: NodeInfo):
+    """
+    Verify result for test node with `make_handle` method when
+    `node_info` is available.
+    """
+    node = Node("TestAdd", label="test_label", lhs=1, rhs=2)
+    node.node_info = add_node_info
+    with catch_warnings(record=True) as warnings:
+        assert node.make_handle("ans") == Handle("test_label.ans")
+        assert len(warnings) == 0
+
+
+def test_node_make_handle_no_node_info_warning():
+    """
+    Verify result for test node with `make_handle` method and that
+    correct warnings are shown when node info is not available.
+    """
+    node = Node("TestAdd", label="test_label")
+    with catch_warnings(record=True) as warnings:
+        assert node.make_handle("output") == Handle("test_label.output")
+        assert len(warnings) == 1
+        assert (
+            str(warnings[0].message)
+            == "Skipping validation as node info is not available."
+        )
+
+
+@mark.parametrize("output_name", ["a", "output", "", "Answer"])
+def test_node_make_handle_invalid_handle_warning(
+    add_node_info: NodeInfo, output_name: str
+):
+    """
+    Verify result for test node with `make_handle` method and that
+    correct warnings are shown when output name does not exist.
+    """
+    node = Node("TestAdd", label="test_label")
+    node.node_info = add_node_info
+    with catch_warnings(record=True) as warnings:
+        assert node.make_handle(output_name) == Handle(f"test_label.{output_name}")
+        assert len(warnings) == 1
+        assert (
+            str(warnings[0].message)
+            == f"Output '{output_name}' does not exist. This will cause node 'test_label' to fail. Please make a handle using any of the following outputs instead: ['ans']."
+        )
 
 
 def test_add_tool_input(default_node_info: NodeInfo):
@@ -262,9 +305,6 @@ def test_validate_warnings(
     node = Node(node_name="test_node", client=test_client, **node_inputs)
 
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
         # Run validate and collect warning messages
         node.validate()
         warning_messages = [str(w.message) for w in warnings]
