@@ -107,6 +107,14 @@ def test_node_make_handle():
     assert node.make_handle("output") == Handle("test_label.output")
 
 
+def test_node_make_handle_with_node_info():
+    """
+    Verify result for test node with make_handle method.
+    """
+    node = Node("TestAdd", label="test_label", lhs=1, rhs=2)
+    assert node.make_handle("ans") == Handle("test_label.ans")
+
+
 def test_node_make_handle_no_label():
     """
     Verify error is raised if node has no label.
@@ -127,7 +135,7 @@ def test_node_make_handle_no_node_info_warning():
         simplefilter("always")
 
         # Assert correct warning is shown when no node info available
-        assert node.make_handle("answer") == Handle("test_label.answer")
+        assert node.make_handle("output") == Handle("test_label.output")
         assert len(warnings) == 1
         assert (
             str(warnings[0].message)
@@ -146,12 +154,12 @@ def test_node_make_handle_invalid_handle_warning(add_node_info: NodeInfo):
         # Set so python always shows warning
         simplefilter("always")
 
-        # Assert correct warning is shown when no node info available
-        assert node.make_handle("answer") == Handle("test_label.answer")
+        # Assert correct warning is shown when validation fails
+        assert node.make_handle("output") == Handle("test_label.output")
         assert len(warnings) == 1
         assert (
             str(warnings[0].message)
-            == f"Output 'answer' does not exist please use one of the following: ['ans']"
+            == f"Output 'output' does not exist please use one of the following: ['ans']"
         )
 
 
