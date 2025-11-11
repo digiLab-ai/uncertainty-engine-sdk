@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
 import boto3
 import jwt
 import pytest
-from uncertainty_engine_types import Handle
+from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.auth_service import (
     AUTH_CACHE_ID_TOKEN,
@@ -16,6 +16,43 @@ from uncertainty_engine.auth_service import (
 from uncertainty_engine.client import Client
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
+
+
+@pytest.fixture
+def add_node_info() -> NodeInfo:
+    """
+    Provide an add `NodeInfo` object for tests.
+    """
+    return NodeInfo(
+        id="TestAdd",
+        label="add_label",
+        category="add_category",
+        description="add_description",
+        long_description="add_long_description",
+        image_name="add_image",
+        cost=0,
+        version_base_image=1,
+        version_node=1,
+        inputs={
+            "lhs": NodeInputInfo(
+                type="float",
+                label="LHS",
+                description="Left-hand side of the addition",
+            ),
+            "rhs": NodeInputInfo(
+                type="float",
+                label="RHS",
+                description="Right-hand side of the addition",
+            ),
+        },
+        outputs={
+            "ans": NodeOutputInfo(
+                label="Answer",
+                type="float",
+                description="Result of the addition",
+            )
+        },
+    )
 
 
 @pytest.fixture

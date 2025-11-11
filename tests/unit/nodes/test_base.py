@@ -116,6 +116,45 @@ def test_node_make_handle_no_label():
         node.make_handle("output")
 
 
+def test_node_make_handle_no_node_info_warning():
+    """
+    Verify result for test node with make_handle method and that correct
+    warnings are shown when node info is not available.
+    """
+    node = Node("TestAdd", label="test_label")
+    with catch_warnings(record=True) as warnings:
+        # Set so python always shows warning
+        simplefilter("always")
+
+        # Assert correct warning is shown when no node info available
+        assert node.make_handle("answer") == Handle("test_label.answer")
+        assert len(warnings) == 1
+        assert (
+            str(warnings[0].message)
+            == "Skipping validation as node info is not available."
+        )
+
+
+def test_node_make_handle_invalid_handle_warning(add_node_info: NodeInfo):
+    """
+    Verify result for test node with make_handle method and that correct
+    warnings are shown when node info is not available.
+    """
+    node = Node("TestAdd", label="test_label")
+    node.node_info = add_node_info
+    with catch_warnings(record=True) as warnings:
+        # Set so python always shows warning
+        simplefilter("always")
+
+        # Assert correct warning is shown when no node info available
+        assert node.make_handle("answer") == Handle("test_label.answer")
+        assert len(warnings) == 1
+        assert (
+            str(warnings[0].message)
+            == f"Output 'answer' does not exist please use one of the following: ['ans']"
+        )
+
+
 def test_add_tool_input(default_node_info: NodeInfo):
     """
     Verify that add_tool_input correctly adds a tool input to the node's metadata.
