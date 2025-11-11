@@ -16,6 +16,11 @@ from uncertainty_engine.auth_service import (
 from uncertainty_engine.client import Client
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
+from warnings import simplefilter
+
+
+# Set so python always shows warnings in tests
+simplefilter("always")
 
 
 @pytest.fixture

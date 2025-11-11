@@ -1,6 +1,6 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
-from warnings import catch_warnings, simplefilter
+from warnings import catch_warnings
 
 import pytest
 from pytest import mark, raises
@@ -39,9 +39,6 @@ def test_node_no_client_warnings():
     Assert that when no `client` is given a warning is raised.
     """
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
         # Patch validate (before creating `Node` instance)
         # We mock it to make sure no calls are made
         with patch.object(Node, "validate") as mock_validate:
@@ -124,13 +121,7 @@ def test_node_make_handle_with_node_info(add_node_info: NodeInfo):
     node = Node("TestAdd", label="test_label", lhs=1, rhs=2)
     node.node_info = add_node_info
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
-        # Assert correct result returned
         assert node.make_handle("ans") == Handle("test_label.ans")
-
-        # Assert no warnings shown
         assert len(warnings) == 0
 
 
@@ -141,10 +132,6 @@ def test_node_make_handle_no_node_info_warning():
     """
     node = Node("TestAdd", label="test_label")
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
-        # Assert correct warning is shown when no node info available
         assert node.make_handle("output") == Handle("test_label.output")
         assert len(warnings) == 1
         assert (
@@ -164,10 +151,6 @@ def test_node_make_handle_invalid_handle_warning(
     node = Node("TestAdd", label="test_label")
     node.node_info = add_node_info
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
-        # Assert correct warning is shown when validation fails
         assert node.make_handle(output_name) == Handle(f"test_label.{output_name}")
         assert len(warnings) == 1
         assert (
@@ -322,9 +305,6 @@ def test_validate_warnings(
     node = Node(node_name="test_node", client=test_client, **node_inputs)
 
     with catch_warnings(record=True) as warnings:
-        # Set so python always shows warning
-        simplefilter("always")
-
         # Run validate and collect warning messages
         node.validate()
         warning_messages = [str(w.message) for w in warnings]
