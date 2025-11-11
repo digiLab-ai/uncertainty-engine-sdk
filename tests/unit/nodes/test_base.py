@@ -153,7 +153,7 @@ def test_node_make_handle_no_node_info_warning():
         )
 
 
-@mark.parametrize("output_name", ["a", "output", ""])
+@mark.parametrize("output_name", ["a", "output", "", "Answer"])
 def test_node_make_handle_invalid_handle_warning(
     add_node_info: NodeInfo, output_name: str
 ):

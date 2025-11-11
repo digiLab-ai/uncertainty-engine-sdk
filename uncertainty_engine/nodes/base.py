@@ -111,11 +111,10 @@ class Node:
             warn("Skipping validation as node info is not available.", stacklevel=2)
             return handle
 
-        available_outputs = list(self.node_info.outputs)
-        if output_name not in available_outputs:
+        if output_name not in self.node_info.outputs:
             warn(
                 f"Output '{output_name}' does not exist. This will cause node '{self.label}' to fail. "
-                f"Please make a handle using any of the following outputs instead: {available_outputs}.",
+                f"Please make a handle using any of the following outputs instead: {list(self.node_info.outputs)}.",
                 stacklevel=2,
             )
         return handle
