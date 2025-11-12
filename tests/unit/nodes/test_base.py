@@ -272,7 +272,7 @@ def test_validate_no_errors(
 
 
 @pytest.mark.parametrize(
-    "node_inputs,node_info_inputs,expected_errors",
+    "node_inputs,node_info_inputs,expected_error",
     [
         # Missing required input
         (
@@ -314,7 +314,7 @@ def test_validate_errors(
     default_node_info: NodeInfo,
     node_inputs: dict[str, Any],
     node_info_inputs: dict[str, NodeInputInfo],
-    expected_errors: str,
+    expected_error: str,
 ):
     """
     Assert `validate` displays the correct warnings given different input
@@ -325,7 +325,7 @@ def test_validate_errors(
     test_client.get_node_info = MagicMock(return_value=default_node_info)
     node = Node(node_name="test_node", client=test_client, **node_inputs)
 
-    with raises(ValidationError, match=escape(expected_errors)):
+    with raises(ValidationError, match=escape(expected_error)):
         node.validate()
 
 
