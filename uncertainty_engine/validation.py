@@ -1,6 +1,7 @@
 from typing import Any
 
 from uncertainty_engine_types import NodeInfo
+
 from uncertainty_engine.exceptions import ValidationError
 
 
@@ -14,8 +15,11 @@ def validate_required_inputs(node_info: NodeInfo, node_inputs: dict[str, Any]) -
             A list of the missing inputs is returned as part of the
             error message.
     """
-    required_inputs = [name for name, info in node_info.inputs.items() if info.required]
-    missing_inputs = list(set(required_inputs) - set(node_inputs))
+    missing_inputs = [
+        name
+        for name, info in node_info.inputs.items()
+        if info.required and name not in node_inputs
+    ]
 
     if len(missing_inputs) > 0:
         raise ValidationError(f"Missing required inputs: {missing_inputs}")
@@ -31,7 +35,9 @@ def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> N
             A list of the invalid input names is returned as part of the
             error message.
     """
-    invalid_input_names = list(set(node_inputs) - set(node_info.inputs))
+    invalid_input_names = [
+        name for name in node_inputs if (name not in node_info.inputs)
+    ]
 
     if len(invalid_input_names) > 0:
         raise ValidationError(f"Invalid input names: {invalid_input_names}")
