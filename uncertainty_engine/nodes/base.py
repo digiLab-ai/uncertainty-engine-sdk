@@ -5,6 +5,11 @@ from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.protocols import Client
+from uncertainty_engine.validation import (
+    validate_inputs_exist,
+    validate_required_inputs,
+)
+from uncertainty_engine.exceptions import ValidationError
 
 
 class ToolMetadata(TypedDict, total=False):
@@ -209,17 +214,13 @@ class Node:
         # Get current node inputs
         _, node_input_dict = self()
 
-        # Check required inputs
-        required_inputs = [
-            name for name, info in self.node_info.inputs.items() if info.required
-        ]
-        missing_inputs = list(set(required_inputs) - set(node_input_dict))
+        errors = []
 
-        if len(missing_inputs) > 0:
-            warn(f"Missing required inputs: {missing_inputs}", stacklevel=2)
+        for validator in (validate_required_inputs, validate_inputs_exist):
+            try:
+                validator(self.node_info, node_input_dict)
+            except ValidationError as e:
+                errors.append(str(e))
 
-        # Check input names
-        invalid_input_names = list(set(node_input_dict) - set(self.node_info.inputs))
-
-        if len(invalid_input_names) > 0:
-            warn(f"Invalid input names: {invalid_input_names}", stacklevel=2)
+        if errors:
+            raise ValidationError(errors)
