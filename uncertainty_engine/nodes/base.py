@@ -74,6 +74,9 @@ class Node:
             )
             return
 
+        # TODO: The below validation will only produce warnings however
+        # this try/except can be removed when we want to raise on
+        # validation failure.
         try:
             self.validate()
         except ValidationError as e:
@@ -207,10 +210,13 @@ class Node:
         - Check all required inputs are assigned a value or handle.
         - Check all the given input names exist in the node info.
 
-        A warning is displayed to the user if either of these checks fail.
+        The error messages are collected and then re-raised once the
+        all checks have finished.
 
         Raises:
-            `ValueError` if `self.node_info` is `None`.
+            `ValueError`: If `self.node_info` is `None`.
+            `ValidationError`: If validation fails. The error message
+                will contain reasons for failure.
         """
         if not self.node_info:
             raise ValueError("Node info is not available for validation.")
@@ -219,7 +225,6 @@ class Node:
         _, node_input_dict = self()
 
         errors = []
-
         for validator in (validate_required_inputs, validate_inputs_exist):
             try:
                 validator(self.node_info, node_input_dict)

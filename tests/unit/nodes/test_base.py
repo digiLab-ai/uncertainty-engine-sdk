@@ -261,8 +261,8 @@ def test_validate_no_errors(
     node_info_inputs: dict[str, NodeInputInfo],
 ):
     """
-    Assert `validate` displays the correct warnings given different input
-    combinations.
+    Assert `validate` does not raise and return `None` when inputs are
+    correct.
     """
     default_node_info.inputs = node_info_inputs
     test_client = MagicMock(spec=Client)
@@ -317,8 +317,8 @@ def test_validate_errors(
     expected_error: str,
 ):
     """
-    Assert `validate` displays the correct warnings given different input
-    combinations.
+    Assert `validate` raises the correct error given different incorrect
+    input combinations.
     """
     default_node_info.inputs = node_info_inputs
     test_client = MagicMock(spec=Client)
