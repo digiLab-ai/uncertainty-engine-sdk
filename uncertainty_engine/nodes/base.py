@@ -74,7 +74,11 @@ class Node:
             )
             return
 
-        self.validate()
+        try:
+            self.validate()
+        except ValidationError as e:
+            for msg in e.errors:
+                warn(msg, stacklevel=2)
 
     def __call__(self) -> tuple[str, dict]:
         """

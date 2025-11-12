@@ -1,6 +1,7 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
+from re import escape
 
 import pytest
 from pytest import mark, raises
@@ -8,6 +9,7 @@ from typeguard import TypeCheckError
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.client import Client
+from uncertainty_engine.exceptions import ValidationError
 from uncertainty_engine.nodes.base import Node
 
 
@@ -234,49 +236,14 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
 
 
 @pytest.mark.parametrize(
-    "node_inputs,node_info_inputs,expected_warnings",
+    "node_inputs,node_info_inputs",
     [
-        # Missing required input
-        (
-            {"b": 1},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-                "b": NodeInputInfo(type="", label="", description="", required=False),
-            },
-            ["Missing required inputs: ['a']"],
-        ),
-        # Missing required input included as value but not as key
-        (
-            {"b": "a"},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-                "b": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            ["Missing required inputs: ['a']"],
-        ),
-        # Invalid input name
-        (
-            {"a": 1, "x": 99},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            ["Invalid input names: ['x']"],
-        ),
-        # Both missing and invalid inputs
-        (
-            {"y": 10},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            ["Missing required inputs: ['a']", "Invalid input names: ['y']"],
-        ),
         # No warnings
         (
             {"a": 1},
             {
                 "a": NodeInputInfo(type="", label="", description="", required=True),
             },
-            [],
         ),
         # No warnings when no required inputs
         (
@@ -285,15 +252,69 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
                 "a": NodeInputInfo(type="", label="", description="", required=False),
                 "b": NodeInputInfo(type="", label="", description="", required=False),
             },
-            [],
         ),
     ],
 )
-def test_validate_warnings(
+def test_validate_no_errors(
     default_node_info: NodeInfo,
     node_inputs: dict[str, Any],
     node_info_inputs: dict[str, NodeInputInfo],
-    expected_warnings: list[str],
+):
+    """
+    Assert `validate` displays the correct warnings given different input
+    combinations.
+    """
+    default_node_info.inputs = node_info_inputs
+    test_client = MagicMock(spec=Client)
+    test_client.get_node_info = MagicMock(return_value=default_node_info)
+    node = Node(node_name="test_node", client=test_client, **node_inputs)
+    assert node.validate() is None
+
+
+@pytest.mark.parametrize(
+    "node_inputs,node_info_inputs,expected_errors",
+    [
+        # Missing required input
+        (
+            {"b": 1},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+                "b": NodeInputInfo(type="", label="", description="", required=False),
+            },
+            "Missing required inputs: ['a']",
+        ),
+        # Missing required input included as value but not as key
+        (
+            {"b": "a"},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+                "b": NodeInputInfo(type="", label="", description="", required=True),
+            },
+            "Missing required inputs: ['a']",
+        ),
+        # Invalid input name
+        (
+            {"a": 1, "x": 99},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+            },
+            "Invalid input names: ['x']",
+        ),
+        # Both missing and invalid inputs
+        (
+            {"y": 10},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+            },
+            "Missing required inputs: ['a']\nInvalid input names: ['y']",
+        ),
+    ],
+)
+def test_validate_errors(
+    default_node_info: NodeInfo,
+    node_inputs: dict[str, Any],
+    node_info_inputs: dict[str, NodeInputInfo],
+    expected_errors: str,
 ):
     """
     Assert `validate` displays the correct warnings given different input
@@ -304,20 +325,8 @@ def test_validate_warnings(
     test_client.get_node_info = MagicMock(return_value=default_node_info)
     node = Node(node_name="test_node", client=test_client, **node_inputs)
 
-    with catch_warnings(record=True) as warnings:
-        # Run validate and collect warning messages
+    with raises(ValidationError, match=escape(expected_errors)):
         node.validate()
-        warning_messages = [str(w.message) for w in warnings]
-
-        # Check that each expected warning matches a received warning
-        for expected in expected_warnings:
-            assert any(expected in msg for msg in warning_messages), (
-                f"Expected warning containing '{expected}' not found in received warnings:\n"
-                f"{warning_messages}"
-            )
-
-        # Ensure no unexpected warnings
-        assert len(warning_messages) == len(expected_warnings)
 
 
 def test_validate_raises_without_node_info():
