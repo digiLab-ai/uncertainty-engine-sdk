@@ -1,5 +1,3 @@
-from re import escape
-from typing import Any
 from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
 
@@ -11,10 +9,6 @@ from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutput
 from uncertainty_engine.client import Client
 from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.validation import (
-    validate_inputs_exist,
-    validate_required_inputs,
-)
 
 
 def test_node():
