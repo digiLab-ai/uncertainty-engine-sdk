@@ -1,7 +1,7 @@
+from re import escape
 from typing import Any
 from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
-from re import escape
 
 import pytest
 from pytest import mark, raises
@@ -11,6 +11,10 @@ from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutput
 from uncertainty_engine.client import Client
 from uncertainty_engine.exceptions import ValidationError
 from uncertainty_engine.nodes.base import Node
+from uncertainty_engine.validation import (
+    validate_inputs_exist,
+    validate_required_inputs,
+)
 
 
 def test_node():
@@ -235,98 +239,64 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
         node.add_tool_output("output2", default_node_info)
 
 
-@pytest.mark.parametrize(
-    "node_inputs,node_info_inputs",
-    [
-        # No warnings
-        (
-            {"a": 1},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-        ),
-        # No warnings when no required inputs
-        (
-            {},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=False),
-                "b": NodeInputInfo(type="", label="", description="", required=False),
-            },
-        ),
-    ],
-)
 def test_validate_no_errors(
     default_node_info: NodeInfo,
-    node_inputs: dict[str, Any],
-    node_info_inputs: dict[str, NodeInputInfo],
 ):
     """
-    Assert `validate` does not raise and return `None` when inputs are
-    correct.
+    Assert `validate` does not raise and return `None` when validators
+    do not raise.
     """
-    default_node_info.inputs = node_info_inputs
-    test_client = MagicMock(spec=Client)
-    test_client.get_node_info = MagicMock(return_value=default_node_info)
-    node = Node(node_name="test_node", client=test_client, **node_inputs)
-    assert node.validate() is None
+    node = Node(node_name="test_node")
+    node.node_info = default_node_info
+
+    with patch(
+        "uncertainty_engine.nodes.base.validate_required_inputs"
+    ) as mock_validate_req, patch(
+        "uncertainty_engine.nodes.base.validate_inputs_exist"
+    ) as mock_validate_exist:
+
+        mock_validate_req.return_value = None
+        mock_validate_exist.return_value = None
+
+        assert node.validate() is None
 
 
 @pytest.mark.parametrize(
-    "node_inputs,node_info_inputs,expected_error",
+    "inputs_required,missing_inputs, expected_err",
     [
-        # Missing required input
-        (
-            {"b": 1},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-                "b": NodeInputInfo(type="", label="", description="", required=False),
-            },
-            "Missing required inputs: ['a']",
-        ),
-        # Missing required input included as value but not as key
-        (
-            {"b": "a"},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-                "b": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            "Missing required inputs: ['a']",
-        ),
-        # Invalid input name
-        (
-            {"a": 1, "x": 99},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            "Invalid input names: ['x']",
-        ),
-        # Both missing and invalid inputs
-        (
-            {"y": 10},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            "Missing required inputs: ['a']\nInvalid input names: ['y']",
-        ),
+        (True, True, "err1\nerr2"),
+        (True, False, "err1"),
+        (False, True, "err2"),
     ],
 )
 def test_validate_errors(
     default_node_info: NodeInfo,
-    node_inputs: dict[str, Any],
-    node_info_inputs: dict[str, NodeInputInfo],
-    expected_error: str,
+    inputs_required: bool,
+    missing_inputs: bool,
+    expected_err: str,
 ):
     """
-    Assert `validate` raises the correct error given different incorrect
-    input combinations.
+    Assert `validate` raises a collection of all errors raised by
+    validators.
     """
-    default_node_info.inputs = node_info_inputs
-    test_client = MagicMock(spec=Client)
-    test_client.get_node_info = MagicMock(return_value=default_node_info)
-    node = Node(node_name="test_node", client=test_client, **node_inputs)
+    node = Node(node_name="test_node")
+    node.node_info = default_node_info
 
-    with raises(ValidationError, match=escape(expected_error)):
-        node.validate()
+    with patch(
+        "uncertainty_engine.nodes.base.validate_required_inputs"
+    ) as mock_validate_req, patch(
+        "uncertainty_engine.nodes.base.validate_inputs_exist"
+    ) as mock_validate_exist:
+
+        mock_validate_req.side_effect = (
+            ValidationError("err1") if inputs_required else None
+        )
+        mock_validate_exist.side_effect = (
+            ValidationError("err2") if missing_inputs else None
+        )
+
+        with raises(ValidationError, match=expected_err):
+            node.validate()
 
 
 def test_validate_raises_without_node_info():
