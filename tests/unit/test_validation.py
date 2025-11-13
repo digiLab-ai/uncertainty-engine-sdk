@@ -222,6 +222,7 @@ def test_validate_outputs_exist(
             ["y", "y", "a", "x"],
             {
                 "a": NodeOutputInfo(type="", label="", description=""),
+                "yx": NodeOutputInfo(type="", label="", description=""),
             },
             "Invalid output names: ['y', 'y', 'x']",
         ),

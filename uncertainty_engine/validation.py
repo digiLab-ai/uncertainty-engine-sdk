@@ -64,9 +64,9 @@ def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]):
         node_outputs: A list containing the node output names.
 
     Raises:
-        `NodeValidationError`: If there are 1 or more invalid output names.
-            A list of the invalid output names is returned as part of the
-            error message.
+        `NodeValidationError`: If there are 1 or more invalid output
+            names. A list of the invalid output names is returned as
+            part of the error message.
     """
     invalid_output_names = [
         name for name in node_outputs if (name not in node_info.outputs)
