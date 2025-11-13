@@ -131,7 +131,7 @@ class Node:
             validate_outputs_exist(self.node_info, [output_name])
         except NodeValidationError as e:
             warn(
-                f"{str(e)} Please make a handle using any of the following outputs "
+                f"{str(e)}. Please make a handle using any of the following outputs "
                 f"instead: {list(self.node_info.outputs)}.",
                 stacklevel=2,
             )

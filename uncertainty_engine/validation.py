@@ -53,7 +53,7 @@ def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> N
         raise NodeValidationError(f"Invalid input names: {invalid_input_names}")
 
 
-def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]):
+def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]) -> None:
     """
     Validates that all output names referenced in the `node_outputs` are
     existing output names (as defined by the `node_info`).
@@ -73,4 +73,4 @@ def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]):
     ]
 
     if invalid_output_names:
-        raise NodeValidationError(f"Invalid output names: {invalid_output_names}.")
+        raise NodeValidationError(f"Invalid output names: {invalid_output_names}")
