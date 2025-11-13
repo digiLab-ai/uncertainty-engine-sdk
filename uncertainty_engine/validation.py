@@ -10,10 +10,15 @@ def validate_required_inputs(node_info: NodeInfo, node_inputs: dict[str, Any]) -
     Validates that all required inputs (as listed in the `node_info`)
     are included in the `node_inputs`.
 
+    Args:
+        node_info: A `NodeInfo` object used to validate the node inputs
+            against.
+        node_inputs: A dictionary containing the node inputs.
+
     Raises:
-        `NodeValidationError`: If there are 1 or more missing required inputs.
-            A list of the missing inputs is returned as part of the
-            error message.
+        `NodeValidationError`: If there are 1 or more missing required
+            inputs. A list of the missing inputs is returned as part of
+            the error message.
     """
     missing_inputs = [
         name
@@ -21,7 +26,7 @@ def validate_required_inputs(node_info: NodeInfo, node_inputs: dict[str, Any]) -
         if info.required and name not in node_inputs
     ]
 
-    if len(missing_inputs) > 0:
+    if missing_inputs:
         raise NodeValidationError(f"Missing required inputs: {missing_inputs}")
 
 
@@ -29,6 +34,11 @@ def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> N
     """
     Validates that all input names referenced in the `node_inputs` are
     existing input names (as defined by the `node_info`).
+
+    Args:
+        node_info: A `NodeInfo` object used to validate the node inputs
+            against.
+        node_inputs: A dictionary containing the node inputs.
 
     Raises:
         `NodeValidationError`: If there are 1 or more invalid input names.
@@ -39,5 +49,5 @@ def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> N
         name for name in node_inputs if (name not in node_info.inputs)
     ]
 
-    if len(invalid_input_names) > 0:
+    if invalid_input_names:
         raise NodeValidationError(f"Invalid input names: {invalid_input_names}")
