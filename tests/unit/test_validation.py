@@ -2,12 +2,13 @@ from re import escape
 from typing import Any
 
 from pytest import mark, raises
-from uncertainty_engine_types import NodeInfo, NodeInputInfo
+from uncertainty_engine_types import NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.validation import (
     validate_inputs_exist,
     validate_required_inputs,
+    validate_outputs_exist,
 )
 
 
@@ -159,3 +160,83 @@ def test_validate_inputs_exist_errors(
     default_node_info.inputs = node_info_inputs
     with raises(NodeValidationError, match=escape(expected_error)):
         validate_inputs_exist(default_node_info, node_inputs)
+
+
+@mark.parametrize(
+    "node_outputs,node_info_outputs",
+    [
+        (
+            ["a", "b"],
+            {
+                "a": NodeOutputInfo(type="", label="", description=""),
+                "b": NodeOutputInfo(type="", label="", description=""),
+            },
+        ),
+        (
+            ["a"],
+            {
+                "a": NodeOutputInfo(type="", label="", description=""),
+            },
+        ),
+        (
+            ["b", "b"],
+            {
+                "a": NodeOutputInfo(type="", label="", description=""),
+                "b": NodeOutputInfo(type="", label="", description=""),
+            },
+        ),
+    ],
+)
+def test_validate_outputs_exist(
+    default_node_info: NodeInfo,
+    node_outputs: list[str],
+    node_info_outputs: dict[str, NodeOutputInfo],
+):
+    """
+    Assert `validate_outputs_exist` returns `None` with no errors
+    raised when outputs are correct.
+    """
+    default_node_info.outputs = node_info_outputs
+    assert validate_outputs_exist(default_node_info, node_outputs) is None
+
+
+@mark.parametrize(
+    "node_outputs,node_info_outputs,expected_error",
+    [
+        (
+            ["a", "x"],
+            {
+                "a": NodeOutputInfo(type="", label="", description=""),
+                "b": NodeOutputInfo(type="", label="", description=""),
+            },
+            "Invalid output names: ['x']",
+        ),
+        (
+            ["y"],
+            {
+                "a": NodeOutputInfo(type="", label="", description=""),
+            },
+            "Invalid output names: ['y']",
+        ),
+        (
+            ["y", "y", "a", "x"],
+            {
+                "a": NodeOutputInfo(type="", label="", description=""),
+            },
+            "Invalid output names: ['y', 'y', 'x']",
+        ),
+    ],
+)
+def test_validate_outputs_exist_errors(
+    default_node_info: NodeInfo,
+    node_outputs: list[str],
+    node_info_outputs: dict[str, NodeOutputInfo],
+    expected_error: str,
+):
+    """
+    Assert `validate_outputs_exist` raises the correct errors given
+    different incorrect output combinations.
+    """
+    default_node_info.outputs = node_info_outputs
+    with raises(NodeValidationError, match=escape(expected_error)):
+        validate_outputs_exist(default_node_info, node_outputs)
