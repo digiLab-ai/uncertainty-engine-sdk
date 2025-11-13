@@ -1,10 +1,12 @@
 from typing import Any
 
+from typeguard import typechecked
 from uncertainty_engine_types import NodeInfo
 
 from uncertainty_engine.exceptions import NodeValidationError
 
 
+@typechecked
 def validate_required_inputs(node_info: NodeInfo, node_inputs: dict[str, Any]) -> None:
     """
     Validates that all required inputs (as listed in the `node_info`)
@@ -30,6 +32,7 @@ def validate_required_inputs(node_info: NodeInfo, node_inputs: dict[str, Any]) -
         raise NodeValidationError(f"Missing required inputs: {missing_inputs}")
 
 
+@typechecked
 def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> None:
     """
     Validates that all input names referenced in the `node_inputs` are
@@ -53,6 +56,7 @@ def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> N
         raise NodeValidationError(f"Invalid input names: {invalid_input_names}")
 
 
+@typechecked
 def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]) -> None:
     """
     Validates that all output names referenced in the `node_outputs` are
