@@ -5,6 +5,11 @@ from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.protocols import Client
+from uncertainty_engine.validation import (
+    validate_inputs_exist,
+    validate_required_inputs,
+)
+from uncertainty_engine.exceptions import NodeValidationError
 
 
 class ToolMetadata(TypedDict, total=False):
@@ -69,7 +74,14 @@ class Node:
             )
             return
 
-        self.validate()
+        # TODO: The below validation will only produce warnings however
+        # this try/except can be removed when we want to raise on
+        # validation failure.
+        try:
+            self.validate()
+        except NodeValidationError as e:
+            for msg in e.errors:
+                warn(msg, stacklevel=2)
 
     def __call__(self) -> tuple[str, dict]:
         """
@@ -198,10 +210,13 @@ class Node:
         - Check all required inputs are assigned a value or handle.
         - Check all the given input names exist in the node info.
 
-        A warning is displayed to the user if either of these checks fail.
+        The error messages are collected and then re-raised once the
+        all checks have finished.
 
         Raises:
-            `ValueError` if `self.node_info` is `None`.
+            `ValueError`: If `self.node_info` is `None`.
+            `NodeValidationError`: If validation fails. The error message
+                will contain reasons for failure.
         """
         if not self.node_info:
             raise ValueError("Node info is not available for validation.")
@@ -209,17 +224,12 @@ class Node:
         # Get current node inputs
         _, node_input_dict = self()
 
-        # Check required inputs
-        required_inputs = [
-            name for name, info in self.node_info.inputs.items() if info.required
-        ]
-        missing_inputs = list(set(required_inputs) - set(node_input_dict))
+        errors = []
+        for validator in (validate_required_inputs, validate_inputs_exist):
+            try:
+                validator(self.node_info, node_input_dict)
+            except NodeValidationError as e:
+                errors.append(str(e))
 
-        if len(missing_inputs) > 0:
-            warn(f"Missing required inputs: {missing_inputs}", stacklevel=2)
-
-        # Check input names
-        invalid_input_names = list(set(node_input_dict) - set(self.node_info.inputs))
-
-        if len(invalid_input_names) > 0:
-            warn(f"Invalid input names: {invalid_input_names}", stacklevel=2)
+        if errors:
+            raise NodeValidationError(errors)

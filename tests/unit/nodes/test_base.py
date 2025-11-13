@@ -1,4 +1,3 @@
-from typing import Any
 from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
 
@@ -8,6 +7,7 @@ from typeguard import TypeCheckError
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.client import Client
+from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.nodes.base import Node
 
 
@@ -233,91 +233,64 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
         node.add_tool_output("output2", default_node_info)
 
 
-@pytest.mark.parametrize(
-    "node_inputs,node_info_inputs,expected_warnings",
-    [
-        # Missing required input
-        (
-            {"b": 1},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-                "b": NodeInputInfo(type="", label="", description="", required=False),
-            },
-            ["Missing required inputs: ['a']"],
-        ),
-        # Missing required input included as value but not as key
-        (
-            {"b": "a"},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-                "b": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            ["Missing required inputs: ['a']"],
-        ),
-        # Invalid input name
-        (
-            {"a": 1, "x": 99},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            ["Invalid input names: ['x']"],
-        ),
-        # Both missing and invalid inputs
-        (
-            {"y": 10},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            ["Missing required inputs: ['a']", "Invalid input names: ['y']"],
-        ),
-        # No warnings
-        (
-            {"a": 1},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=True),
-            },
-            [],
-        ),
-        # No warnings when no required inputs
-        (
-            {},
-            {
-                "a": NodeInputInfo(type="", label="", description="", required=False),
-                "b": NodeInputInfo(type="", label="", description="", required=False),
-            },
-            [],
-        ),
-    ],
-)
-def test_validate_warnings(
+def test_validate_no_errors(
     default_node_info: NodeInfo,
-    node_inputs: dict[str, Any],
-    node_info_inputs: dict[str, NodeInputInfo],
-    expected_warnings: list[str],
 ):
     """
-    Assert `validate` displays the correct warnings given different input
-    combinations.
+    Assert `validate` does not raise and return `None` when validators
+    do not raise.
     """
-    default_node_info.inputs = node_info_inputs
-    test_client = MagicMock(spec=Client)
-    test_client.get_node_info = MagicMock(return_value=default_node_info)
-    node = Node(node_name="test_node", client=test_client, **node_inputs)
+    node = Node(node_name="test_node")
+    node.node_info = default_node_info
 
-    with catch_warnings(record=True) as warnings:
-        # Run validate and collect warning messages
-        node.validate()
-        warning_messages = [str(w.message) for w in warnings]
+    with patch(
+        "uncertainty_engine.nodes.base.validate_required_inputs"
+    ) as mock_validate_req, patch(
+        "uncertainty_engine.nodes.base.validate_inputs_exist"
+    ) as mock_validate_exist:
 
-        # Check that each expected warning matches a received warning
-        for expected in expected_warnings:
-            assert any(expected in msg for msg in warning_messages), (
-                f"Expected warning containing '{expected}' not found in received warnings:\n"
-                f"{warning_messages}"
-            )
+        mock_validate_req.return_value = None
+        mock_validate_exist.return_value = None
 
-        # Ensure no unexpected warnings
-        assert len(warning_messages) == len(expected_warnings)
+        assert node.validate() is None
+
+
+@pytest.mark.parametrize(
+    "inputs_required,missing_inputs, expected_err",
+    [
+        (True, True, "err1\nerr2"),
+        (True, False, "err1"),
+        (False, True, "err2"),
+    ],
+)
+def test_validate_errors(
+    default_node_info: NodeInfo,
+    inputs_required: bool,
+    missing_inputs: bool,
+    expected_err: str,
+):
+    """
+    Assert `validate` raises a collection of all errors raised by
+    validators.
+    """
+    node = Node(node_name="test_node")
+    node.node_info = default_node_info
+
+    with patch(
+        "uncertainty_engine.nodes.base.validate_required_inputs"
+    ) as mock_validate_req, patch(
+        "uncertainty_engine.nodes.base.validate_inputs_exist"
+    ) as mock_validate_exist:
+
+        mock_validate_req.side_effect = (
+            NodeValidationError("err1") if inputs_required else None
+        )
+        mock_validate_exist.side_effect = (
+            NodeValidationError("err2") if missing_inputs else None
+        )
+
+        with raises(NodeValidationError, match=expected_err):
+            node.validate()
 
 
 def test_validate_raises_without_node_info():
