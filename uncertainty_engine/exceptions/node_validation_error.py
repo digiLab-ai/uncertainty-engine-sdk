@@ -1,4 +1,4 @@
-class ValidationError(Exception):
+class NodeValidationError(Exception):
     """
     Raised when one or more node validation checks fail.
 

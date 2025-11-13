@@ -9,7 +9,7 @@ from typeguard import TypeCheckError
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.client import Client
-from uncertainty_engine.exceptions import ValidationError
+from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.validation import (
     validate_inputs_exist,
@@ -289,13 +289,13 @@ def test_validate_errors(
     ) as mock_validate_exist:
 
         mock_validate_req.side_effect = (
-            ValidationError("err1") if inputs_required else None
+            NodeValidationError("err1") if inputs_required else None
         )
         mock_validate_exist.side_effect = (
-            ValidationError("err2") if missing_inputs else None
+            NodeValidationError("err2") if missing_inputs else None
         )
 
-        with raises(ValidationError, match=expected_err):
+        with raises(NodeValidationError, match=expected_err):
             node.validate()
 
 

@@ -4,7 +4,7 @@ from typing import Any
 from pytest import mark, raises
 from uncertainty_engine_types import NodeInfo, NodeInputInfo
 
-from uncertainty_engine.exceptions import ValidationError
+from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.validation import (
     validate_inputs_exist,
     validate_required_inputs,
@@ -84,7 +84,7 @@ def test_validate_required_inputs_errors(
     different incorrect input combinations.
     """
     default_node_info.inputs = node_info_inputs
-    with raises(ValidationError, match=escape(expected_error)):
+    with raises(NodeValidationError, match=escape(expected_error)):
         validate_required_inputs(default_node_info, node_inputs)
 
 
@@ -157,5 +157,5 @@ def test_validate_inputs_exist_errors(
     different incorrect input combinations.
     """
     default_node_info.inputs = node_info_inputs
-    with raises(ValidationError, match=escape(expected_error)):
+    with raises(NodeValidationError, match=escape(expected_error)):
         validate_inputs_exist(default_node_info, node_inputs)

@@ -9,7 +9,7 @@ from uncertainty_engine.validation import (
     validate_inputs_exist,
     validate_required_inputs,
 )
-from uncertainty_engine.exceptions import ValidationError
+from uncertainty_engine.exceptions import NodeValidationError
 
 
 class ToolMetadata(TypedDict, total=False):
@@ -79,7 +79,7 @@ class Node:
         # validation failure.
         try:
             self.validate()
-        except ValidationError as e:
+        except NodeValidationError as e:
             for msg in e.errors:
                 warn(msg, stacklevel=2)
 
@@ -215,7 +215,7 @@ class Node:
 
         Raises:
             `ValueError`: If `self.node_info` is `None`.
-            `ValidationError`: If validation fails. The error message
+            `NodeValidationError`: If validation fails. The error message
                 will contain reasons for failure.
         """
         if not self.node_info:
@@ -228,8 +228,8 @@ class Node:
         for validator in (validate_required_inputs, validate_inputs_exist):
             try:
                 validator(self.node_info, node_input_dict)
-            except ValidationError as e:
+            except NodeValidationError as e:
                 errors.append(str(e))
 
         if errors:
-            raise ValidationError(errors)
+            raise NodeValidationError(errors)
