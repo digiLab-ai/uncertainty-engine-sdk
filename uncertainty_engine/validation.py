@@ -73,4 +73,4 @@ def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]):
     ]
 
     if invalid_output_names:
-        raise NodeValidationError(f"Invalid output names: {invalid_output_names}")
+        raise NodeValidationError(f"Invalid output names: {invalid_output_names}.")

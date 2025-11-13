@@ -4,12 +4,13 @@ from warnings import warn
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
+from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.protocols import Client
 from uncertainty_engine.validation import (
     validate_inputs_exist,
+    validate_outputs_exist,
     validate_required_inputs,
 )
-from uncertainty_engine.exceptions import NodeValidationError
 
 
 class ToolMetadata(TypedDict, total=False):
@@ -124,12 +125,14 @@ class Node:
             return handle
 
         # NOTE: If the following condition is true then the node will
-        # fail to run so this could be change to raise an error in a
+        # fail to run so this should be changed to raise an error in a
         # future release.
-        if output_name not in self.node_info.outputs:
+        try:
+            validate_outputs_exist(self.node_info, [output_name])
+        except NodeValidationError as e:
             warn(
-                f"Output '{output_name}' does not exist. This will cause node '{self.label}' to fail. "
-                f"Please make a handle using any of the following outputs instead: {list(self.node_info.outputs)}.",
+                f"{str(e)} Please make a handle using any of the following outputs "
+                f"instead: {list(self.node_info.outputs)}.",
                 stacklevel=2,
             )
         return handle
