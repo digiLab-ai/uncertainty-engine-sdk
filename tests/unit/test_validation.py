@@ -12,6 +12,37 @@ from uncertainty_engine.validation import (
 
 
 @mark.parametrize(
+    "node_inputs,node_info_inputs",
+    [
+        (
+            {"a": 1, "x": 99},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+                "b": NodeInputInfo(type="", label="", description="", required=False),
+            },
+        ),
+        (
+            {"y": 10},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=False),
+            },
+        ),
+    ],
+)
+def test_validate_required_inputs(
+    default_node_info: NodeInfo,
+    node_inputs: dict[str, Any],
+    node_info_inputs: dict[str, NodeInputInfo],
+):
+    """
+    Assert `validate_required_inputs` returns `None` with no errors
+    raised when inputs are correct.
+    """
+    default_node_info.inputs = node_info_inputs
+    assert validate_required_inputs(default_node_info, node_inputs) is None
+
+
+@mark.parametrize(
     "node_inputs,node_info_inputs,expected_error",
     [
         # Missing required input
@@ -58,6 +89,44 @@ def test_validate_required_inputs_errors(
 
 
 @mark.parametrize(
+    "node_inputs,node_info_inputs",
+    [
+        (
+            {"a": 1, "b": 99},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+                "b": NodeInputInfo(type="", label="", description="", required=False),
+            },
+        ),
+        (
+            {"a": 10},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=False),
+            },
+        ),
+        (
+            {"b": 99},
+            {
+                "a": NodeInputInfo(type="", label="", description="", required=True),
+                "b": NodeInputInfo(type="", label="", description="", required=False),
+            },
+        ),
+    ],
+)
+def test_validate_inputs_exist(
+    default_node_info: NodeInfo,
+    node_inputs: dict[str, Any],
+    node_info_inputs: dict[str, NodeInputInfo],
+):
+    """
+    Assert `validate_inputs_exist` returns `None` with no errors
+    raised when inputs are correct.
+    """
+    default_node_info.inputs = node_info_inputs
+    assert validate_inputs_exist(default_node_info, node_inputs) is None
+
+
+@mark.parametrize(
     "node_inputs,node_info_inputs,expected_error",
     [
         (
@@ -87,9 +156,6 @@ def test_validate_inputs_exist_errors(
     Assert `validate_inputs_exist` raises the correct errors given
     different incorrect input combinations.
     """
-    default_node_info.inputs = node_info_inputs
-    with raises(ValidationError, match=escape(expected_error)):
-        validate_inputs_exist(default_node_info, node_inputs)
     default_node_info.inputs = node_info_inputs
     with raises(ValidationError, match=escape(expected_error)):
         validate_inputs_exist(default_node_info, node_inputs)
