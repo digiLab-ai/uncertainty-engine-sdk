@@ -124,9 +124,9 @@ class Node:
             warn("Skipping validation as node info is not available.", stacklevel=2)
             return handle
 
-        # NOTE: If the following condition is true then the node will
-        # fail to run so this should be changed to raise an error in a
-        # future release.
+        # TODO: The below validation code block will only produce
+        # warnings however this try/except can be removed when we want
+        # to raise on validation failure.
         try:
             validate_outputs_exist(self.node_info, [output_name])
         except NodeValidationError as e:
