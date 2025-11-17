@@ -302,3 +302,38 @@ def test_validate_raises_without_node_info():
 
     with raises(ValueError, match="Node info is not available for validation."):
         node.validate()
+
+
+def test_call_basic_functionality():
+    """
+    Verify that __call__ returns correct tuple with node name and filtered inputs.
+    """
+    node = Node("test_node", a=1, b=2, c="test")
+    node_name, inputs = node()
+
+    assert node_name == "test_node"
+    assert inputs == {"a": 1, "b": 2, "c": "test"}
+
+
+def test_call_excludes_internal_attributes(default_node_info: NodeInfo):
+    """
+    Verify that internal attributes are excluded from the input dictionary.
+    """
+    node = Node("test_node", label="test_label", a=1, b=2)
+    default_node_info.inputs = {
+        "input1": NodeInputInfo(
+            type="int", label="test node", description="test node desc"
+        )
+    }
+
+    node.add_tool_input("input1", default_node_info)
+
+    node_name, inputs = node()
+
+    assert node_name == "test_node"
+    assert inputs == {"a": 1, "b": 2}
+    assert "node_name" not in inputs
+    assert "label" not in inputs
+    assert "client" not in inputs
+    assert "node_info" not in inputs
+    assert "tool_metadata" not in inputs
