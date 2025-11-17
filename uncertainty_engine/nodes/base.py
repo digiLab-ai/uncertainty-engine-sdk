@@ -97,7 +97,7 @@ class Node:
             for key in self.__dict__
             # NOTE: Currently any attribute names that are not input
             # parameters should be added here.
-            if key not in ["node_name", "label", "client", "node_info"]
+            if key not in ["node_name", "label", "client", "node_info", "tool_metadata"]
         }
 
         if "tool_metadata" in input and not input["tool_metadata"]:
