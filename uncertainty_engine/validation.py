@@ -65,8 +65,8 @@ def validate_outputs_exist(node_info: NodeInfo, node_outputs: str | list[str]) -
     Args:
         node_info: A `NodeInfo` object used to validate the node outputs
             against.
-        node_outputs: One (`str`) or multiple (`list[str]`) node output
-            names to validate.
+        node_outputs: A single or a list of multiple node output names
+            to validate.
 
     Raises:
         `NodeValidationError`: If there are 1 or more invalid output
