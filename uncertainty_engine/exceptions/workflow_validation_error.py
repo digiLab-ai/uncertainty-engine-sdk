@@ -38,7 +38,7 @@ class WorkflowValidationError(Exception):
         super().__init__(self._format_message())
 
     def _format_message(self) -> str:
-        """Returns a human-readable summary of errors."""
+        """Returns a human-readable categorised summary of errors."""
         parts: list[str] = []
 
         if self.node_errors:
