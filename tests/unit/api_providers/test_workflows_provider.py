@@ -583,3 +583,24 @@ def test_list_versions_api_exception(
         version_manager.list_versions("project-123", "workflow-123")
         version_manager.list_versions("project-123", "workflow-123")
         version_manager.list_versions("project-123", "workflow-123")
+
+
+def test_delete_workflow_success(
+    workflows_provider: WorkflowsProvider,
+    mock_workflows_client: WorkflowsApi,
+):
+    """Test successful workflow deletion."""
+    # Mock the delete_workflow_record method
+    mock_workflows_client.delete_workflow_record = Mock(return_value=None)
+    workflows_provider.workflows_client = mock_workflows_client
+
+    project_id = "project-123"
+    workflow_id = "workflow-456"
+
+    # Should not raise any exceptions
+    workflows_provider.delete_workflow(project_id, workflow_id)
+
+    mock_workflows_client.delete_workflow_record.assert_called_once_with(
+        project_id,
+        workflow_id,
+    )
