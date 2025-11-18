@@ -251,6 +251,40 @@ class WorkflowsProvider(ApiProviderBase):
         )
         return workflow_id
 
+    @ApiProviderBase.with_auth_refresh
+    def delete_workflow(
+        self,
+        project_id: str,
+        workflow_id: str,
+    ) -> None:
+        """
+        Delete a workflow from your project.
+
+        Use this method when you want to permanently remove a workflow
+        from your project. Be cautious, as this action cannot be undone.
+
+        Args:
+            project_id: Your project's unique identifier
+            workflow_id: The ID of the workflow you want to delete
+        """
+        try:
+            self.workflows_client.delete_workflow_record(
+                project_id,
+                workflow_id,
+            )
+
+        except ApiException as e:
+            raise Exception(
+                f"Error deleting workflow: {format_api_error(e)}",
+            )
+
+        except Exception as e:
+            raise Exception(f"Error deleting workflow: {str(e)}")
+
+        print(
+            f"Workflow {workflow_id} deleted successfully from project {project_id}.",
+        )
+
     def get_workflow_id_by_name(self, project_id: str, name: str) -> str:
         """
         Get the unique workflow ID for a workflow by its name within a project.
