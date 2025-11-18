@@ -46,7 +46,6 @@ class WorkflowValidationError(Exception):
             node handle references.
         - requested_output_errors: An optional list of errors related to
             requested output handle references.
-
     """
 
     def __init__(
