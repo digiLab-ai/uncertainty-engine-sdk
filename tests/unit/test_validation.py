@@ -189,7 +189,7 @@ def test_validate_inputs_exist_errors(
 )
 def test_validate_outputs_exist(
     default_node_info: NodeInfo,
-    node_outputs: list[str],
+    node_outputs: str | list[str],
     node_info_outputs: dict[str, NodeOutputInfo],
 ):
     """
@@ -230,7 +230,7 @@ def test_validate_outputs_exist(
 )
 def test_validate_outputs_exist_errors(
     default_node_info: NodeInfo,
-    node_outputs: list[str],
+    node_outputs: str | list[str],
     node_info_outputs: dict[str, NodeOutputInfo],
     expected_error: str,
 ):
