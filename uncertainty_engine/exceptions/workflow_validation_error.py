@@ -2,17 +2,32 @@ from pydantic import BaseModel
 
 
 class NodeErrorInfo(BaseModel):
+    """Describes an error related to a node and its input parameters."""
+
     node_id: str
+    """The unique id (label) for the invalid node in the graph."""
+
     message: str
+    """The specific error message."""
 
 
 class NodeHandleErrorInfo(NodeErrorInfo):
+    """Describes an error related to a node handle reference."""
+
     input_id: str
+    """The id of the input which references the invalid handle."""
 
 
 class RequestedOutputErrorInfo(BaseModel):
+    """
+    Describes an error related to a requested output handle reference.
+    """
+
     requested_output_id: str
+    """The unique id (label) for the invalid requested output."""
+
     message: str
+    """The specific error message."""
 
 
 class WorkflowValidationError(Exception):
@@ -23,6 +38,15 @@ class WorkflowValidationError(Exception):
       - node_errors
       - node_handle_errors
       - requested_output_errors
+
+    Args:
+        - node_errors: An optional list of errors related to nodes and
+            their input parameters.
+        - node_handle_errors: An optional list of errors related to
+            node handle references.
+        - requested_output_errors: An optional list of errors related to
+            requested output handle references.
+
     """
 
     def __init__(
