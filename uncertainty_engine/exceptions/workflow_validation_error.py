@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from uncertainty_engine_types import Handle
 
 
 class NodeErrorInfo(BaseModel):
@@ -8,7 +7,7 @@ class NodeErrorInfo(BaseModel):
 
 
 class NodeHandleErrorInfo(NodeErrorInfo):
-    handle: Handle
+    input_id: str
 
 
 class RequestedOutputErrorInfo(BaseModel):
@@ -48,13 +47,16 @@ class WorkflowValidationError(Exception):
                 parts.append(f"  - [{err.node_id}] {err.message}")
 
         if self.node_handle_errors:
+            # add empty line if previous section exists
+            if parts:
+                parts.append("")
             parts.append("Handle Errors:")
             for err in self.node_handle_errors:
-                parts.append(
-                    f"  - [{err.node_id}:{err.handle.model_dump()}] {err.message}"
-                )
+                parts.append(f"  - [{err.node_id}:{err.input_id}] {err.message}")
 
         if self.requested_output_errors:
+            if parts:
+                parts.append("")
             parts.append("Requested Output Errors:")
             for err in self.requested_output_errors:
                 parts.append(f"  - [{err.requested_output_id}] {err.message}")
