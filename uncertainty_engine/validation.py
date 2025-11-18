@@ -57,7 +57,7 @@ def validate_inputs_exist(node_info: NodeInfo, node_inputs: dict[str, Any]) -> N
 
 
 @typechecked
-def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]) -> None:
+def validate_outputs_exist(node_info: NodeInfo, node_outputs: str | list[str]) -> None:
     """
     Validates that all output names referenced in the `node_outputs` are
     existing output names (as defined by the `node_info`).
@@ -65,13 +65,17 @@ def validate_outputs_exist(node_info: NodeInfo, node_outputs: list[str]) -> None
     Args:
         node_info: A `NodeInfo` object used to validate the node outputs
             against.
-        node_outputs: A list containing the node output names.
+        node_outputs: One (`str`) or multiple (`list[str]`) node output
+            names to validate.
 
     Raises:
         `NodeValidationError`: If there are 1 or more invalid output
             names. A list of the invalid output names is returned as
             part of the error message.
     """
+    if isinstance(node_outputs, str):
+        node_outputs = [node_outputs]
+
     invalid_output_names = [
         name for name in node_outputs if (name not in node_info.outputs)
     ]

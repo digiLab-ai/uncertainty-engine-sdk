@@ -173,7 +173,7 @@ def test_validate_inputs_exist_errors(
             },
         ),
         (
-            ["a"],
+            "a",
             {
                 "a": NodeOutputInfo(type="", label="", description=""),
             },
@@ -212,7 +212,7 @@ def test_validate_outputs_exist(
             "Invalid output names: ['x']",
         ),
         (
-            ["y"],
+            "y",
             {
                 "a": NodeOutputInfo(type="", label="", description=""),
             },

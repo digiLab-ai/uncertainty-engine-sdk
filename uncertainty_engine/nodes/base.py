@@ -128,7 +128,7 @@ class Node:
         # warnings however this try/except can be removed when we want
         # to raise on validation failure.
         try:
-            validate_outputs_exist(self.node_info, [output_name])
+            validate_outputs_exist(self.node_info, output_name)
         except NodeValidationError as e:
             warn(
                 f"{str(e)}. Please make a handle using any of the following outputs "
