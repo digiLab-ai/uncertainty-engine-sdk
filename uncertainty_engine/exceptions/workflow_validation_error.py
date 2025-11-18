@@ -34,17 +34,12 @@ class WorkflowValidationError(Exception):
     """
     Raised when validating an entire workflow fails.
 
-    Contains structured details for:
-      - node_errors
-      - node_handle_errors
-      - requested_output_errors
-
     Args:
-        - node_errors: An optional list of errors related to nodes and
+        node_errors: An optional list of errors related to nodes and
             their input parameters.
-        - node_handle_errors: An optional list of errors related to
+        node_handle_errors: An optional list of errors related to
             node handle references.
-        - requested_output_errors: An optional list of errors related to
+        requested_output_errors: An optional list of errors related to
             requested output handle references.
     """
 
@@ -55,8 +50,13 @@ class WorkflowValidationError(Exception):
         requested_output_errors: list[RequestedOutputErrorInfo] | None = None,
     ):
         self.node_errors = node_errors or []
+        """Errors related to nodes and their input parameters."""
+
         self.node_handle_errors = node_handle_errors or []
+        """Errors related to node handle references."""
+
         self.requested_output_errors = requested_output_errors or []
+        """Errors related to requested output handle references."""
 
         super().__init__(self._format_message())
 
