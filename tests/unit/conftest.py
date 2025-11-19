@@ -94,8 +94,7 @@ def node_info_list(
     add_node_info: NodeInfo, display_node_info: NodeInfo
 ) -> list[NodeInfo]:
     """
-    Returns a list of the add node serialised `NodeInfo` object (as it
-    would appear when fetching via the client `list_nodes` method).
+    Returns a list of the add node and display `NodeInfo` objects.
     """
     return [add_node_info, display_node_info]
 
@@ -122,13 +121,13 @@ def workflow_node_graph() -> dict[str, Any]:
 
 @pytest.fixture
 def workflow_node_inputs() -> dict[str, Any]:
-    """Returns an example `Workflow` node graph input."""
+    """Returns example `Workflow` node external inputs."""
     return {"Test Add_lhs": 2, "Test Add_rhs": 1}
 
 
 @pytest.fixture
 def workflow_node_requested_output() -> dict[str, Any]:
-    """Returns an add workflow serialised `Graph` object."""
+    """Returns example `Workflow` node requested outputs."""
     return {"Answer": {"node_handle": "value", "node_name": "Test Display"}}
 
 
