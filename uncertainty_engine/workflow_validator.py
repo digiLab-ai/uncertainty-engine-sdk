@@ -3,15 +3,20 @@ from typing import Any
 from pydantic import ValidationError
 from typeguard import typechecked
 from uncertainty_engine_types import Graph as WorkflowNodeGraph
-from uncertainty_engine_types import NodeInfo
+from uncertainty_engine_types import NodeElement, NodeInfo
 
 from uncertainty_engine.exceptions import (
     NodeErrorInfo,
     NodeHandleErrorInfo,
+    NodeValidationError,
     RequestedOutputErrorInfo,
     WorkflowValidationError,
 )
 from uncertainty_engine.utils import format_pydantic_error
+from uncertainty_engine.validation import (
+    validate_inputs_exist,
+    validate_required_inputs,
+)
 
 
 class WorkflowValidator:
@@ -85,3 +90,41 @@ class WorkflowValidator:
 
         self.requested_output_errors: list[RequestedOutputErrorInfo] = []
         """Errors related to requested output handle references."""
+
+    def _validate_node_inputs(self, node: tuple[str, NodeElement]) -> None:
+        """
+        Performs the following validation checks on an individual node
+        and its input parameters:
+
+            - Checks the node type exists
+            - Checks the assigned inputs exist on that node type
+            - Checks all required inputs have been assigned a value
+
+        If any of these check fail the unique node id (label) and error
+        message are stored in `self.node_errors` to be raised once
+        validation finishes.
+
+        Args:
+            node: A tuple containing the node key (its unique id in the
+                graph) and value (the assigned inputs and node type).
+        """
+        node_id, node_element = node
+
+        # Check node exists and get relevant node info. If this check
+        # fails the method will return for this node as it will be
+        # unable to perform input validation without the node info.
+        node_info = self.node_infos.get(node_element.type)
+        if node_info is None:
+            self.node_errors.append(
+                NodeErrorInfo(
+                    node_id=node_id,
+                    message=f"The '{node_element.type}' node does not exist.",
+                )
+            )
+            return
+
+        for validator in (validate_required_inputs, validate_inputs_exist):
+            try:
+                validator(node_info, node_element.inputs)
+            except NodeValidationError as e:
+                self.node_errors.append(NodeErrorInfo(node_id=node_id, message=str(e)))
