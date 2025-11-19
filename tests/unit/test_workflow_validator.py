@@ -169,5 +169,5 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
     validator._validate_node_inputs(test_node)
 
     assert validator.node_errors == [
-        NodeErrorInfo(node_id="Test Add", message=f"The 'TestAdd' node does not exist.")
+        NodeErrorInfo(node_id="Test Add", message="The 'TestAdd' node does not exist.")
     ]
