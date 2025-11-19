@@ -1,7 +1,7 @@
 from typing import Any
 
 from typeguard import typechecked
-from uncertainty_engine_types import NodeInfo
+from uncertainty_engine_types import NodeInfo, Handle
 
 from uncertainty_engine.exceptions import NodeValidationError
 

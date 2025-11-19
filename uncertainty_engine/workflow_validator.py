@@ -3,7 +3,7 @@ from typing import Any
 from pydantic import ValidationError
 from typeguard import typechecked
 from uncertainty_engine_types import Graph as WorkflowNodeGraph
-from uncertainty_engine_types import NodeElement, NodeInfo
+from uncertainty_engine_types import Handle, NodeElement, NodeInfo
 
 from uncertainty_engine.exceptions import (
     NodeErrorInfo,
@@ -15,6 +15,7 @@ from uncertainty_engine.exceptions import (
 from uncertainty_engine.utils import format_pydantic_error
 from uncertainty_engine.validation import (
     validate_inputs_exist,
+    validate_outputs_exist,
     validate_required_inputs,
 )
 
@@ -128,3 +129,40 @@ class WorkflowValidator:
                 validator(node_info, node_element.inputs)
             except NodeValidationError as e:
                 self.node_errors.append(NodeErrorInfo(node_id=node_id, message=str(e)))
+
+    def _validate_handles(self, node: tuple[str, NodeElement]):
+        node_id, node_element = node
+        for input_id, handle in node_element.inputs.items():
+            if handle.node_name == self.external_input_id:
+                message = self._get_input_handle_error(handle)
+            else:
+                message = self._get_graph_handle_error(handle)
+
+            if message:
+                self.node_handle_errors.append(
+                    NodeHandleErrorInfo(
+                        node_id=node_id, input_id=input_id, message=message
+                    )
+                )
+
+    def _get_input_handle_error(self, handle: Handle) -> str | None:
+        """Return an error message if external input handle is invalid."""
+        if not self.inputs or handle.node_handle not in self.inputs:
+            return f"External input '{handle.node_handle}' does not exist."
+
+    def _get_graph_handle_error(self, handle: Handle) -> str | None:
+        # Check handle `node_name` is in graph
+        handle_node = self.graph.nodes.get(handle.node_name)
+        if handle_node is None:
+            return f"Node with label '{handle.node_name}' is referenced to but is not in graph."
+
+        # Check node exists
+        node_info = self.node_infos.get(handle_node.type)
+        if node_info is None:
+            return f"The '{handle_node.type}' node does not exist."
+
+        # Check outputs exist
+        try:
+            validate_outputs_exist(node_info, handle.node_handle)
+        except NodeValidationError as e:
+            return str(e)
