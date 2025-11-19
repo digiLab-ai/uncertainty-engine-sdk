@@ -45,15 +45,31 @@ class WorkflowValidator:
         external_input_id: str = "_",
     ):
         self.node_infos = {node_info.id: node_info for node_info in node_info_list}
+        """
+        A dictionary containing all available node infos to validate
+        nodes against.
+        """
+
         self.inputs = inputs
+        """The external inputs to the workflow."""
+
         self.external_input_id = external_input_id
+        """
+        String identifier that refers to external inputs to the graph.
+        """
+
         self.requested_output = requested_output
+        """
+        The requested output from the workflow.
+        """
 
         # Validate graph shape using Pydantic. This is required to
         # perform full graph validation so `WorkflowValidationError` is
         # raised immediately on failure.
         try:
             self.graph = WorkflowNodeGraph(**graph)
+            """The graph of nodes to execute."""
+
         except ValidationError as e:
             raise WorkflowValidationError(
                 f"Invalid workflow graph:\n" + format_pydantic_error(e)
