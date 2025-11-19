@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+DEFAULT_FAILURE_MESSAGE = "Workflow Validation Failed"
+
 
 class NodeErrorInfo(BaseModel):
     """Describes an error related to a node and its input parameters."""
@@ -35,6 +37,9 @@ class WorkflowValidationError(Exception):
     Raised when validating an entire workflow fails.
 
     Args:
+        validation_error: An optional high-level error message
+            describing the reason for validation failure. Defaults to
+            generic validation failure message.
         node_errors: An optional list of errors related to nodes and
             their input parameters.
         node_handle_errors: An optional list of errors related to
@@ -45,10 +50,17 @@ class WorkflowValidationError(Exception):
 
     def __init__(
         self,
+        validation_error: str = DEFAULT_FAILURE_MESSAGE,
         node_errors: list[NodeErrorInfo] | None = None,
         node_handle_errors: list[NodeHandleErrorInfo] | None = None,
         requested_output_errors: list[RequestedOutputErrorInfo] | None = None,
     ):
+        self.validation_error = validation_error
+        """
+        A high-level error message describing reason for validation
+        failure.
+        """
+
         self.node_errors = node_errors or []
         """Errors related to nodes and their input parameters."""
 
@@ -62,26 +74,24 @@ class WorkflowValidationError(Exception):
 
     def _format_message(self) -> str:
         """Returns a human-readable categorised summary of errors."""
-        parts: list[str] = []
+        parts: list[str] = [self.validation_error]
 
         if self.node_errors:
+            parts.append("")
             parts.append("Node Errors:")
             for err in self.node_errors:
-                parts.append(f"  - [{err.node_id}] {err.message}")
+                parts.append(f"  - {err.node_id}: {err.message}")
 
         if self.node_handle_errors:
-            # add empty line if previous section exists
-            if parts:
-                parts.append("")
+            parts.append("")
             parts.append("Handle Errors:")
             for err in self.node_handle_errors:
-                parts.append(f"  - [{err.node_id}:{err.input_id}] {err.message}")
+                parts.append(f"  - {err.node_id} -> {err.input_id}: {err.message}")
 
         if self.requested_output_errors:
-            if parts:
-                parts.append("")
+            parts.append("")
             parts.append("Requested Output Errors:")
             for err in self.requested_output_errors:
-                parts.append(f"  - [{err.requested_output_id}] {err.message}")
+                parts.append(f"  - {err.requested_output_id}: {err.message}")
 
         return "\n".join(parts)

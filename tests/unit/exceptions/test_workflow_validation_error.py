@@ -5,6 +5,8 @@ from uncertainty_engine.exceptions import (
     WorkflowValidationError,
 )
 
+DEFAULT_FAILURE_MESSAGE = "Workflow Validation Failed\n\n"
+
 
 def test_workflow_validation_error_node_errors():
     """Assert node errors are formatted correctly."""
@@ -16,9 +18,9 @@ def test_workflow_validation_error_node_errors():
     err = WorkflowValidationError(node_errors=node_errors)
     received = str(err)
     expected = (
-        "Node Errors:\n"
-        "  - [node1] Missing required input\n"
-        "  - [node2] Input does not exist"
+        DEFAULT_FAILURE_MESSAGE + "Node Errors:\n"
+        "  - node1: Missing required input\n"
+        "  - node2: Input does not exist"
     )
     assert expected == received
 
@@ -41,9 +43,9 @@ def test_workflow_validation_error_handle_errors():
     err = WorkflowValidationError(node_handle_errors=handle_errors)
     received = str(err)
     expected = (
-        "Handle Errors:\n"
-        "  - [node:input1] Handle reference invalid\n"
-        "  - [node:input2] Handle reference invalid"
+        DEFAULT_FAILURE_MESSAGE + "Handle Errors:\n"
+        "  - node -> input1: Handle reference invalid\n"
+        "  - node -> input2: Handle reference invalid"
     )
     assert expected == received
 
@@ -59,7 +61,10 @@ def test_workflow_validation_error_requested_output_errors():
 
     err = WorkflowValidationError(requested_output_errors=req_errors)
     received = str(err)
-    expected = "Requested Output Errors:\n  - [node] Requested output not found"
+    expected = (
+        DEFAULT_FAILURE_MESSAGE
+        + "Requested Output Errors:\n  - node: Requested output not found"
+    )
     assert expected == received
 
 
@@ -89,13 +94,13 @@ def test_workflow_validation_error_all_errors():
     )
     received = str(err)
     expected = (
-        "Node Errors:\n"
-        "  - [node1] Invalid node input\n"
+        DEFAULT_FAILURE_MESSAGE + "Node Errors:\n"
+        "  - node1: Invalid node input\n"
         "\n"
         "Handle Errors:\n"
-        "  - [node2:input] Invalid handle\n"
+        "  - node2 -> input: Invalid handle\n"
         "\n"
         "Requested Output Errors:\n"
-        "  - [req_output] Invalid requested output"
+        "  - req_output: Invalid requested output"
     )
     assert expected == received
