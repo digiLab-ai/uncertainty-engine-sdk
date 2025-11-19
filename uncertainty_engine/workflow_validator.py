@@ -50,6 +50,18 @@ class WorkflowValidator:
         nodes against.
         """
 
+        # Validate graph shape using Pydantic. This is required to
+        # perform full graph validation so `WorkflowValidationError` is
+        # raised immediately on failure.
+        try:
+            self.graph = WorkflowNodeGraph(**graph)
+            """The graph of nodes to execute."""
+
+        except ValidationError as e:
+            raise WorkflowValidationError(
+                f"Invalid workflow graph:\n" + format_pydantic_error(e)
+            )
+
         self.inputs = inputs
         """The external inputs to the workflow."""
 
@@ -63,18 +75,13 @@ class WorkflowValidator:
         The requested output from the workflow.
         """
 
-        # Validate graph shape using Pydantic. This is required to
-        # perform full graph validation so `WorkflowValidationError` is
-        # raised immediately on failure.
-        try:
-            self.graph = WorkflowNodeGraph(**graph)
-            """The graph of nodes to execute."""
-
-        except ValidationError as e:
-            raise WorkflowValidationError(
-                f"Invalid workflow graph:\n" + format_pydantic_error(e)
-            )
-
+        # Categories of errors to be collected and raised once
+        # validation is finished.
         self.node_errors: list[NodeErrorInfo] = []
+        """Errors related to nodes and their input parameters."""
+
         self.node_handle_errors: list[NodeHandleErrorInfo] = []
+        """Errors related to node handle references."""
+
         self.requested_output_errors: list[RequestedOutputErrorInfo] = []
+        """Errors related to requested output handle references."""
