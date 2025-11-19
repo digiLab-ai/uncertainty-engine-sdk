@@ -1,10 +1,11 @@
 from typing import Any
+from unittest.mock import patch
 
 from pytest import mark, raises
-from uncertainty_engine_types import NodeInfo
+from uncertainty_engine_types import NodeElement, NodeInfo
 
-from uncertainty_engine.workflow_validator import WorkflowValidator
 from uncertainty_engine.exceptions import WorkflowValidationError
+from uncertainty_engine.workflow_validator import WorkflowValidator
 
 
 def test_workflow_validator_init(
@@ -89,3 +90,30 @@ def test_workflow_validator_init_value_error(
         match=expected_error,
     ):
         WorkflowValidator(node_info_list, invalid_graph)
+
+
+def test_workflow_validator_validate_node_inputs_no_errors(
+    add_node_info: NodeInfo,
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+):
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+    )
+
+    node_id = "Test Add"
+    node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
+    test_node = (node_id, node_element)
+
+    with patch(
+        "uncertainty_engine.workflow_validator.validate_required_inputs"
+    ) as mock_validate_req, patch(
+        "uncertainty_engine.workflow_validator.validate_inputs_exist"
+    ) as mock_validate_exist:
+        validator._validate_node_inputs(test_node)
+
+        mock_validate_req.assert_called_once_with(add_node_info, node_element.inputs)
+        mock_validate_exist.assert_called_once_with(add_node_info, node_element.inputs)
+
+    assert validator.node_errors == []
