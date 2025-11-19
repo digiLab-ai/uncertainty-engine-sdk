@@ -17,10 +17,22 @@ from uncertainty_engine.utils import format_pydantic_error
 class WorkflowValidator:
     """
     Takes all workflow node inputs along with a list of all available
-    node info and is used to perform full workflow validation.
+    nodes and their info and is used to perform full workflow
+    validation.
 
     Args:
-        nodes_list: List of node info dictionaries as fetched from
+        node_info_list: List of `NodeInfo` objects for each of the available
+            nodes.
+        graph: Workflow node input graph.
+        inputs: Workflow node external inputs. Defaults to `None`.
+        requested_output: Workflow node requested output. Defaults to
+            `None`.
+        external_input_id: Workflow node external input id. Defaults to
+            "_" (same as workflow node).
+
+    Raises:
+        WorkflowValidationError: If workflow validation fails. Error
+            message will contain details of failure.
     """
 
     @typechecked
@@ -37,9 +49,9 @@ class WorkflowValidator:
         self.external_input_id = external_input_id
         self.requested_output = requested_output
 
-        # Validate graph shape using Pydantic.
-        # Will be unable to validate workflow if graph is incorrect
-        # shape so this error is raised immediately.
+        # Validate graph shape using Pydantic. This is required to
+        # perform full graph validation so `WorkflowValidationError` is
+        # raised immediately on failure.
         try:
             self.graph = WorkflowNodeGraph(**graph)
         except ValidationError as e:
