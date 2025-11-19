@@ -1,7 +1,8 @@
 import json
-from typing import TypeAlias, TypeVar, Union, Any
+from typing import Any, TypeAlias, TypeVar, Union
 from warnings import warn
 
+from pydantic import ValidationError
 from typeguard import typechecked
 from uncertainty_engine_resource_client.exceptions import ApiException
 from uncertainty_engine_types import Handle
@@ -59,6 +60,20 @@ def format_api_error(e: ApiException) -> str:
         detail = "No error message"
 
     return f"API Error: {reason}\nDetails: {detail}"
+
+
+@typechecked
+def format_pydantic_error(e: ValidationError) -> str:
+    """
+    Return a human-readable string for any Pydantic ValidationError.
+
+    Each line shows the full path to the field and the validation message.
+    """
+    parts = []
+    for err in e.errors():
+        path = " -> ".join(str(p) for p in err["loc"])
+        parts.append(f"  - {path}: {err['msg']}")
+    return "\n".join(parts)
 
 
 def handle_input_deprecation(

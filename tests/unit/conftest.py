@@ -1,7 +1,8 @@
 import json
 import time
-from typing import Iterator
+from typing import Any, Iterator
 from unittest.mock import MagicMock, Mock, PropertyMock, mock_open, patch
+from warnings import simplefilter
 
 import boto3
 import jwt
@@ -16,8 +17,6 @@ from uncertainty_engine.auth_service import (
 from uncertainty_engine.client import Client
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
-from warnings import simplefilter
-
 
 # Set so python always shows warnings in tests
 simplefilter("always")
@@ -58,6 +57,79 @@ def add_node_info() -> NodeInfo:
             )
         },
     )
+
+
+@pytest.fixture
+def display_node_info() -> NodeInfo:
+    """Provide a display `NodeInfo` object for tests."""
+    return NodeInfo(
+        id="TestDisplay",
+        label="display_label",
+        category="display_category",
+        description="display_description",
+        long_description="display_long_description",
+        image_name="display_image",
+        cost=0,
+        version_base_image=1,
+        version_node=1,
+        inputs={
+            "value": NodeInputInfo(
+                label="Value",
+                type="Any",
+                description="Input value description",
+            ),
+        },
+        outputs={
+            "value": NodeOutputInfo(
+                label="Value",
+                type="Any",
+                description="Output value description",
+            )
+        },
+    )
+
+
+@pytest.fixture
+def node_info_list(
+    add_node_info: NodeInfo, display_node_info: NodeInfo
+) -> list[NodeInfo]:
+    """
+    Returns a list of the add node serialised `NodeInfo` object (as it
+    would appear when fetching via the client `list_nodes` method).
+    """
+    return [add_node_info, display_node_info]
+
+
+@pytest.fixture
+def workflow_node_graph() -> dict[str, Any]:
+    """Returns an example `Workflow` node graph input."""
+    return {
+        "nodes": {
+            "Test Display": {
+                "inputs": {"value": {"node_handle": "ans", "node_name": "Test Add"}},
+                "type": "TestDisplay",
+            },
+            "Test Add": {
+                "inputs": {
+                    "lhs": {"node_handle": "Test Add_lhs", "node_name": "_"},
+                    "rhs": {"node_handle": "Test Add_rhs", "node_name": "_"},
+                },
+                "type": "TestAdd",
+            },
+        }
+    }
+
+
+@pytest.fixture
+def workflow_node_inputs() -> dict[str, Any]:
+    """Returns an example `Workflow` node graph input."""
+    return {"Test Add_lhs": 2, "Test Add_rhs": 1}
+
+
+@pytest.fixture
+def workflow_node_requested_output() -> dict[str, Any]:
+    """Returns an add workflow serialised `Graph` object."""
+    return {"Answer": {"node_handle": "value", "node_name": "Test Display"}}
 
 
 @pytest.fixture
