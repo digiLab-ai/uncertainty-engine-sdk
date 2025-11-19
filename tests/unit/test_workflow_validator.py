@@ -35,12 +35,12 @@ def test_workflow_validator_init(
 @mark.parametrize(
     "invalid_graph, expected_error",
     [
-        ({"invalid": "nodes"}, "Invalid workflow graph:\n  - nodes: Field required"),
+        ({"invalid": "nodes"}, "Invalid workflow graph\n  - nodes: Field required"),
         (
             {"nodes": {"nodes": {}}},
-            "Invalid workflow graph:\n  - nodes -> nodes -> type: Field required",
+            "Invalid workflow graph\n  - nodes -> nodes -> type: Field required",
         ),
-        ({}, "Invalid workflow graph:\n  - nodes: Field required"),
+        ({}, "Invalid workflow graph\n  - nodes: Field required"),
         (
             {
                 "nodes": {
@@ -50,7 +50,7 @@ def test_workflow_validator_init(
                     },
                 }
             },
-            "Invalid workflow graph:\n  - nodes -> Test Display -> inputs -> value: Input should be a valid dictionary or instance of Handle",
+            "Invalid workflow graph\n  - nodes -> Test Display -> inputs -> value: Input should be a valid dictionary or instance of Handle",
         ),
         (
             {
@@ -59,7 +59,7 @@ def test_workflow_validator_init(
                     {"First Add": {}},
                 ]
             },
-            "Invalid workflow graph:\n  - nodes: Input should be a valid dictionary",
+            "Invalid workflow graph\n  - nodes: Input should be a valid dictionary",
         ),  # type: ignore
         (
             {
@@ -73,7 +73,7 @@ def test_workflow_validator_init(
                     }
                 }
             },
-            "Invalid workflow graph:\n  - nodes -> First Add -> type: Input should be a valid string\n  - nodes -> First Add -> inputs: Input should be a valid dictionary",
+            "Invalid workflow graph\n  - nodes -> First Add -> type: Input should be a valid string\n  - nodes -> First Add -> inputs: Input should be a valid dictionary",
         ),
     ],
 )
