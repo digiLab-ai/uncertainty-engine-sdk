@@ -111,6 +111,10 @@ def test_workflow_validator_validate_node_inputs(
     workflow_node_graph: dict[str, Any],
     validation_errors: list[str | None],
 ):
+    """
+    Assert `_validate_node_inputs` stores input validation errors under
+    `self.node_errors` with associated node id and error message.
+    """
     validator = WorkflowValidator(
         node_info_list=node_info_list,
         graph=workflow_node_graph,
@@ -149,6 +153,10 @@ def test_workflow_validator_validate_node_inputs(
 def test_workflow_validator_validate_node_inputs_node_type_error(
     workflow_node_graph: dict[str, Any],
 ):
+    """
+    Asserts `_validate_node_inputs` stores correct error message with
+    associated node id if teh node type does not exist.
+    """
     validator = WorkflowValidator(
         node_info_list=[],
         graph=workflow_node_graph,
