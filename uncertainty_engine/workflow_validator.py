@@ -59,7 +59,7 @@ class WorkflowValidator:
 
         except ValidationError as e:
             raise WorkflowValidationError(
-                f"Invalid workflow graph:\n" + format_pydantic_error(e)
+                "Invalid workflow graph:\n" + format_pydantic_error(e)
             )
 
         self.inputs = inputs
