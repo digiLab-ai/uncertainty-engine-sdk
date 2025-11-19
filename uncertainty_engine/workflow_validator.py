@@ -111,7 +111,7 @@ class WorkflowValidator:
         node_id, node_element = node
 
         # Check node exists and get relevant node info. If this check
-        # fails the method will return for this node as it will be
+        # fails the method will store the error and return as it will be
         # unable to perform input validation without the node info.
         node_info = self.node_infos.get(node_element.type)
         if node_info is None:
