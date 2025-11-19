@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+DEFAULT_FAILURE_MESSAGE = "Workflow Validation Failed"
+
 
 class NodeErrorInfo(BaseModel):
     """Describes an error related to a node and its input parameters."""
@@ -48,7 +50,7 @@ class WorkflowValidationError(Exception):
 
     def __init__(
         self,
-        validation_error: str = "Workflow Validation Failed",
+        validation_error: str = DEFAULT_FAILURE_MESSAGE,
         node_errors: list[NodeErrorInfo] | None = None,
         node_handle_errors: list[NodeHandleErrorInfo] | None = None,
         requested_output_errors: list[RequestedOutputErrorInfo] | None = None,

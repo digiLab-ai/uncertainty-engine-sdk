@@ -5,7 +5,7 @@ from uncertainty_engine.exceptions import (
     WorkflowValidationError,
 )
 
-DEFAULT_VALIDATION_MESSAGE = "Workflow Validation Failed\n\n"
+DEFAULT_FAILURE_MESSAGE = "Workflow Validation Failed\n\n"
 
 
 def test_workflow_validation_error_node_errors():
@@ -18,7 +18,7 @@ def test_workflow_validation_error_node_errors():
     err = WorkflowValidationError(node_errors=node_errors)
     received = str(err)
     expected = (
-        DEFAULT_VALIDATION_MESSAGE + "Node Errors:\n"
+        DEFAULT_FAILURE_MESSAGE + "Node Errors:\n"
         "  - node1: Missing required input\n"
         "  - node2: Input does not exist"
     )
@@ -43,7 +43,7 @@ def test_workflow_validation_error_handle_errors():
     err = WorkflowValidationError(node_handle_errors=handle_errors)
     received = str(err)
     expected = (
-        DEFAULT_VALIDATION_MESSAGE + "Handle Errors:\n"
+        DEFAULT_FAILURE_MESSAGE + "Handle Errors:\n"
         "  - node -> input1: Handle reference invalid\n"
         "  - node -> input2: Handle reference invalid"
     )
@@ -62,7 +62,7 @@ def test_workflow_validation_error_requested_output_errors():
     err = WorkflowValidationError(requested_output_errors=req_errors)
     received = str(err)
     expected = (
-        DEFAULT_VALIDATION_MESSAGE
+        DEFAULT_FAILURE_MESSAGE
         + "Requested Output Errors:\n  - node: Requested output not found"
     )
     assert expected == received
@@ -94,7 +94,7 @@ def test_workflow_validation_error_all_errors():
     )
     received = str(err)
     expected = (
-        DEFAULT_VALIDATION_MESSAGE + "Node Errors:\n"
+        DEFAULT_FAILURE_MESSAGE + "Node Errors:\n"
         "  - node1: Invalid node input\n"
         "\n"
         "Handle Errors:\n"
