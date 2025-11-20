@@ -208,7 +208,7 @@ class WorkflowValidator:
 
         return None
 
-    def _validate_requested_output(self):
+    def _validate_requested_output(self) -> None:
         """
         Validates all handle references to a requested output are valid.
         Performs the following checks for each requested output handle:
