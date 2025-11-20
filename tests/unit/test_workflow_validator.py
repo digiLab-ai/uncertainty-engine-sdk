@@ -6,6 +6,7 @@ from uncertainty_engine_types import NodeElement, NodeInfo
 
 from uncertainty_engine.exceptions import (
     NodeErrorInfo,
+    NodeHandleErrorInfo,
     NodeValidationError,
     WorkflowValidationError,
 )
@@ -170,4 +171,142 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
 
     assert validator.node_errors == [
         NodeErrorInfo(node_id="Test Add", message="The 'TestAdd' node does not exist.")
+    ]
+
+
+@mark.parametrize("node_id", ["Test Add", "Test Display"])
+def test_validate_handles_no_errors(
+    node_id: str,
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """Assert no errors are stored when handles are valid."""
+    node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
+    test_node = (node_id, node_element)
+
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+    )
+    validator._validate_handles(test_node)
+    assert validator.node_handle_errors == []
+
+
+@mark.parametrize("inputs", [None, {}, {"invalid": "Test Add_lhs"}])
+def test_validate_handles_input_error(
+    inputs: dict[str, Any],
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+):
+    """
+    Assert correct errors are stored when handles are invalid input
+    references.
+    """
+    node_id = "Test Add"
+    node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
+    test_node = (node_id, node_element)
+
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=inputs,
+    )
+    validator._validate_handles(test_node)
+    assert validator.node_handle_errors == [
+        NodeHandleErrorInfo(
+            node_id=node_id,
+            message="External input 'Test Add_lhs' does not exist.",
+            input_id="lhs",
+        ),
+        NodeHandleErrorInfo(
+            node_id=node_id,
+            input_id="rhs",
+            message="External input 'Test Add_rhs' does not exist.",
+        ),
+    ]
+
+
+def test_validate_handles_not_in_graph(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+):
+    """
+    Assert correct errors are stored when handles are invalid graph
+    references.
+    """
+    node_id = "Test Display"
+    node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
+    test_node = (node_id, node_element)
+
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph={"nodes": {node_id: node_element.model_dump()}},
+    )
+    validator._validate_handles(test_node)
+
+    assert validator.node_handle_errors == [
+        NodeHandleErrorInfo(
+            node_id=node_id,
+            input_id="value",
+            message="Node with label 'Test Add' is referenced but is not in graph.",
+        ),
+    ]
+
+
+def test_validate_handles_node_does_not_exist(
+    display_node_info: NodeInfo,
+    workflow_node_graph: dict[str, Any],
+):
+    """
+    Assert correct errors are stored when handle `node_name` does not
+    reference a node type that does not exist.
+    """
+    node_id = "Test Display"
+    node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
+    test_node = (node_id, node_element)
+
+    validator = WorkflowValidator(
+        node_info_list=[display_node_info],
+        graph=workflow_node_graph,
+    )
+    validator._validate_handles(test_node)
+
+    assert validator.node_handle_errors == [
+        NodeHandleErrorInfo(
+            node_id=node_id,
+            input_id="value",
+            message="The 'TestAdd' node does not exist.",
+        ),
+    ]
+
+
+def test_validate_handles_outputs_invalid(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+):
+    """
+    Assert correct errors are stored when handle `node_handle` does not
+    exist on node.
+    """
+    node_id = "Test Display"
+    node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
+    test_node = (node_id, node_element)
+
+    validator = WorkflowValidator(
+        node_info_list=node_info_list, graph=workflow_node_graph
+    )
+    with patch(
+        "uncertainty_engine.workflow_validator.validate_outputs_exist"
+    ) as mock_validate_outputs:
+        mock_validate_outputs.side_effect = NodeValidationError("output does not exist")
+        validator._validate_handles(test_node)
+
+    assert validator.node_handle_errors == [
+        NodeHandleErrorInfo(
+            node_id="Test Display",
+            input_id="value",
+            message="output does not exist",
+        )
     ]

@@ -3,7 +3,7 @@ from typing import Any
 from pydantic import ValidationError
 from typeguard import typechecked
 from uncertainty_engine_types import Graph as WorkflowNodeGraph
-from uncertainty_engine_types import NodeElement, NodeInfo
+from uncertainty_engine_types import Handle, NodeElement, NodeInfo
 
 from uncertainty_engine.exceptions import (
     NodeErrorInfo,
@@ -15,6 +15,7 @@ from uncertainty_engine.exceptions import (
 from uncertainty_engine.utils import format_pydantic_error
 from uncertainty_engine.validation import (
     validate_inputs_exist,
+    validate_outputs_exist,
     validate_required_inputs,
 )
 
@@ -128,3 +129,81 @@ class WorkflowValidator:
                 validator(node_info, node_element.inputs)
             except NodeValidationError as e:
                 self.node_errors.append(NodeErrorInfo(node_id=node_id, message=str(e)))
+
+    def _validate_handles(self, node: tuple[str, NodeElement]) -> None:
+        """
+        Validates all handle references of a node are valid. Performs
+        the following checks for each handle:
+
+            - If it references the inputs, it checks the input exists
+            - Otherwise, it checks that the handle referenced exists in
+                the graph
+
+        Any validation errors are stored in `self.node_handle_errors`
+        with the node id, input id, and error message.
+
+        Args:
+            node: A tuple containing the node key (its unique id in the
+                graph) and value (the NodeElement with assigned inputs).
+        """
+        node_id, node_element = node
+        for input_id, handle in node_element.inputs.items():
+            if handle.node_name == self.external_input_id:
+                message = self._get_input_handle_error(handle)
+            else:
+                message = self._get_graph_handle_error(handle)
+
+            if message:
+                self.node_handle_errors.append(
+                    NodeHandleErrorInfo(
+                        node_id=node_id, input_id=input_id, message=message
+                    )
+                )
+
+    def _get_input_handle_error(self, handle: Handle) -> str | None:
+        """
+        Checks whether an external input handle is valid.
+
+        Args:
+            handle: The handle to validate, which should reference an
+                input to the workflow.
+
+        Returns:
+            A string error message if the handle is invalid, otherwise
+            `None`.
+        """
+        if not self.inputs or handle.node_handle not in self.inputs:
+            return f"External input '{handle.node_handle}' does not exist."
+
+        return None
+
+    def _get_graph_handle_error(self, handle: Handle) -> str | None:
+        """
+        Validates a handle that references a node output in the workflow
+        graph. The following checks are made:
+
+            - Checks the referenced node exists in the graph
+            - Checks the referenced node type is valid
+            - Checks the referenced output exists on the node
+
+        Args:
+            handle: The handle to validate.
+
+        Returns:
+            A string error message if the handle is invalid, otherwise
+            `None`.
+        """
+        handle_node = self.graph.nodes.get(handle.node_name)
+        if handle_node is None:
+            return f"Node with label '{handle.node_name}' is referenced but is not in graph."
+
+        node_info = self.node_infos.get(handle_node.type)
+        if node_info is None:
+            return f"The '{handle_node.type}' node does not exist."
+
+        try:
+            validate_outputs_exist(node_info, handle.node_handle)
+        except NodeValidationError as e:
+            return str(e)
+
+        return None
