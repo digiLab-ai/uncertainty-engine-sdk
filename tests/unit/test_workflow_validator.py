@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from pytest import mark, raises
 from uncertainty_engine_types import Handle, NodeElement, NodeInfo
