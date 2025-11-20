@@ -372,7 +372,7 @@ def test_validate_requested_output_handle_obj_error(
     assert validator.requested_output_errors == [
         RequestedOutputErrorInfo(
             requested_output_id="Answer",
-            message="Requested output must be a serialised dictionary, not a `Handle` object.",
+            message="Requested output must be a dictionary, not a `Handle` object. Did you mean to use `handle.model_dump()`?",
         ),
     ]
 

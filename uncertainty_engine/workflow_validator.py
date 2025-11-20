@@ -248,7 +248,7 @@ class WorkflowValidator:
                     RequestedOutputErrorInfo(
                         requested_output_id=output_id,
                         message=(
-                            "Requested output must be a serialised dictionary, not a `Handle` object."
+                            "Requested output must be a dictionary, not a `Handle` object. Did you mean to use `handle.model_dump()`?"
                         ),
                     )
                 )
