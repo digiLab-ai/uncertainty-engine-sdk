@@ -1,15 +1,20 @@
+import warnings
 from typing import Any, TypedDict
 from warnings import warn
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
-from uncertainty_engine.exceptions import NodeValidationError
+from uncertainty_engine.exceptions import NodeValidationError, WorkflowValidationError
 from uncertainty_engine.protocols import Client
 from uncertainty_engine.validation import (
     validate_inputs_exist,
     validate_outputs_exist,
     validate_required_inputs,
+)
+
+warnings.showwarning = lambda message, category, *_, **__: print(  # type: ignore
+    f"{category.__name__}: {message}"
 )
 
 
@@ -80,9 +85,8 @@ class Node:
         # validation failure.
         try:
             self.validate()
-        except NodeValidationError as e:
-            for msg in e.errors:
-                warn(msg, stacklevel=2)
+        except (NodeValidationError, WorkflowValidationError, ValueError) as e:
+            warn(str(e), stacklevel=2)
 
     def __call__(self) -> tuple[str, dict]:
         """
@@ -97,7 +101,15 @@ class Node:
             for key in self.__dict__
             # NOTE: Currently any attribute names that are not input
             # parameters should be added here.
-            if key not in ["node_name", "label", "client", "node_info", "tool_metadata"]
+            if key
+            not in [
+                "node_name",
+                "label",
+                "client",
+                "node_info",
+                "nodes_list",
+                "tool_metadata",
+            ]
         }
 
         if "tool_metadata" in input and not input["tool_metadata"]:
@@ -121,7 +133,6 @@ class Node:
         handle = Handle(f"{self.label}.{output_name}")
 
         if not self.node_info:
-            warn("Skipping validation as node info is not available.", stacklevel=2)
             return handle
 
         # TODO: The below validation code block will only produce

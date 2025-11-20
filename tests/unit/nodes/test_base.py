@@ -125,21 +125,6 @@ def test_node_make_handle_with_node_info(add_node_info: NodeInfo):
         assert len(warnings) == 0
 
 
-def test_node_make_handle_no_node_info_warning():
-    """
-    Verify result for test node with `make_handle` method and that
-    correct warnings are shown when node info is not available.
-    """
-    node = Node("TestAdd", label="test_label")
-    with catch_warnings(record=True) as warnings:
-        assert node.make_handle("output") == Handle("test_label.output")
-        assert len(warnings) == 1
-        assert (
-            str(warnings[0].message)
-            == "Skipping validation as node info is not available."
-        )
-
-
 @mark.parametrize("output_name", ["a", "output", "", "Answer"])
 def test_node_make_handle_invalid_handle_warning(
     add_node_info: NodeInfo, output_name: str

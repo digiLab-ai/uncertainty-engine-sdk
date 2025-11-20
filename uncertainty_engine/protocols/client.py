@@ -1,4 +1,4 @@
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from uncertainty_engine_types import NodeInfo
 
@@ -36,5 +36,18 @@ class Client(Protocol):
 
         Returns:
             Information about the node as a NodeInfo object.
+        """
+        ...
+
+    def list_nodes(self, category: str | None = None) -> list[dict[str, Any]]:
+        """
+        List all available nodes in the specified deployment.
+
+        Args:
+            category: The category of nodes to list. If not specified, all nodes are listed.
+                Defaults to ``None``.
+
+        Returns:
+            List of available nodes. Each list item is a dictionary of information about the node.
         """
         ...

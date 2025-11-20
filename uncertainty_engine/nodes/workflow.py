@@ -1,11 +1,14 @@
 from typing import Any, TypedDict
+from warnings import warn
 
 from typeguard import typechecked
+from uncertainty_engine_types import NodeInfo
 
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import handle_input_deprecation
+from uncertainty_engine.workflow_validator import WorkflowValidator
 
 
 class ToolMetadata(TypedDict):
@@ -72,6 +75,7 @@ class Workflow(Node):
         self.external_input_id = external_input_id
         self.inputs = final_inputs
         self.tool_metadata = tool_metadata
+        self.nodes_list = self._get_nodes_list(client) if client else None
 
         super().__init__(
             node_name=self.node_name,
@@ -112,3 +116,43 @@ class Workflow(Node):
             tool_metadata=tool_metadata,
             requested_output=requested_output,
         )
+
+    def _get_nodes_list(self, client: Client) -> list[NodeInfo] | None:
+        """
+        Returns a list of NodeInfo objects from the client, or None if
+        the client is not provided or a validation error occurs.
+
+        Args:
+            client: Client to be used to fetch node information.
+        """
+        try:
+            return [NodeInfo(**node_info) for node_info in client.list_nodes()]
+        except Exception:
+            warn(
+                "Unable to get node info list. Workflow node will not be able to perform validation."
+            )
+            return None
+
+    def validate(self) -> None:
+        """
+        Validates the entire workflow using the list of nodes fetched
+        from the client and set as `self.nodes_list`:
+
+        The error messages are collected and then re-raised once the
+        all checks have finished.
+
+        Raises:
+            `ValueError`: If `self.nodes_list` is `None`.
+            `WorkflowValidationError`: If validation fails. The error
+                message will contain reasons for failure.
+        """
+        if self.nodes_list is None:
+            raise ValueError("Nodes list is not available for validation.")
+
+        validator = WorkflowValidator(
+            node_info_list=self.nodes_list,
+            graph=self.graph,
+            inputs=self.inputs,
+            requested_output=self.requested_output,
+        )
+        validator.validate()
