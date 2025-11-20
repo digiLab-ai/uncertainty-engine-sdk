@@ -208,7 +208,7 @@ class WorkflowValidator:
 
         return None
 
-    def _validate_requested_output(self, requested_output: dict[str, Any]):
+    def _validate_requested_output(self):
         """
         Validates all handle references to a requested output are valid.
         Performs the following checks for each requested output handle:
@@ -222,13 +222,22 @@ class WorkflowValidator:
         Any validation errors are stored in
         `self.requested_output_errors` with the requested output id
         and error message.
-
-        Args:
-            node: A requested output item (a dictionary containing the
-                requested output id a as the key and the requested
-                output handle as the value).
         """
-        for output_id, handle_dict in requested_output.items():
+        if not self.requested_output:
+            return
+
+        for output_id, handle_dict in self.requested_output.items():
+            if isinstance(handle_dict, Handle):
+                self.requested_output_errors.append(
+                    RequestedOutputErrorInfo(
+                        requested_output_id=output_id,
+                        message=(
+                            "Requested output must be a *serialised* dictionary, not a `Handle` object."
+                        ),
+                    )
+                )
+                continue
+
             try:
                 handle = Handle(**handle_dict)
             except (TypeError, ValidationError):

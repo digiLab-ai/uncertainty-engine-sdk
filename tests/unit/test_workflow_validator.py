@@ -2,12 +2,13 @@ from typing import Any
 from unittest.mock import patch
 
 from pytest import mark, raises
-from uncertainty_engine_types import NodeElement, NodeInfo
+from uncertainty_engine_types import Handle, NodeElement, NodeInfo
 
 from uncertainty_engine.exceptions import (
     NodeErrorInfo,
     NodeHandleErrorInfo,
     NodeValidationError,
+    RequestedOutputErrorInfo,
     WorkflowValidationError,
 )
 from uncertainty_engine.workflow_validator import WorkflowValidator
@@ -309,4 +310,112 @@ def test_validate_handles_outputs_invalid(
             input_id="value",
             message="output does not exist",
         )
+    ]
+
+
+@mark.parametrize(
+    "requested_output",
+    [
+        {"Answer": {"node_handle": "value", "node_name": "Test Display"}},
+        {
+            "Answer1": {"node_handle": "value", "node_name": "Test Display"},
+            "Answer2": {"node_handle": "ans", "node_name": "Test Add"},
+        },
+    ],
+)
+def test_validate_handles_no_errors(
+    requested_output: dict[str, Any],
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """
+    Assert no errors are stored when requested_outputs are valid are
+    valid.
+    """
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=requested_output,
+    )
+
+    validator._validate_requested_output()
+    assert validator.requested_output_errors == []
+
+
+@mark.parametrize(
+    "requested_output",
+    [
+        {"Answer": Handle(node_handle="value", node_name="Test Display")},
+        {
+            "Answer": Handle(node_handle="value", node_name="Test Display"),
+            "Answer2": {"node_handle": "ans", "node_name": "Test Add"},
+        },
+    ],
+)
+def test_validate_handles_handle_obj_error(
+    requested_output: dict[str, Any],
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """
+    Assert no errors are stored when requested_outputs are valid are
+    valid.
+    """
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=requested_output,
+    )
+
+    validator._validate_requested_output()
+    assert validator.requested_output_errors == [
+        RequestedOutputErrorInfo(
+            requested_output_id="Answer",
+            message="Requested output must be a *serialised* dictionary, not a `Handle` object.",
+        ),
+    ]
+
+
+@mark.parametrize(
+    "requested_output",
+    [
+        {"Answer": 2},
+        {"Answer": "Handle"},
+        {
+            "Answer": {"node_handle": "value"},
+            "Answer2": {"node_handle": "ans", "node_name": "Test Add"},
+        },
+        {
+            "Answer": {"handle": "value", "name": "Test Display"},
+            "Answer2": {"node_handle": "ans", "node_name": "Test Add"},
+        },
+    ],
+)
+def test_validate_handles_invalid_dict_error(
+    requested_output: dict[str, Any],
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """
+    Assert no errors are stored when requested_outputs are valid are
+    valid.
+    """
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=requested_output,
+    )
+
+    validator._validate_requested_output()
+    assert validator.requested_output_errors == [
+        RequestedOutputErrorInfo(
+            requested_output_id="Answer",
+            message="Each requested output must be a dictionary with keys 'node_name' and 'node_handle', referencing values in the workflow graph.",
+        ),
     ]
