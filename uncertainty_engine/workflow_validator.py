@@ -92,7 +92,7 @@ class WorkflowValidator:
         self.requested_output_errors: list[RequestedOutputErrorInfo] = []
         """Errors related to requested output handle references."""
 
-    def validate(self):
+    def validate(self) -> None:
         """
         Validate a workflow. Performs the following checks:
 
@@ -118,6 +118,8 @@ class WorkflowValidator:
                 node_handle_errors=self.node_handle_errors,
                 requested_output_errors=self.requested_output_errors,
             )
+
+        return None
 
     def _validate_node_inputs(self, node: tuple[str, NodeElement]) -> None:
         """

@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from pytest import mark, raises
 from uncertainty_engine_types import Handle, NodeElement, NodeInfo
@@ -96,6 +96,111 @@ def test_workflow_validator_init_value_error(
         match=expected_error,
     ):
         WorkflowValidator(node_info_list, invalid_graph)
+
+
+def test_validate_no_errors(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    """Assert validate does not raise for a valid workflow."""
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=workflow_node_requested_output,
+    )
+
+    validator.validate()
+    assert validator.node_errors == []
+    assert validator.node_handle_errors == []
+    assert validator.requested_output_errors == []
+
+
+def test_validate_empty_graph():
+    """Assert validate doesn't raise for an empty graph."""
+    validator = WorkflowValidator(
+        node_info_list=[],
+        graph={"nodes": {}},
+    )
+
+    validator.validate()
+    assert validator.node_errors == []
+    assert validator.node_handle_errors == []
+    assert validator.requested_output_errors == []
+
+
+def test_validate_node_input_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=workflow_node_requested_output,
+    )
+
+    validator.node_errors.append(
+        NodeErrorInfo(node_id="TestAdd", message="input error")
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nNode Errors:\n  - TestAdd: input error",
+    ):
+        validator.validate()
+
+
+def test_validate_handle_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=workflow_node_requested_output,
+    )
+
+    validator.node_handle_errors.append(
+        NodeHandleErrorInfo(node_id="TestAdd", input_id="lhs", message="handle error")
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nHandle Errors:\n  - TestAdd -> lhs: handle error",
+    ):
+        validator.validate()
+
+
+def test_validate_requested_output_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=workflow_node_requested_output,
+    )
+
+    validator.requested_output_errors.append(
+        RequestedOutputErrorInfo(requested_output_id="Answer", message="output error")
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nRequested Output Errors:\n  - Answer: output error",
+    ):
+        validator.validate()
 
 
 @mark.parametrize(
