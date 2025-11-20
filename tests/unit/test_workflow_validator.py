@@ -250,7 +250,7 @@ def test_validate_handles_not_in_graph(
         NodeHandleErrorInfo(
             node_id=node_id,
             input_id="value",
-            message="Node with label 'Test Add' is referenced to but is not in graph.",
+            message="Node with label 'Test Add' is referenced but is not in graph.",
         ),
     ]
 

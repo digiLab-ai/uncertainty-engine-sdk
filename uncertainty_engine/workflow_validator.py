@@ -130,7 +130,7 @@ class WorkflowValidator:
             except NodeValidationError as e:
                 self.node_errors.append(NodeErrorInfo(node_id=node_id, message=str(e)))
 
-    def _validate_handles(self, node: tuple[str, NodeElement]):
+    def _validate_handles(self, node: tuple[str, NodeElement]) -> None:
         """
         Validates all handle references of a node are valid. Performs
         the following checks for each handle:
@@ -175,6 +175,8 @@ class WorkflowValidator:
         if not self.inputs or handle.node_handle not in self.inputs:
             return f"External input '{handle.node_handle}' does not exist."
 
+        return None
+
     def _get_graph_handle_error(self, handle: Handle) -> str | None:
         """
         Validates a handle that references a node output in the workflow
@@ -193,7 +195,7 @@ class WorkflowValidator:
         """
         handle_node = self.graph.nodes.get(handle.node_name)
         if handle_node is None:
-            return f"Node with label '{handle.node_name}' is referenced to but is not in graph."
+            return f"Node with label '{handle.node_name}' is referenced but is not in graph."
 
         node_info = self.node_infos.get(handle_node.type)
         if node_info is None:
@@ -203,3 +205,5 @@ class WorkflowValidator:
             validate_outputs_exist(node_info, handle.node_handle)
         except NodeValidationError as e:
             return str(e)
+
+        return None
