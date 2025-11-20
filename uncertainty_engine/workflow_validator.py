@@ -224,7 +224,7 @@ class WorkflowValidator:
 
         return None
 
-    def _validate_requested_output(self):
+    def _validate_requested_output(self) -> None:
         """
         Validates all handle references to a requested output are valid.
         Performs the following checks for each requested output handle:
@@ -248,7 +248,7 @@ class WorkflowValidator:
                     RequestedOutputErrorInfo(
                         requested_output_id=output_id,
                         message=(
-                            "Requested output must be a *serialised* dictionary, not a `Handle` object."
+                            "Requested output must be a serialised dictionary, not a `Handle` object."
                         ),
                     )
                 )
