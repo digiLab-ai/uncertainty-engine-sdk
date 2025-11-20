@@ -178,9 +178,8 @@ class WorkflowValidator:
     def _get_graph_handle_error(self, handle: Handle) -> str | None:
         """
         Validates a handle that references a node output in the workflow
-        graph.
+        graph. The following checks are made:
 
-        Performs the following checks:
             - Checks the referenced node exists in the graph
             - Checks the referenced node type is valid
             - Checks the referenced output exists on the node
