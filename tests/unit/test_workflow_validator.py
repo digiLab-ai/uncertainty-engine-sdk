@@ -323,16 +323,13 @@ def test_validate_handles_outputs_invalid(
         },
     ],
 )
-def test_validate_handles_no_errors(
+def test_validate_requested_output_no_errors(
     requested_output: dict[str, Any],
     node_info_list: list[NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
-    """
-    Assert no errors are stored when requested_outputs are valid are
-    valid.
-    """
+    """Assert no errors are stored when requested outputs are valid."""
     validator = WorkflowValidator(
         node_info_list=node_info_list,
         graph=workflow_node_graph,
@@ -354,15 +351,15 @@ def test_validate_handles_no_errors(
         },
     ],
 )
-def test_validate_handles_handle_obj_error(
+def test_validate_requested_output_handle_obj_error(
     requested_output: dict[str, Any],
     node_info_list: list[NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
     """
-    Assert no errors are stored when requested_outputs are valid are
-    valid.
+    Assert correct errors are stored when requested output is not
+    serialisable.
     """
     validator = WorkflowValidator(
         node_info_list=node_info_list,
@@ -395,15 +392,15 @@ def test_validate_handles_handle_obj_error(
         },
     ],
 )
-def test_validate_handles_invalid_dict_error(
+def test_validate_requested_output_invalid_dict_error(
     requested_output: dict[str, Any],
     node_info_list: list[NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
     """
-    Assert no errors are stored when requested_outputs are valid are
-    valid.
+    Assert correct errors are stored when requested output is not
+    a valid handle reference dictionary.
     """
     validator = WorkflowValidator(
         node_info_list=node_info_list,
@@ -417,5 +414,80 @@ def test_validate_handles_invalid_dict_error(
         RequestedOutputErrorInfo(
             requested_output_id="Answer",
             message="Each requested output must be a dictionary with keys 'node_name' and 'node_handle', referencing values in the workflow graph.",
+        ),
+    ]
+
+
+@mark.parametrize(
+    "requested_output",
+    [
+        {"Answer": {"node_handle": "Test Add_lhs", "node_name": "_"}},
+        {
+            "Answer": {"node_handle": "Test Add_lhs", "node_name": "_"},
+            "Answer2": {"node_handle": "ans", "node_name": "Test Add"},
+        },
+    ],
+)
+def test_validate_requested_output_input_reference(
+    requested_output: dict[str, Any],
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """
+    Assert correct errors are stored when requested output is not
+    a valid handle reference dictionary.
+    """
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=requested_output,
+    )
+
+    validator._validate_requested_output()
+    assert validator.requested_output_errors == [
+        RequestedOutputErrorInfo(
+            requested_output_id="Answer",
+            message="Requested outputs cannot reference workflow inputs.",
+        ),
+    ]
+
+
+@mark.parametrize(
+    "requested_output, expected_message",
+    [
+        (
+            {"Answer": {"node_handle": "value", "node_name": "invalid"}},
+            "Node with label 'invalid' is referenced but is not in graph.",
+        ),
+        (
+            {"Answer": {"node_handle": "invalid", "node_name": "Test Display"}},
+            "Invalid output names: ['invalid']",
+        ),
+    ],
+)
+def test_validate_requested_output_invalid_output_error(
+    requested_output: dict[str, Any],
+    expected_message: str,
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """
+    Assert correct errors are stored when requested output references an
+    invalid output in graph.
+    """
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=requested_output,
+    )
+
+    validator._validate_requested_output()
+    assert validator.requested_output_errors == [
+        RequestedOutputErrorInfo(
+            requested_output_id="Answer", message=expected_message
         ),
     ]
