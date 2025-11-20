@@ -98,6 +98,98 @@ def test_workflow_validator_init_value_error(
         WorkflowValidator(node_info_list, invalid_graph)
 
 
+def test_validate_no_errors(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    """Assert validate does not raise for a valid workflow."""
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=workflow_node_requested_output,
+    )
+
+    validator.validate()
+    assert validator.node_errors == []
+    assert validator.node_handle_errors == []
+    assert validator.requested_output_errors == []
+
+
+def test_validate_empty_graph():
+    """Assert validate doesn't raise for an empty graph."""
+    validator = WorkflowValidator(
+        node_info_list=[],
+        graph={"nodes": {}},
+    )
+
+    validator.validate()
+    assert validator.node_errors == []
+    assert validator.node_handle_errors == []
+    assert validator.requested_output_errors == []
+
+
+def test_validate_node_and_handle_error(
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    """Assert validate raises correct errors."""
+    validator = WorkflowValidator(
+        node_info_list=[],
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output=workflow_node_requested_output,
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node does not exist.\n  - Test Add: The 'TestAdd' node does not exist.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node does not exist.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node does not exist.",
+    ):
+        validator.validate()
+
+
+def test_validate_node_handle_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    """Assert validate raises correct errors."""
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        requested_output=workflow_node_requested_output,
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nHandle Errors:\n  - Test Add -> lhs: External input 'Test Add_lhs' does not exist.\n  - Test Add -> rhs: External input 'Test Add_rhs' does not exist.",
+    ):
+        validator.validate()
+
+
+def test_validate_requested_output_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """Assert validate raises correct errors."""
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output={"Answer": "ans"},
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nRequested Output Errors:\n  - Answer: Each requested output must be a dictionary with keys 'node_name' and 'node_handle', referencing values in the workflow graph.",
+    ):
+        validator.validate()
+
+
 @mark.parametrize(
     "validation_errors",
     [
