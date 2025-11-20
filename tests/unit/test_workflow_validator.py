@@ -131,78 +131,61 @@ def test_validate_empty_graph():
     assert validator.requested_output_errors == []
 
 
-@mark.parametrize(
-    "node_errors, handle_errors, requested_output_errors, expected_message",
-    [
-        (
-            [NodeErrorInfo(node_id="TestAdd", message="input error")],
-            [],
-            [],
-            "Node Errors:\n  - TestAdd: input error",
-        ),
-        (
-            [],
-            [
-                NodeHandleErrorInfo(
-                    node_id="TestAdd", input_id="lhs", message="handle error"
-                ),
-                NodeHandleErrorInfo(
-                    node_id="TestAdd", input_id="rhs", message="handle error"
-                ),
-            ],
-            [],
-            "Handle Errors:\n  - TestAdd -> lhs: handle error",
-        ),
-        (
-            [NodeErrorInfo(node_id="TestAdd", message="input error")],
-            [],
-            [
-                RequestedOutputErrorInfo(
-                    requested_output_id="Answer", message="output error"
-                )
-            ],
-            "Node Errors:\n  - TestAdd: input error\n\nRequested Output Errors:\n  - Answer: output error",
-        ),
-        (
-            [NodeErrorInfo(node_id="TestAdd", message="input error")],
-            [
-                NodeHandleErrorInfo(
-                    node_id="TestAdd", input_id="lhs", message="handle error"
-                )
-            ],
-            [
-                RequestedOutputErrorInfo(
-                    requested_output_id="Answer", message="output error"
-                )
-            ],
-            "Node Errors:\n  - TestAdd: input error\n\nHandle Errors:\n  - TestAdd -> lhs: handle error\n\nRequested Output Errors:\n  - Answer: output error",
-        ),
-    ],
-)
-def test_validate_errors(
-    node_errors: list[NodeErrorInfo],
-    handle_errors: list[NodeHandleErrorInfo],
-    requested_output_errors: list[RequestedOutputErrorInfo],
-    expected_message: str,
-    node_info_list: list[NodeInfo],
+def test_validate_node_and_handle_error(
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
     workflow_node_requested_output: dict[str, Any],
 ):
+    """Assert validate raises correct errors."""
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_list=[],
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=workflow_node_requested_output,
     )
 
-    validator.node_errors = node_errors
-    validator.node_handle_errors = handle_errors
-    validator.requested_output_errors = requested_output_errors
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node does not exist.\n  - Test Add: The 'TestAdd' node does not exist.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node does not exist.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node does not exist.",
+    ):
+        validator.validate()
+
+
+def test_validate_node_handle_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_requested_output: dict[str, Any],
+):
+    """Assert validate raises correct errors."""
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        requested_output=workflow_node_requested_output,
+    )
 
     with raises(
         WorkflowValidationError,
-        match=f"Workflow Validation Failed\n\n{expected_message}",
+        match="Workflow Validation Failed\n\nHandle Errors:\n  - Test Add -> lhs: External input 'Test Add_lhs' does not exist.\n  - Test Add -> rhs: External input 'Test Add_rhs' does not exist.",
+    ):
+        validator.validate()
+
+
+def test_validate_requested_output_error(
+    node_info_list: list[NodeInfo],
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """Assert validate raises correct errors."""
+    validator = WorkflowValidator(
+        node_info_list=node_info_list,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        requested_output={"Answer": "ans"},
+    )
+
+    with raises(
+        WorkflowValidationError,
+        match="Workflow Validation Failed\n\nRequested Output Errors:\n  - Answer: Each requested output must be a dictionary with keys 'node_name' and 'node_handle', referencing values in the workflow graph.",
     ):
         validator.validate()
 
