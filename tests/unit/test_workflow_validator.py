@@ -372,7 +372,7 @@ def test_validate_requested_output_handle_obj_error(
     assert validator.requested_output_errors == [
         RequestedOutputErrorInfo(
             requested_output_id="Answer",
-            message="Requested output must be a *serialised* dictionary, not a `Handle` object.",
+            message="Requested output must be a serialised dictionary, not a `Handle` object.",
         ),
     ]
 
@@ -435,8 +435,8 @@ def test_validate_requested_output_input_reference(
     workflow_node_inputs: dict[str, Any],
 ):
     """
-    Assert correct errors are stored when requested output is not
-    a valid handle reference dictionary.
+    Assert correct errors are stored when requested output references
+    workflow inputs.
     """
     validator = WorkflowValidator(
         node_info_list=node_info_list,
