@@ -92,6 +92,22 @@ class WorkflowValidator:
         self.requested_output_errors: list[RequestedOutputErrorInfo] = []
         """Errors related to requested output handle references."""
 
+    def validate(self):
+        """"""
+        for node in self.graph.nodes.items():
+            self._validate_node_inputs(node)
+            self._validate_handles(node)
+
+        self._validate_requested_output()
+
+        # Raise errors once validation is finished
+        if self.node_errors or self.node_handle_errors or self.requested_output_errors:
+            raise WorkflowValidationError(
+                node_errors=self.node_errors,
+                node_handle_errors=self.node_handle_errors,
+                requested_output_errors=self.requested_output_errors,
+            )
+
     def _validate_node_inputs(self, node: tuple[str, NodeElement]) -> None:
         """
         Performs the following validation checks on an individual node
