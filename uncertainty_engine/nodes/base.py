@@ -4,7 +4,7 @@ from warnings import warn
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
-from uncertainty_engine.exceptions import NodeValidationError
+from uncertainty_engine.exceptions import NodeValidationError, WorkflowValidationError
 from uncertainty_engine.protocols import Client
 from uncertainty_engine.validation import (
     validate_inputs_exist,
@@ -80,9 +80,8 @@ class Node:
         # validation failure.
         try:
             self.validate()
-        except NodeValidationError as e:
-            for msg in e.errors:
-                warn(msg, stacklevel=2)
+        except (NodeValidationError, WorkflowValidationError, ValueError) as e:
+            warn(str(e), stacklevel=2)
 
     def __call__(self) -> tuple[str, dict]:
         """
