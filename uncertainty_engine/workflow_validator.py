@@ -119,7 +119,7 @@ class WorkflowValidator:
                 requested_output_errors=self.requested_output_errors,
             )
 
-        return None
+        return
 
     def _validate_node_inputs(self, node: tuple[str, NodeElement]) -> None:
         """
