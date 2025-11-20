@@ -93,14 +93,25 @@ class WorkflowValidator:
         """Errors related to requested output handle references."""
 
     def validate(self):
-        """"""
+        """
+        Validate a workflow. Performs the following checks:
+
+            - Validates all nodes exist and have valid inputs
+            - Validates all node handles are valid
+            - Validates all requested outputs are valid
+
+        Any errors are collected and raised once validation is finished.
+
+        Raises:
+            WorkflowValidationError: If workflow validation fails. The
+                error message will contain all details for failure.
+        """
         for node in self.graph.nodes.items():
             self._validate_node_inputs(node)
             self._validate_handles(node)
 
         self._validate_requested_output()
 
-        # Raise errors once validation is finished
         if self.node_errors or self.node_handle_errors or self.requested_output_errors:
             raise WorkflowValidationError(
                 node_errors=self.node_errors,
