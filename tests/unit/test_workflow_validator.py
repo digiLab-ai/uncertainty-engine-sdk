@@ -261,7 +261,7 @@ def test_validate_handles_node_does_not_exist(
 ):
     """
     Assert correct errors are stored when handle `node_name` does not
-    references a node type that does not exist.
+    reference a node type that does not exist.
     """
     node_id = "Test Display"
     node_element = NodeElement(**workflow_node_graph["nodes"][node_id])
