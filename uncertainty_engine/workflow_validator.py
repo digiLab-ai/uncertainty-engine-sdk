@@ -207,3 +207,49 @@ class WorkflowValidator:
             return str(e)
 
         return None
+
+    def _validate_requested_output(self, requested_output: dict[str, Any]):
+        """
+        Validates all handle references to a requested output are valid.
+        Performs the following checks for each requested output handle:
+
+            - Checks the output reference is a valid handle dictionary
+            - If it references the inputs, it will add an error
+                (requested outputs should not reference external inputs)
+            - Otherwise, it checks that the handle referenced exists in
+                the graph
+
+        Any validation errors are stored in
+        `self.requested_output_errors` with the requested output id
+        and error message.
+
+        Args:
+            node: A requested output item (a dictionary containing the
+                requested output id a as the key and the requested
+                output handle as the value).
+        """
+        for output_id, handle_dict in requested_output.items():
+            try:
+                handle = Handle(**handle_dict)
+            except (TypeError, ValidationError):
+                self.requested_output_errors.append(
+                    RequestedOutputErrorInfo(
+                        requested_output_id=output_id,
+                        message=(
+                            "Each requested output must be a dictionary with keys 'node_name' and 'node_handle', referencing values in the workflow graph."
+                        ),
+                    )
+                )
+                continue
+
+            if handle.node_name == self.external_input_id:
+                message = "Requested outputs cannot reference workflow inputs."
+            else:
+                message = self._get_graph_handle_error(handle)
+
+            if message:
+                self.requested_output_errors.append(
+                    RequestedOutputErrorInfo(
+                        requested_output_id=output_id, message=message
+                    )
+                )
