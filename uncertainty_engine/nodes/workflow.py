@@ -143,10 +143,10 @@ class Workflow(Node):
 
         Raises:
             `ValueError`: If `self.node_info` is `None`.
-            `WorkflowValidationError`: If validation fails. The error message
-                will contain reasons for failure.
+            `WorkflowValidationError`: If validation fails. The error
+                message will contain reasons for failure.
         """
-        if not self.nodes_list:
+        if self.nodes_list is None:
             raise ValueError("Nodes list is not available for validation.")
 
         validator = WorkflowValidator(
@@ -155,5 +155,4 @@ class Workflow(Node):
             inputs=self.inputs,
             requested_output=self.requested_output,
         )
-
         validator.validate()
