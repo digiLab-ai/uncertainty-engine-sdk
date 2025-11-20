@@ -73,8 +73,8 @@ def test_workflow_initialization_no_client(simple_graph: Graph):
         },
     }
     assert node.inputs == {"add_lhs": 1, "add_rhs": 2}
-    assert node.client == None
-    assert node.nodes_list == None
+    assert node.client is None
+    assert node.nodes_list is None
 
 
 def test_get_nodes_list(mock_client: Client, add_node_info: NodeInfo):
