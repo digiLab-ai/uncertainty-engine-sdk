@@ -1,9 +1,11 @@
 import inspect
 from typing import Optional, Type, Union
+from warnings import warn
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle
 
+from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.nodes.base import Node
 
 
@@ -81,6 +83,18 @@ class Graph:
                 if ki not in ["self", "label", "client"]
             }
 
+        # TODO: The below validation code block will only produce
+        # warnings however this try/except can be removed when we want
+        # to raise on validation failure.
+        try:
+            self.validate_label_is_unique(label)
+        except GraphValidationError as e:
+            warn(
+                f"{str(e)}. Please use a unique label for your node to "
+                "prevent it from being overwritten.",
+                stacklevel=2,
+            )
+
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
 
     def add_nodes_from(self, nodes: list[Node]) -> None:
@@ -119,6 +133,20 @@ class Graph:
             value: The value of the input.
         """
         self.external_input[key] = value
+
+    def validate_label_is_unique(self, label: str) -> None:
+        """
+        Validate that a node label is unique within the graph.
+
+        Args:
+            label: The label to validate.
+
+        Raises:
+            GraphValidationError: If the label is not unique.
+        """
+
+        if label in self.nodes["nodes"]:
+            raise GraphValidationError(f"Label '{label}' already used in the graph")
 
     def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
         """
