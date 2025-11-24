@@ -383,3 +383,22 @@ def test_process_metadata_with_no_tool_metadata():
     # Verify that tool metadata remains empty
     assert graph.tool_metadata["inputs"] == {}
     assert graph.tool_metadata["outputs"] == {}
+
+
+def test_graph_add_node_duplicate_label_issues_warning():
+    """
+    Verify that a warning is issued if a node with a duplicate label is
+    added.
+    """
+    graph = Graph()
+
+    add1 = Add(lhs=1, rhs=2, label="duplicate")
+    add2 = Add(lhs=3, rhs=4, label="duplicate")
+
+    graph.add_node(add1)
+
+    with pytest.warns(
+        UserWarning,
+        match="Label 'duplicate' already used in the graph",
+    ):
+        graph.add_node(add2)
