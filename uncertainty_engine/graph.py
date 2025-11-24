@@ -5,7 +5,7 @@ from warnings import warn
 from typeguard import typechecked
 from uncertainty_engine_types import Handle
 
-from uncertainty_engine.exceptions.graph_validation_error import GraphValidationError
+from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.nodes.base import Node
 
 
