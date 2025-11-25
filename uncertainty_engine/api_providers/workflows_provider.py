@@ -207,7 +207,7 @@ class WorkflowsProvider(ApiProviderBase):
 
         # Pass the client to force validation and suppress missing
         # client warnings
-        workflow["client"] = client if client else None
+        workflow["client"] = client
 
         return Workflow(**workflow)
 
