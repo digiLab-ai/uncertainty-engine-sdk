@@ -226,6 +226,29 @@ def test_load_workflow_success(
     )
 
 
+def test_load_workflow_with_metadata(
+    workflows_provider: WorkflowsProvider,
+    mock_executable_workflow: WorkflowExecutable,
+):
+    """Test loading a workflow with a 'metadata' key in inputs."""
+
+    mock_executable_workflow.inputs["metadata"] = {"some": "metadata"}
+
+    workflows_provider._version_manager.read_version = Mock(
+        return_value=mock_executable_workflow
+    )
+
+    result: Workflow = workflows_provider.load(
+        "project-123",
+        "workflow-123",
+        "version-456",
+    )
+
+    # This check is enough; if metadata was not removed, the Workflow
+    # init would fail
+    assert isinstance(result, Workflow)
+
+
 def test_save_workflow_new(
     workflows_provider: WorkflowsProvider,
     mock_workflow: Workflow,
