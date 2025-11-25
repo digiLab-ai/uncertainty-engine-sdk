@@ -26,6 +26,7 @@ from uncertainty_engine.api_providers.models import (
 )
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.nodes.workflow import Workflow
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import format_api_error
 
 
@@ -175,6 +176,7 @@ class WorkflowsProvider(ApiProviderBase):
         self,
         project_id: str,
         workflow_id: str,
+        client: Client | None = None,
         version_id: Optional[str] = None,
     ) -> Workflow:
         """
@@ -183,6 +185,8 @@ class WorkflowsProvider(ApiProviderBase):
         Args:
             project_id: Your project's unique identifier
             workflow_id: The ID of the workflow you want to read
+            client: An optional Client instance to associate with the
+                loaded Workflow, needed for validation.
             version_id: The specific version ID to read. Defaults to none, which retrieves the latest version.
 
         Returns:
@@ -200,6 +204,10 @@ class WorkflowsProvider(ApiProviderBase):
         # Remove metadata if present; relevant for workflows
         # saved/exported via the GUI and loaded in the SDK
         workflow.pop("metadata", None)
+
+        # Pass the client to force validation and suppress missing
+        # client warnings
+        workflow["client"] = client
 
         return Workflow(**workflow)
 

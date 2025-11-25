@@ -212,7 +212,9 @@ def test_load_workflow_success(
     )
 
     result: Workflow = workflows_provider.load(
-        "project-123", "workflow-123", "version-456"
+        "project-123",
+        "workflow-123",
+        version_id="version-456",
     )
 
     assert isinstance(result, Workflow)
@@ -241,7 +243,7 @@ def test_load_workflow_with_metadata(
     result: Workflow = workflows_provider.load(
         "project-123",
         "workflow-123",
-        "version-456",
+        version_id="version-456",
     )
 
     # This check is enough; if metadata was not removed, the Workflow
