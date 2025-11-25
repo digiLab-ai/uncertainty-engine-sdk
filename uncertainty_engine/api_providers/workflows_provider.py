@@ -197,6 +197,10 @@ class WorkflowsProvider(ApiProviderBase):
         )
         workflow = executable_workflow.inputs
 
+        # Remove metadata if present; relevant for workflows
+        # saved/exported via the GUI and loaded in the SDK
+        workflow.pop("metadata", None)
+
         return Workflow(**workflow)
 
     @ApiProviderBase.with_auth_refresh
