@@ -25,7 +25,7 @@ def mock_sensor_designer():
     return sensor_designer
 
 
-def test_build_sensor_designer(mock_client: Client):
+def test_build_sensor_designer():
     """
     Verify result for arbitrary test input.
     """
@@ -46,7 +46,6 @@ def test_build_sensor_designer(mock_client: Client):
         sensor_data=sensor_data,
         quantities_of_interest_data=qoi_data,
         sigma=sigma,
-        client=mock_client,
     )
 
     assert node() == (
@@ -57,7 +56,6 @@ def test_build_sensor_designer(mock_client: Client):
             "sigma": sigma,
         },
     )
-    assert node.client == mock_client
 
 
 def test_build_sensor_designer_no_sigma():
@@ -137,9 +135,7 @@ def test_build_sensor_designer_list_sigma():
     )
 
 
-def test_suggest_sensor_design(
-    mock_client: Client, mock_sensor_designer: dict[str, Any]
-):
+def test_suggest_sensor_design(mock_sensor_designer: dict[str, Any]):
     """
     Verify result for arbitrary test input.
     """
@@ -151,7 +147,6 @@ def test_suggest_sensor_design(
         sensor_designer=mock_sensor_designer,
         num_sensors=num_sensors,
         num_eval=num_eval,
-        client=mock_client,
     )
 
     assert node() == (
@@ -162,10 +157,9 @@ def test_suggest_sensor_design(
             "num_eval": num_eval,
         },
     )
-    assert node.client == mock_client
 
 
-def test_score_sensor_design(mock_client: Client, mock_sensor_designer: dict[str, Any]):
+def test_score_sensor_design(mock_sensor_designer: dict[str, Any]):
     """
     Verify result for arbitrary test input.
     """
@@ -173,7 +167,8 @@ def test_score_sensor_design(mock_client: Client, mock_sensor_designer: dict[str
     design = ["sensor_1", "sensor_2"]
 
     node = ScoreSensorDesign(
-        sensor_designer=mock_sensor_designer, design=design, client=mock_client
+        sensor_designer=mock_sensor_designer,
+        design=design,
     )
 
     assert node() == (
@@ -183,4 +178,3 @@ def test_score_sensor_design(mock_client: Client, mock_sensor_designer: dict[str
             "design": design,
         },
     )
-    assert node.client == mock_client

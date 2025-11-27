@@ -1,6 +1,5 @@
 import inspect
 from typing import Optional, Type, Union
-from warnings import warn
 
 from typeguard import typechecked
 from uncertainty_engine_types import Handle

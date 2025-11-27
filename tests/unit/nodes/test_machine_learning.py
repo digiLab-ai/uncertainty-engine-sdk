@@ -13,7 +13,7 @@ from uncertainty_engine.nodes.machine_learning import (
 )
 
 
-def test_export_torch_script_initialization(mock_client: Client, mock_handle: Handle):
+def test_export_torch_script_initialization(mock_handle: Handle):
     """Test the initialization of the ExportTorchScript node."""
 
     label = "Test Export Torch Script"
@@ -22,7 +22,6 @@ def test_export_torch_script_initialization(mock_client: Client, mock_handle: Ha
         model=mock_handle,
         validation_inputs=mock_handle,
         label=label,
-        client=mock_client,
     )
 
     assert node.node_name == "ExportTorchScript"
@@ -30,10 +29,9 @@ def test_export_torch_script_initialization(mock_client: Client, mock_handle: Ha
     assert node.validation_inputs == mock_handle
     assert node.observation_noise is True
     assert node.label == label
-    assert node.client == mock_client
 
 
-def test_model_config_initialization(mock_client: Client):
+def test_model_config_initialization():
     """Test the initialization of the ModelConfig node."""
 
     node = ModelConfig(
@@ -46,7 +44,6 @@ def test_model_config_initialization(mock_client: Client):
         warp_inputs=True,
         seed=42,
         label="Model Config",
-        client=mock_client,
     )
 
     assert node.node_name == "ModelConfig"
@@ -59,10 +56,9 @@ def test_model_config_initialization(mock_client: Client):
     assert node.warp_inputs is True
     assert node.seed == 42
     assert node.label == "Model Config"
-    assert node.client == mock_client
 
 
-def test_predict_model_initialization(mock_client: Client, mock_handle: Handle):
+def test_predict_model_initialization(mock_handle: Handle):
     """Test the initialization of the PredictModel node."""
 
     # Example values, test with handles and direct objects
@@ -72,19 +68,15 @@ def test_predict_model_initialization(mock_client: Client, mock_handle: Handle):
         model=mock_handle,
         dataset=mock_handle,
         label=label,
-        client=mock_client,
     )
 
     assert node.node_name == "PredictModel"
     assert node.model == mock_handle
     assert node.dataset == mock_handle
     assert node.label == label
-    assert node.client == mock_client
 
 
-def test_predict_posterior_conditioning_initialization(
-    mock_client: Client, mock_handle: Handle
-):
+def test_predict_posterior_conditioning_initialization(mock_handle: Handle):
     """Test the initialization of the PredictPosteriorConditioning node."""
 
     node = PredictPosteriorConditioning(
@@ -92,7 +84,6 @@ def test_predict_posterior_conditioning_initialization(
         conditioning_outputs=mock_handle,
         model=mock_handle,
         prediction_inputs=mock_handle,
-        client=mock_client,
     )
 
     assert node.node_name == "PredictPosteriorConditioning"
@@ -100,10 +91,9 @@ def test_predict_posterior_conditioning_initialization(
     assert node.conditioning_outputs == mock_handle
     assert node.model == mock_handle
     assert node.prediction_inputs == mock_handle
-    assert node.client == mock_client
 
 
-def test_recommend_initialization(mock_client: Client, mock_handle: Handle):
+def test_recommend_initialization(mock_handle: Handle):
     """Test the initialization of the Recommend node."""
 
     num_of_points = 10
@@ -113,17 +103,15 @@ def test_recommend_initialization(mock_client: Client, mock_handle: Handle):
         model=mock_handle,
         acquisition_function=acquisition_function,
         num_of_points=num_of_points,
-        client=mock_client,
     )
 
     assert node.node_name == "Recommend"
     assert node.model == mock_handle
     assert node.acquisition_function == acquisition_function
     assert node.num_of_points == num_of_points
-    assert node.client == mock_client
 
 
-def test_train_model_initialization(mock_client: Client, mock_handle: Handle):
+def test_train_model_initialization(mock_handle: Handle):
     """Test the initialization of the TrainModel node."""
 
     # Example values, test with handles and direct objects
@@ -135,7 +123,6 @@ def test_train_model_initialization(mock_client: Client, mock_handle: Handle):
         inputs=mock_handle,
         outputs=mock_handle,
         label=label,
-        client=mock_client,
     )
 
     assert node.node_name == "TrainModel"
@@ -143,10 +130,9 @@ def test_train_model_initialization(mock_client: Client, mock_handle: Handle):
     assert node.inputs == mock_handle
     assert node.outputs == mock_handle
     assert node.label == label
-    assert node.client == mock_client
 
 
-def test_score_model_initialization(mock_client: Client, mock_handle: Handle):
+def test_score_model_initialization(mock_handle: Handle):
     """Test the initialization of the ScoreModel node."""
 
     label = "Test Score Model"
@@ -155,7 +141,6 @@ def test_score_model_initialization(mock_client: Client, mock_handle: Handle):
         predictions=mock_handle,
         truth=mock_handle,
         label=label,
-        client=mock_client,
     )
 
     assert node.node_name == "ScoreModel"
@@ -165,4 +150,3 @@ def test_score_model_initialization(mock_client: Client, mock_handle: Handle):
     assert node.train_outputs is None
     assert node.metrics == ["MSE", "RMSE", "R2"]
     assert node.label == label
-    assert node.client == mock_client
