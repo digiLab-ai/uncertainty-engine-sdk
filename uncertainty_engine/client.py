@@ -248,8 +248,8 @@ class Client:
         self,
         project_id: str,
         workflow_id: str,
-        inputs: Optional[list[dict[str, str]]] = None,
-        outputs: Optional[list[dict[str, str]]] = None,
+        inputs: Optional[list[dict[str, Any]]] = None,
+        outputs: Optional[list[dict[str, Any]]] = None,
     ) -> Job:
         """
         Queue a workflow for execution
@@ -338,8 +338,8 @@ class Client:
         self,
         project_id: str,
         workflow_id: str,
-        inputs: Optional[list[dict[str, str]]] = None,
-        outputs: Optional[list[dict[str, str]]] = None,
+        inputs: Optional[list[dict[str, Any]]] = None,
+        outputs: Optional[list[dict[str, Any]]] = None,
     ) -> JobInfo:
         """
         Run a workflow synchronously.
