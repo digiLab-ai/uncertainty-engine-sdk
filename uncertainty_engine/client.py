@@ -3,6 +3,7 @@ from time import sleep
 from typing import Any, Optional, Union
 
 from pydantic import BaseModel
+from requests import HTTPError
 from typeguard import typechecked
 from uncertainty_engine_types import JobInfo, JobStatus, NodeInfo
 
@@ -187,10 +188,23 @@ class Client:
 
         Returns:
             Information about the node as a NodeInfo object.
+
+        Raises:
+            HTTPError: If the node does not exist (404) or another
+                HTTP error occurs.
         """
 
-        node_info = self.core_api.get(f"/nodes/{node}")
-        return NodeInfo(**node_info)
+        try:
+            node_info = self.core_api.get(f"/nodes/{node}")
+            return NodeInfo(**node_info)
+
+        except HTTPError as e:
+            if e.response is not None and e.response.status_code == 404:
+                reason = e.response.reason
+                raise HTTPError(
+                    f"404 {reason}: The node '{node}' does not exist."
+                ) from e
+            raise
 
     def queue_node(
         self,
