@@ -76,9 +76,15 @@ def validate_outputs_exist(node_info: NodeInfo, node_outputs: str | list[str]) -
     if isinstance(node_outputs, str):
         node_outputs = [node_outputs]
 
+    valid_output_names = list(node_info.outputs)
+
     invalid_output_names = [
-        name for name in node_outputs if (name not in node_info.outputs)
+        name for name in node_outputs if (name not in valid_output_names)
     ]
 
     if invalid_output_names:
-        raise NodeValidationError(f"Invalid output names: {invalid_output_names}")
+        raise NodeValidationError(
+            f"Invalid output names: {invalid_output_names}. "
+            "Please make a handle using any of the following outputs "
+            f"instead: {valid_output_names}."
+        )

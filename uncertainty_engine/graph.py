@@ -83,17 +83,7 @@ class Graph:
                 if ki not in ["self", "label", "client"]
             }
 
-        # TODO: The below validation code block will only produce
-        # warnings however this try/except can be removed when we want
-        # to raise on validation failure.
-        try:
-            self.validate_label_is_unique(label)
-        except GraphValidationError as e:
-            warn(
-                f"{str(e)}. Please use a unique label for your node to "
-                "prevent it from being overwritten.",
-                stacklevel=2,
-            )
+        self.validate_label_is_unique(label)
 
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
 
@@ -146,7 +136,11 @@ class Graph:
         """
 
         if label in self.nodes["nodes"]:
-            raise GraphValidationError(f"Label '{label}' already used in the graph")
+            raise GraphValidationError(
+                f"Label '{label}' already used in the graph. Please use "
+                "a unique label for your node to prevent it from being "
+                "overwritten."
+            )
 
     def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
         """
