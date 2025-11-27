@@ -200,8 +200,9 @@ class Client:
 
         except HTTPError as e:
             if e.response is not None and e.response.status_code == 404:
+                reason = e.response.reason
                 raise HTTPError(
-                    f"404 Client Error: The node '{node}' does not exist."
+                    f"404 {reason}: The node '{node}' does not exist."
                 ) from e
             raise
 
