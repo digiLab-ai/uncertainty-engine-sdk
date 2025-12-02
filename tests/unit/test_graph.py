@@ -397,8 +397,8 @@ def test_graph_add_node_duplicate_label_issues_warning():
 
     graph.add_node(add1)
 
-    with pytest.raises(
-        ValueError,
+    with pytest.warns(
+        UserWarning,
         match="Label 'duplicate' already used in the graph",
     ):
         graph.add_node(add2)
