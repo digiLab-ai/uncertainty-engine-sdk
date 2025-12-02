@@ -1,6 +1,5 @@
 from uncertainty_engine_types import Handle, ResourceID
 
-from uncertainty_engine.client import Client
 from uncertainty_engine.nodes.resource_management import (
     Download,
     LoadChatHistory,

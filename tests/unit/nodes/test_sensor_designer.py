@@ -2,7 +2,6 @@ from typing import Any
 
 import pytest
 
-from uncertainty_engine.client import Client
 from uncertainty_engine.nodes.sensor_designer import (
     BuildSensorDesigner,
     ScoreSensorDesign,

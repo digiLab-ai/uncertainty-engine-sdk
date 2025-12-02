@@ -1,7 +1,6 @@
 from uncertainty_engine_types import Handle
 from uncertainty_engine_types import ModelConfig as ModelConfigType
 
-from uncertainty_engine.client import Client
 from uncertainty_engine.nodes.machine_learning import (
     ExportTorchScript,
     ModelConfig,
