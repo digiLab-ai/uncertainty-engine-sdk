@@ -399,6 +399,6 @@ def test_graph_add_node_duplicate_label_issues_warning():
 
     with pytest.warns(
         UserWarning,
-        match='Node "duplicate" overwritten. Use unique labels to prevent overwriting.',
+        match="Node 'duplicate' overwritten. Use unique labels to prevent overwriting.",
     ):
         graph.add_node(add2)

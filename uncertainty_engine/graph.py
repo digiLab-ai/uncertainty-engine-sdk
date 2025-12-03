@@ -90,7 +90,7 @@ class Graph:
             self.validate_label_is_unique(label)
         except GraphValidationError:
             warn(
-                f'Node "{label}" overwritten. '
+                f"Node '{label}' overwritten. "
                 "Use unique labels to prevent overwriting.",
                 stacklevel=2,
             )
