@@ -88,10 +88,10 @@ class Graph:
         # to raise on validation failure.
         try:
             self.validate_label_is_unique(label)
-        except GraphValidationError as e:
+        except GraphValidationError:
             warn(
-                f"{str(e)}. Please use a unique label for your node to "
-                "prevent it from being overwritten.",
+                f'Node "{label}" overwritten. '
+                "Use unique labels to prevent overwriting.",
                 stacklevel=2,
             )
 
