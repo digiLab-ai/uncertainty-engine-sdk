@@ -126,20 +126,19 @@ def test_node_make_handle_with_node_info(add_node_info: NodeInfo):
 
 
 @mark.parametrize("output_name", ["a", "output", "", "Answer"])
-def test_node_make_handle_invalid_handle_warning(
+def test_node_make_handle_invalid_handle_error(
     add_node_info: NodeInfo, output_name: str
 ):
     """
     Verify result for test node with `make_handle` method and that
-    correct warnings are shown when output name does not exist.
+    correct error is raised when output name does not exist.
     """
     node = Node("TestAdd", label="test_label")
     node.node_info = add_node_info
-    with catch_warnings(record=True) as warnings:
+    with pytest.raises(NodeValidationError) as excinfo:
         assert node.make_handle(output_name) == Handle(f"test_label.{output_name}")
-        assert len(warnings) == 1
         assert (
-            str(warnings[0].message)
+            str(excinfo.value)
             == f"Invalid output names: ['{output_name}']. Please make a handle using any of the following outputs instead: ['ans']."
         )
 

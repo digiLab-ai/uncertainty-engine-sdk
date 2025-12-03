@@ -555,7 +555,7 @@ def test_validate_requested_output_input_reference(
         ),
         (
             {"Answer": {"node_handle": "invalid", "node_name": "Test Display"}},
-            "Invalid output names: ['invalid']",
+            "Invalid output names: ['invalid']. Please make a handle using any of the following outputs instead: ['value'].",
         ),
     ],
 )

@@ -5,7 +5,7 @@ from warnings import warn
 from typeguard import typechecked
 from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
 
-from uncertainty_engine.exceptions import NodeValidationError, WorkflowValidationError
+from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.protocols import Client
 from uncertainty_engine.validation import (
     validate_inputs_exist,
@@ -80,13 +80,7 @@ class Node:
             )
             return
 
-        # TODO: The below validation will only produce warnings however
-        # this try/except can be removed when we want to raise on
-        # validation failure.
-        try:
-            self.validate()
-        except (NodeValidationError, WorkflowValidationError, ValueError) as e:
-            warn(str(e), stacklevel=2)
+        self.validate()
 
     def __call__(self) -> tuple[str, dict]:
         """
@@ -135,17 +129,8 @@ class Node:
         if not self.node_info:
             return handle
 
-        # TODO: The below validation code block will only produce
-        # warnings however this try/except can be removed when we want
-        # to raise on validation failure.
-        try:
-            validate_outputs_exist(self.node_info, output_name)
-        except NodeValidationError as e:
-            warn(
-                f"{str(e)}. Please make a handle using any of the following outputs "
-                f"instead: {list(self.node_info.outputs)}.",
-                stacklevel=2,
-            )
+        validate_outputs_exist(self.node_info, output_name)
+
         return handle
 
     def add_tool_input(self, handle_name: str, node_info: NodeInfo) -> None:
