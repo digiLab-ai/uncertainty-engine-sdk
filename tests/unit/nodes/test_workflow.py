@@ -1,3 +1,5 @@
+from typing import Any
+
 from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
 
@@ -10,38 +12,27 @@ from uncertainty_engine.nodes.workflow import Workflow
 
 
 def test_workflow_initialization_with_client(
-    mock_client: Client, simple_graph: Graph, add_node_info: NodeInfo
+    mock_client: Client,
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    node_info_list: list[NodeInfo],
 ):
     """Test the initialization of the `Workflow` node."""
-    mock_client.list_nodes = MagicMock(return_value=[add_node_info.model_dump()])
+    mock_client.list_nodes = MagicMock(
+        return_value=[ni.model_dump() for ni in node_info_list]
+    )
 
     node = Workflow(
-        graph=simple_graph.nodes,
-        inputs=simple_graph.external_input,
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
         client=mock_client,
     )
 
     assert node.node_name == "Workflow"
-    assert node.graph == {
-        "nodes": {
-            "add": {
-                "inputs": {
-                    "lhs": {
-                        "node_handle": "add_lhs",
-                        "node_name": "_",
-                    },
-                    "rhs": {
-                        "node_handle": "add_rhs",
-                        "node_name": "_",
-                    },
-                },
-                "type": "Add",
-            },
-        },
-    }
-    assert node.inputs == {"add_lhs": 1, "add_rhs": 2}
+    assert node.graph == workflow_node_graph
+    assert node.inputs == workflow_node_inputs
     assert node.client == mock_client
-    assert node.nodes_list == [add_node_info]
+    assert node.nodes_list == node_info_list
 
 
 def test_workflow_initialization_no_client(simple_graph: Graph):
