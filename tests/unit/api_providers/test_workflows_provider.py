@@ -190,7 +190,7 @@ def test_list_workflow_versions(
             id="version-123",
             workflow_id="workflow-123",
             name="version",
-            created_at=datetime(2024, 1, 1, 12, 0, 0),
+            created_at="12:00:00 2024-01-01",
             owner_id="mock_account_id",
         )
     ]
