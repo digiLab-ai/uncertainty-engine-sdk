@@ -66,9 +66,6 @@ class Graph:
         if self.prevent_node_overwrite:
             self.validate_label_is_unique(label or node.label)
 
-        # add tool_metadata
-        self._process_metadata(node)
-
         if isinstance(node, Node):
             if label is None and node.label is None:
                 raise ValueError("Nodes must have a non-None label.")
@@ -103,6 +100,9 @@ class Graph:
             }
 
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
+
+        # add tool_metadata
+        self._process_metadata(node)
 
     def add_nodes_from(self, nodes: list[Node]) -> None:
         """
