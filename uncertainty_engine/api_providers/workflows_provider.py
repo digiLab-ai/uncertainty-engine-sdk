@@ -148,7 +148,7 @@ class WorkflowsProvider(ApiProviderBase):
                 - workflow_id: The ID of the workflow this version belongs to
                 - name: The version name
                 - owner_id: The ID of the owner of the version (who created it)
-                - created_at: The creation date of the version as a datetime object
+                - created_at: The creation date of the version in ISO format
         """
         # Check if account ID is set
         if not self.account_id:
@@ -162,7 +162,11 @@ class WorkflowsProvider(ApiProviderBase):
                 workflow_id=version.workflow_id,
                 name=version.name,
                 owner_id=version.owner_id,
-                created_at=version.created_at if version.created_at else None,
+                created_at=(
+                    version.created_at.strftime(DATETIME_STRING_FORMAT)
+                    if version.created_at
+                    else None
+                ),
             )
             for version in self._version_manager.list_versions(project_id, workflow_id)
         ]
