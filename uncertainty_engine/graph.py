@@ -12,11 +12,14 @@ from uncertainty_engine.nodes.base import Node
 @typechecked
 class Graph:
     """
-    Define a graph of nodes that can be executed by the Uncertainty Engine.
+    Define a graph of nodes that can be executed by the Uncertainty
+    Engine.
 
     Args:
-        external_input_id: String identifier that refers to external inputs to the graph.
-        prevent_node_overwrite: If True, prevents adding nodes with duplicate labels. Defaults to False.
+        external_input_id: String identifier that refers to external
+            inputs to the graph.
+        prevent_node_overwrite: If True, prevents adding nodes with
+            duplicate labels. Defaults to False.
 
     Example:
         >>> graph = Graph()
