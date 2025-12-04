@@ -16,6 +16,7 @@ class Graph:
 
     Args:
         external_input_id: String identifier that refers to external inputs to the graph.
+        prevent_node_overwrite: If True, prevents adding nodes with duplicate labels. Defaults to False.
 
     Example:
         >>> graph = Graph()
@@ -29,11 +30,14 @@ class Graph:
         'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
     """
 
-    def __init__(self, external_input_id: str = "_"):
+    def __init__(
+        self, external_input_id: str = "_", prevent_node_overwrite: bool = False
+    ):
         self.nodes = {"nodes": dict()}
         self.external_input_id = external_input_id
         self.external_input = dict()
         self.tool_metadata = {"inputs": {}, "outputs": {}}
+        self.prevent_node_overwrite = prevent_node_overwrite
 
     def add_node(
         self, node: Union[Node, Type[Node]], label: Optional[str] = None
@@ -83,17 +87,8 @@ class Graph:
                 if ki not in ["self", "label", "client"]
             }
 
-        # TODO: The below validation code block will only produce
-        # warnings however this try/except can be removed when we want
-        # to raise on validation failure.
-        try:
+        if self.prevent_node_overwrite:
             self.validate_label_is_unique(label)
-        except GraphValidationError:
-            warn(
-                f"Node '{label}' overwritten. "
-                "Use unique labels to prevent overwriting.",
-                stacklevel=2,
-            )
 
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
 
