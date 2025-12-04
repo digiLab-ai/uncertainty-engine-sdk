@@ -393,16 +393,33 @@ def test_graph_add_node_duplicate_label_raises_error():
     """
     graph = Graph(prevent_node_overwrite=True)
 
-    add1 = Add(lhs=1, rhs=2, label="duplicate")
-    add2 = Add(lhs=3, rhs=4, label="duplicate")
+    node1 = Add(lhs=1, rhs=2, label="duplicate")
+    node2 = Node("test_node", label="duplicate", arg1=5)
 
-    graph.add_node(add1)
+    graph.add_node(node1)
 
     with pytest.raises(
         GraphValidationError,
         match="Label 'duplicate' already used in the graph",
     ):
-        graph.add_node(add2)
+        graph.add_node(node2)
+
+    # Verify that only the first node is in the graph
+    assert graph.nodes["nodes"] == {
+        "duplicate": {
+            "type": "Add",
+            "inputs": {
+                "lhs": {"node_name": "_", "node_handle": "duplicate_lhs"},
+                "rhs": {"node_name": "_", "node_handle": "duplicate_rhs"},
+            },
+        }
+    }
+
+    # Verify that the external input was logged for the first node
+    assert graph.external_input == {
+        "duplicate_lhs": 1,
+        "duplicate_rhs": 2,
+    }
 
 
 def test_graph_add_node_duplicate_label_allowed():
