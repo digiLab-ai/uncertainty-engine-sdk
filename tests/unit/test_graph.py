@@ -4,6 +4,7 @@ from uncertainty_engine_types import Handle
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.nodes.basic import Add
+from uncertainty_engine.exceptions import GraphValidationError
 
 
 @pytest.mark.parametrize(
@@ -385,20 +386,20 @@ def test_process_metadata_with_no_tool_metadata():
     assert graph.tool_metadata["outputs"] == {}
 
 
-def test_graph_add_node_duplicate_label_issues_warning():
+def test_graph_add_node_duplicate_label_raises_error():
     """
-    Verify that a warning is issued if a node with a duplicate label is
-    added.
+    Verify that an exception is raised if a node with a duplicate label
+    is added.
     """
-    graph = Graph()
+    graph = Graph(prevent_node_overwrite=True)
 
     add1 = Add(lhs=1, rhs=2, label="duplicate")
     add2 = Add(lhs=3, rhs=4, label="duplicate")
 
     graph.add_node(add1)
 
-    with pytest.warns(
-        UserWarning,
-        match="Node 'duplicate' overwritten. Use unique labels to prevent overwriting.",
+    with pytest.raises(
+        GraphValidationError,
+        match="Label 'duplicate' already used in the graph",
     ):
         graph.add_node(add2)
