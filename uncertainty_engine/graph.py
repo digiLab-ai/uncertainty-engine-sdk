@@ -63,6 +63,9 @@ class Graph:
                 Defaults to None.
         """
 
+        if self.prevent_node_overwrite:
+            self.validate_label_is_unique(label or node.label)
+
         # add tool_metadata
         self._process_metadata(node)
 
@@ -98,9 +101,6 @@ class Graph:
                 for ki in inspect.signature(node.__init__).parameters.keys()
                 if ki not in ["self", "label", "client"]
             }
-
-        if self.prevent_node_overwrite:
-            self.validate_label_is_unique(label)
 
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
 
