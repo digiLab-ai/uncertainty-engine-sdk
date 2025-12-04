@@ -455,7 +455,7 @@ def test_graph_add_node_duplicate_label_warning():
     """
     with pytest.warns(
         FutureWarning,
-        match="The default value of `prevent_node_overwrite`will"
+        match="The default value of `prevent_node_overwrite` will"
         " change to `True` in a future release. Please set this "
         "argument explicitly to `False` to maintain the ability to"
         " overwrite nodes.",

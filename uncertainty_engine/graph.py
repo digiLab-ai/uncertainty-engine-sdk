@@ -42,7 +42,7 @@ class Graph:
         self.tool_metadata = {"inputs": {}, "outputs": {}}
         if prevent_node_overwrite is None:
             warn(
-                "The default value of `prevent_node_overwrite`"
+                "The default value of `prevent_node_overwrite` "
                 "will change to `True` in a future release. "
                 "Please set this argument explicitly to `False` "
                 "to maintain the ability to overwrite nodes.",
