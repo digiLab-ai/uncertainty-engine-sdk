@@ -63,15 +63,16 @@ class Graph:
                 Defaults to None.
         """
 
+        # Make sure we have a label to use
+        if label is None and isinstance(node, Node):
+            label = node.label
+        if label is None:
+            raise ValueError("Nodes must have a non-None label.")
+
         if self.prevent_node_overwrite:
-            self.validate_label_is_unique(label or node.label)
+            self.validate_label_is_unique(label)
 
         if isinstance(node, Node):
-            if label is None and node.label is None:
-                raise ValueError("Nodes must have a non-None label.")
-            elif label is None:
-                label = node.label
-
             node_input_dict = dict()
 
             # Calling the node will return a dictionary containing the
@@ -90,9 +91,6 @@ class Graph:
                     self.external_input[f"{label}_{ki}"] = vi
 
         else:
-            if label is None:
-                raise ValueError("Nodes must have a non-None label.")
-
             node_input_dict = {
                 ki: None
                 for ki in inspect.signature(node.__init__).parameters.keys()
