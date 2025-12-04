@@ -12,10 +12,14 @@ from uncertainty_engine.nodes.base import Node
 @typechecked
 class Graph:
     """
-    Define a graph of nodes that can be executed by the Uncertainty Engine.
+    Define a graph of nodes that can be executed by the Uncertainty
+    Engine.
 
     Args:
-        external_input_id: String identifier that refers to external inputs to the graph.
+        external_input_id: String identifier that refers to external
+            inputs to the graph.
+        prevent_node_overwrite: If True, prevents adding nodes with
+            duplicate labels. Defaults to False.
 
     Example:
         >>> graph = Graph()
@@ -29,11 +33,23 @@ class Graph:
         'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
     """
 
-    def __init__(self, external_input_id: str = "_"):
+    def __init__(
+        self, external_input_id: str = "_", prevent_node_overwrite: bool | None = None
+    ):
         self.nodes = {"nodes": dict()}
         self.external_input_id = external_input_id
         self.external_input = dict()
         self.tool_metadata = {"inputs": {}, "outputs": {}}
+        if prevent_node_overwrite is None:
+            warn(
+                "The default value of `prevent_node_overwrite` "
+                "will change to `True` in a future release. "
+                "Please set this argument explicitly to `False` "
+                "to maintain the ability to overwrite nodes.",
+                FutureWarning,
+            )
+            prevent_node_overwrite = False
+        self.prevent_node_overwrite = prevent_node_overwrite
 
     def add_node(
         self, node: Union[Node, Type[Node]], label: Optional[str] = None
@@ -47,15 +63,16 @@ class Graph:
                 Defaults to None.
         """
 
-        # add tool_metadata
-        self._process_metadata(node)
+        # Make sure we have a label to use
+        if label is None and isinstance(node, Node):
+            label = node.label
+        if label is None:
+            raise ValueError("Nodes must have a non-None label.")
+
+        if self.prevent_node_overwrite:
+            self.validate_label_is_unique(label)
 
         if isinstance(node, Node):
-            if label is None and node.label is None:
-                raise ValueError("Nodes must have a non-None label.")
-            elif label is None:
-                label = node.label
-
             node_input_dict = dict()
 
             # Calling the node will return a dictionary containing the
@@ -74,28 +91,16 @@ class Graph:
                     self.external_input[f"{label}_{ki}"] = vi
 
         else:
-            if label is None:
-                raise ValueError("Nodes must have a non-None label.")
-
             node_input_dict = {
                 ki: None
                 for ki in inspect.signature(node.__init__).parameters.keys()
                 if ki not in ["self", "label", "client"]
             }
 
-        # TODO: The below validation code block will only produce
-        # warnings however this try/except can be removed when we want
-        # to raise on validation failure.
-        try:
-            self.validate_label_is_unique(label)
-        except GraphValidationError:
-            warn(
-                f"Node '{label}' overwritten. "
-                "Use unique labels to prevent overwriting.",
-                stacklevel=2,
-            )
-
         self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
+
+        # add tool_metadata
+        self._process_metadata(node)
 
     def add_nodes_from(self, nodes: list[Node]) -> None:
         """

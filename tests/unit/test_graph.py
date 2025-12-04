@@ -4,6 +4,7 @@ from uncertainty_engine_types import Handle
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.nodes.basic import Add
+from uncertainty_engine.exceptions import GraphValidationError
 
 
 @pytest.mark.parametrize(
@@ -385,20 +386,78 @@ def test_process_metadata_with_no_tool_metadata():
     assert graph.tool_metadata["outputs"] == {}
 
 
-def test_graph_add_node_duplicate_label_issues_warning():
+def test_graph_add_node_duplicate_label_raises_error():
     """
-    Verify that a warning is issued if a node with a duplicate label is
-    added.
+    Verify that an exception is raised if a node with a duplicate label
+    is added.
     """
-    graph = Graph()
+    graph = Graph(prevent_node_overwrite=True)
+
+    node1 = Add(lhs=1, rhs=2, label="duplicate")
+    node2 = Node("test_node", label="duplicate", arg1=5)
+
+    graph.add_node(node1)
+
+    with pytest.raises(
+        GraphValidationError,
+        match="Label 'duplicate' already used in the graph",
+    ):
+        graph.add_node(node2)
+
+    # Verify that only the first node is in the graph
+    assert graph.nodes["nodes"] == {
+        "duplicate": {
+            "type": "Add",
+            "inputs": {
+                "lhs": {"node_name": "_", "node_handle": "duplicate_lhs"},
+                "rhs": {"node_name": "_", "node_handle": "duplicate_rhs"},
+            },
+        }
+    }
+
+    # Verify that the external input was logged for the first node
+    assert graph.external_input == {
+        "duplicate_lhs": 1,
+        "duplicate_rhs": 2,
+    }
+
+
+def test_graph_add_node_duplicate_label_allowed():
+    """
+    Verify that no exception is raised if a node with a duplicate label
+    is added when prevent_node_overwrite is False.
+    """
+    graph = Graph(prevent_node_overwrite=False)
 
     add1 = Add(lhs=1, rhs=2, label="duplicate")
     add2 = Add(lhs=3, rhs=4, label="duplicate")
 
     graph.add_node(add1)
+    graph.add_node(add2)
 
+    # Verify that the second node overwrote the first
+    assert graph.nodes["nodes"]["duplicate"]["inputs"] == {
+        "lhs": {"node_name": "_", "node_handle": "duplicate_lhs"},
+        "rhs": {"node_name": "_", "node_handle": "duplicate_rhs"},
+    }
+
+    # Verify that the external input was logged for the second node
+    assert graph.external_input == {
+        "duplicate_lhs": 3,
+        "duplicate_rhs": 4,
+    }
+
+
+def test_graph_add_node_duplicate_label_warning():
+    """
+    Verify that a warning is issued when prevent_node_overwrite is None
+    (default).
+    """
     with pytest.warns(
-        UserWarning,
-        match="Node 'duplicate' overwritten. Use unique labels to prevent overwriting.",
+        FutureWarning,
+        match="The default value of `prevent_node_overwrite` will"
+        " change to `True` in a future release. Please set this "
+        "argument explicitly to `False` to maintain the ability to"
+        " overwrite nodes.",
     ):
-        graph.add_node(add2)
+        Graph()
