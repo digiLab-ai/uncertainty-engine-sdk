@@ -403,3 +403,29 @@ def test_graph_add_node_duplicate_label_raises_error():
         match="Label 'duplicate' already used in the graph",
     ):
         graph.add_node(add2)
+
+
+def test_graph_add_node_duplicate_label_allowed():
+    """
+    Verify that no exception is raised if a node with a duplicate label
+    is added when prevent_node_overwrite is False.
+    """
+    graph = Graph(prevent_node_overwrite=False)
+
+    add1 = Add(lhs=1, rhs=2, label="duplicate")
+    add2 = Add(lhs=3, rhs=4, label="duplicate")
+
+    graph.add_node(add1)
+    graph.add_node(add2)
+
+    # Verify that the second node overwrote the first
+    assert graph.nodes["nodes"]["duplicate"]["inputs"] == {
+        "lhs": {"node_name": "_", "node_handle": "duplicate_lhs"},
+        "rhs": {"node_name": "_", "node_handle": "duplicate_rhs"},
+    }
+
+    # Verify that the external input was logged for the second node
+    assert graph.external_input == {
+        "duplicate_lhs": 3,
+        "duplicate_rhs": 4,
+    }
