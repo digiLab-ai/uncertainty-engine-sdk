@@ -31,12 +31,21 @@ class Graph:
     """
 
     def __init__(
-        self, external_input_id: str = "_", prevent_node_overwrite: bool = False
+        self, external_input_id: str = "_", prevent_node_overwrite: bool | None = None
     ):
         self.nodes = {"nodes": dict()}
         self.external_input_id = external_input_id
         self.external_input = dict()
         self.tool_metadata = {"inputs": {}, "outputs": {}}
+        if prevent_node_overwrite is None:
+            warn(
+                "The default value of `prevent_node_overwrite`"
+                "will change to `True` in a future release. "
+                "Please set this argument explicitly to `False` "
+                "to maintain the ability to overwrite nodes.",
+                FutureWarning,
+            )
+            prevent_node_overwrite = False
         self.prevent_node_overwrite = prevent_node_overwrite
 
     def add_node(
