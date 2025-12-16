@@ -793,3 +793,42 @@ class TestClientMethods:
                     workflow_id=workflow_id,
                     outputs=override_outputs,
                 )
+
+    def test_queue_workflow_deprecation_warning_on_any_item_in_inputs(
+        self, client: Client
+    ):
+        """
+        Test if any item in inputs is dict than throws deprecation warning
+        """
+
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            OverrideWorkflowInput(
+                node_label="input_node_label",
+                input_handle="input_parameter_name",
+                value="new_value",
+            ),
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            },
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                response=expected_job_id,
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'inputs' is deprecated",
+            ):
+                client.queue_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    inputs=override_inputs,
+                )
