@@ -633,3 +633,79 @@ class TestClientMethods:
             )
             mock_wait_for_job.assert_called_once_with(mock_job)
             assert result.status == JobStatus.COMPLETED
+
+    def test_queue_workflow_with_dict_inputs_deprecation(self, client: Client):
+        """
+        Verify that the queue_workflow method raises a deprecation warning when dict inputs are used.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": override_inputs,
+                    "outputs": None,
+                },
+                response=expected_job_id,
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'inputs' is deprecated",
+            ):
+                client.queue_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    inputs=override_inputs,
+                )
+
+    def test_queue_workflow_with_dict_outputs_deprecation(self, client: Client):
+        """
+        Verify that the queue_workflow method raises a deprecation warning when dict outputs are used.
+
+        Args:
+            client: A Client instance.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": None,
+                    "outputs": override_outputs,
+                },
+                response=expected_job_id,
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'outputs' is deprecated",
+            ):
+                client.queue_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    outputs=override_outputs,
+                )
