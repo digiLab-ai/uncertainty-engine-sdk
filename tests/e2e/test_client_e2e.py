@@ -136,12 +136,12 @@ class TestClientMethods:
             OverrideWorkflowInput(
                 node_label="num node",
                 input_handle="value",
-                value="12",
+                value=12,
             ),
             OverrideWorkflowInput(
                 node_label="add node",
                 input_handle="lhs",
-                value="12",
+                value=12,
             ),
         ]
 
@@ -208,12 +208,12 @@ class TestClientMethods:
             OverrideWorkflowInput(
                 node_label="num node",
                 input_handle="value",
-                value="6",
+                value=6,
             ),
             OverrideWorkflowInput(
                 node_label="add node",
                 input_handle="lhs",
-                value="6",
+                value=6,
             ),
         ]
 
