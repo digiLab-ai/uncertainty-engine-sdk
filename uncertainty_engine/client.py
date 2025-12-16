@@ -312,7 +312,15 @@ class Client:
             ... )
         """
         if inputs is not None and len(inputs) > 0:
-            has_dicts = any(isinstance(item, dict) for item in inputs)
+            has_dicts = False
+            converted_inputs: list[OverrideWorkflowInput] = []
+            for item in inputs:
+                if isinstance(item, dict):
+                    has_dicts = True
+                    converted_inputs.append(OverrideWorkflowInput(**item))
+                else:
+                    converted_inputs.append(item)
+
             if has_dicts:
                 warnings.warn(
                     "Passing dict objects for 'inputs' is deprecated. "
@@ -321,14 +329,18 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                # Convert any dict items to OverrideWorkflowInput
-                inputs = [
-                    OverrideWorkflowInput(**item) if isinstance(item, dict) else item
-                    for item in inputs
-                ]
+                inputs = converted_inputs
 
         if outputs is not None and len(outputs) > 0:
-            has_dicts = any(isinstance(item, dict) for item in outputs)
+            has_dicts = False
+            converted_outputs: list[OverrideWorkflowOutput] = []
+            for item in outputs:
+                if isinstance(item, dict):
+                    has_dicts = True
+                    converted_outputs.append(OverrideWorkflowOutput(**item))
+                else:
+                    converted_outputs.append(item)
+
             if has_dicts:
                 warnings.warn(
                     "Passing dict objects for 'outputs' is deprecated. "
@@ -337,10 +349,7 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                outputs = [
-                    OverrideWorkflowOutput(**item) if isinstance(item, dict) else item
-                    for item in outputs
-                ]
+                outputs = converted_outputs
 
         payload = RunWorkflowRequest(inputs=inputs, outputs=outputs)
 
