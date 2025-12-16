@@ -1,3 +1,4 @@
+import warnings
 from os import environ
 from time import sleep
 from typing import Any, Optional, Union
@@ -5,7 +6,14 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 from requests import HTTPError
 from typeguard import typechecked
-from uncertainty_engine_types import JobInfo, JobStatus, NodeInfo
+from uncertainty_engine_types import (
+    JobInfo,
+    JobStatus,
+    NodeInfo,
+    OverrideWorkflowInput,
+    OverrideWorkflowOutput,
+    RunWorkflowRequest,
+)
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
@@ -249,8 +257,12 @@ class Client:
         self,
         project_id: str,
         workflow_id: str,
-        inputs: Optional[list[dict[str, Any]]] = None,
-        outputs: Optional[list[dict[str, Any]]] = None,
+        inputs: Optional[
+            Union[list[OverrideWorkflowInput], list[dict[str, Any]]]
+        ] = None,
+        outputs: Optional[
+            Union[list[OverrideWorkflowOutput], list[dict[str, Any]]]
+        ] = None,
     ) -> Job:
         """
         Queue a workflow for execution
@@ -273,11 +285,11 @@ class Client:
 
             >>> # With input overrides
             >>> override_inputs = [
-            ...     {
-            ...         "node_label": "input_node_label",
-            ...         "input_handle": "input_parameter_name",
-            ...         "value": "new_value"
-            ...     }
+            ...     OverrideWorkflowInput(
+            ...         node_label="input_node_label",
+            ...         input_handle="input_parameter_name",
+            ...         value="new_value"
+            ...     )
             ... ]
             >>> job = client.queue_workflow(
             ...     project_id="your_project_id",
@@ -287,11 +299,11 @@ class Client:
 
             >>> # With output overrides
             >>> override_outputs = [
-            ...     {
-            ...         "node_label": "output_node_label",
-            ...         "output_handle": "output_parameter_name",
-            ...         "output_label": "custom_output_name"
-            ...     }
+            ...     OverrideWorkflowOutput(
+            ...         node_label="output_node_label",
+            ...         output_handle="output_parameter_name",
+            ...         output_label="custom_output_name"
+            ...     )
             ... ]
             >>> job = client.queue_workflow(
             ...     project_id="your_project_id",
@@ -299,14 +311,51 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
-        payload = {
-            "inputs": inputs if inputs is not None else [],
-            "outputs": outputs if outputs is not None else [],
-        }
+        if inputs is not None and len(inputs) > 0:
+            has_dicts = False
+            converted_inputs: list[OverrideWorkflowInput] = []
+            for item in inputs:
+                if isinstance(item, dict):
+                    has_dicts = True
+                    converted_inputs.append(OverrideWorkflowInput(**item))
+                else:
+                    converted_inputs.append(item)
+
+            if has_dicts:
+                warnings.warn(
+                    "Passing dict objects for 'inputs' is deprecated. "
+                    "Please use OverrideWorkflowInput objects instead. "
+                    "This functionality will be removed in a future version.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                inputs = converted_inputs
+
+        if outputs is not None and len(outputs) > 0:
+            has_dicts = False
+            converted_outputs: list[OverrideWorkflowOutput] = []
+            for item in outputs:
+                if isinstance(item, dict):
+                    has_dicts = True
+                    converted_outputs.append(OverrideWorkflowOutput(**item))
+                else:
+                    converted_outputs.append(item)
+
+            if has_dicts:
+                warnings.warn(
+                    "Passing dict objects for 'outputs' is deprecated. "
+                    "Please use OverrideWorkflowOutput objects instead. "
+                    "This functionality will be removed in a future version.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                outputs = converted_outputs
+
+        payload = RunWorkflowRequest(inputs=inputs, outputs=outputs)
 
         job_id = self.core_api.post(
             f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
-            payload,
+            payload.model_dump(),
         )
         return Job(node_id="Workflow", job_id=job_id)
 
@@ -339,8 +388,12 @@ class Client:
         self,
         project_id: str,
         workflow_id: str,
-        inputs: Optional[list[dict[str, Any]]] = None,
-        outputs: Optional[list[dict[str, Any]]] = None,
+        inputs: Optional[
+            Union[list[OverrideWorkflowInput], list[dict[str, Any]]]
+        ] = None,
+        outputs: Optional[
+            Union[list[OverrideWorkflowOutput], list[dict[str, Any]]]
+        ] = None,
     ) -> JobInfo:
         """
         Run a workflow synchronously.
@@ -363,11 +416,11 @@ class Client:
 
             >>> # With input overrides
             >>> override_inputs = [
-            ...     {
-            ...         "node_label": "input_node_label",
-            ...         "input_handle": "input_parameter_name",
-            ...         "value": "new_value"
-            ...     }
+            ...     OverrideWorkflowInput(
+            ...         node_label="input_node_label",
+            ...         input_handle="input_parameter_name",
+            ...         value="new_value"
+            ...     )
             ... ]
             >>> job_info = client.run_workflow(
             ...     project_id="your_project_id",
@@ -377,11 +430,11 @@ class Client:
 
             >>> # With output overrides
             >>> override_outputs = [
-            ...     {
-            ...         "node_label": "output_node_label",
-            ...         "output_handle": "output_parameter_name",
-            ...         "output_label": "custom_output_name"
-            ...     }
+            ...     OverrideWorkflowOutput(
+            ...         node_label="output_node_label",
+            ...         output_handle="output_parameter_name",
+            ...         output_label="custom_output_name"
+            ...     )
             ... ]
             >>> job_info = client.run_workflow(
             ...     project_id="your_project_id",
@@ -389,7 +442,10 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
-        job = self.queue_workflow(project_id, workflow_id, inputs, outputs)
+        # catch deprecation warning from `queue_workflow`
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            job = self.queue_workflow(project_id, workflow_id, inputs, outputs)
 
         return self._wait_for_job(job)
 

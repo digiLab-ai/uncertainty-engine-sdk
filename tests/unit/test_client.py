@@ -1,7 +1,12 @@
 from unittest.mock import patch
 
 import pytest
-from uncertainty_engine_types import JobInfo, JobStatus
+from uncertainty_engine_types import (
+    JobInfo,
+    JobStatus,
+    OverrideWorkflowInput,
+    OverrideWorkflowOutput,
+)
 
 from tests.mock_api_invoker import mock_core_api
 from uncertainty_engine import Client, Environment
@@ -330,8 +335,8 @@ class TestClientMethods:
             api.expect_post(
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
-                    "inputs": [],
-                    "outputs": [],
+                    "inputs": None,
+                    "outputs": None,
                 },
                 response=expected_job_id,
             )
@@ -355,19 +360,19 @@ class TestClientMethods:
         workflow_id = "test_workflow_id"
         expected_job_id = "test_job_id"
         override_inputs = [
-            {
-                "node_label": "input_node_label",
-                "input_handle": "input_parameter_name",
-                "value": "new_value",
-            }
+            OverrideWorkflowInput(
+                node_label="input_node_label",
+                input_handle="input_parameter_name",
+                value="new_value",
+            )
         ]
 
         with mock_core_api(client) as api:
             api.expect_post(
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
-                    "inputs": override_inputs,
-                    "outputs": [],
+                    "inputs": [override_inputs[0].model_dump()],
+                    "outputs": None,
                 },
                 response=expected_job_id,
             )
@@ -392,19 +397,19 @@ class TestClientMethods:
         workflow_id = "test_workflow_id"
         expected_job_id = "test_job_id"
         override_outputs = [
-            {
-                "node_label": "output_node_label",
-                "output_handle": "output_parameter_name",
-                "output_label": "custom_output_name",
-            }
+            OverrideWorkflowOutput(
+                node_label="output_node_label",
+                output_handle="output_parameter_name",
+                output_label="custom_output_name",
+            )
         ]
 
         with mock_core_api(client) as api:
             api.expect_post(
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
-                    "inputs": [],
-                    "outputs": override_outputs,
+                    "inputs": None,
+                    "outputs": [override_outputs[0].model_dump()],
                 },
                 response=expected_job_id,
             )
@@ -429,26 +434,26 @@ class TestClientMethods:
         workflow_id = "test_workflow_id"
         expected_job_id = "test_job_id"
         override_inputs = [
-            {
-                "node_label": "input_node_label",
-                "input_handle": "input_parameter_name",
-                "value": "new_value",
-            }
+            OverrideWorkflowInput(
+                node_label="input_node_label",
+                input_handle="input_parameter_name",
+                value="new_value",
+            )
         ]
         override_outputs = [
-            {
-                "node_label": "output_node_label",
-                "output_handle": "output_parameter_name",
-                "output_label": "custom_output_name",
-            }
+            OverrideWorkflowOutput(
+                node_label="output_node_label",
+                output_handle="output_parameter_name",
+                output_label="custom_output_name",
+            )
         ]
 
         with mock_core_api(client) as api:
             api.expect_post(
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
-                    "inputs": override_inputs,
-                    "outputs": override_outputs,
+                    "inputs": [override_inputs[0].model_dump()],
+                    "outputs": [override_outputs[0].model_dump()],
                 },
                 response=expected_job_id,
             )
@@ -506,11 +511,11 @@ class TestClientMethods:
         project_id = "test_project_id"
         workflow_id = "test_workflow_id"
         override_inputs = [
-            {
-                "node_label": "input_node_label",
-                "input_handle": "input_parameter_name",
-                "value": "new_value",
-            }
+            OverrideWorkflowInput(
+                node_label="input_node_label",
+                input_handle="input_parameter_name",
+                value="new_value",
+            )
         ]
         mock_job = Job(node_id="Workflow", job_id="test_job_id")
 
@@ -547,11 +552,11 @@ class TestClientMethods:
         project_id = "test_project_id"
         workflow_id = "test_workflow_id"
         override_outputs = [
-            {
-                "node_label": "output_node_label",
-                "output_handle": "output_parameter_name",
-                "output_label": "custom_output_name",
-            }
+            OverrideWorkflowOutput(
+                node_label="output_node_label",
+                output_handle="output_parameter_name",
+                output_label="custom_output_name",
+            )
         ]
         mock_job = Job(node_id="Workflow", job_id="test_job_id")
 
@@ -588,18 +593,18 @@ class TestClientMethods:
         project_id = "test_project_id"
         workflow_id = "test_workflow_id"
         override_inputs = [
-            {
-                "node_label": "input_node_label",
-                "input_handle": "input_parameter_name",
-                "value": "new_value",
-            }
+            OverrideWorkflowInput(
+                node_label="input_node_label",
+                input_handle="input_parameter_name",
+                value="new_value",
+            )
         ]
         override_outputs = [
-            {
-                "node_label": "output_node_label",
-                "output_handle": "output_parameter_name",
-                "output_label": "custom_output_name",
-            }
+            OverrideWorkflowOutput(
+                node_label="output_node_label",
+                output_handle="output_parameter_name",
+                output_label="custom_output_name",
+            )
         ]
         mock_job = Job(node_id="Workflow", job_id="test_job_id")
 
@@ -628,3 +633,202 @@ class TestClientMethods:
             )
             mock_wait_for_job.assert_called_once_with(mock_job)
             assert result.status == JobStatus.COMPLETED
+
+    def test_queue_workflow_with_dict_inputs_deprecation(self, client: Client):
+        """
+        Verify that the queue_workflow method raises a deprecation warning
+        when dict inputs are used.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": override_inputs,
+                    "outputs": None,
+                },
+                response=expected_job_id,
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'inputs' is deprecated",
+            ):
+                client.queue_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    inputs=override_inputs,
+                )
+
+    def test_queue_workflow_with_dict_outputs_deprecation(self, client: Client):
+        """
+        Verify that the queue_workflow method raises a deprecation warning
+        when dict outputs are used.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": None,
+                    "outputs": override_outputs,
+                },
+                response=expected_job_id,
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'outputs' is deprecated",
+            ):
+                client.queue_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    outputs=override_outputs,
+                )
+
+    def test_run_workflow_with_dict_inputs_deprecation(self, client: Client):
+        """
+        Verify that the run_workflow method raises a deprecation warning
+        when dict inputs are used.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            }
+        ]
+
+        with mock_core_api(client) as api, patch(
+            "uncertainty_engine.client.Client._wait_for_job"
+        ) as mock_wait_for_job:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": override_inputs,
+                    "outputs": None,
+                },
+                response=expected_job_id,
+            )
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Workflow completed",
+                inputs={"input_parameter_name": "new_value"},
+                outputs={"result": "success"},
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'inputs' is deprecated",
+            ):
+                client.run_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    inputs=override_inputs,
+                )
+
+    def test_run_workflow_with_dict_outputs_deprecation(self, client: Client):
+        """
+        Verify that the run_workflow method raises a deprecation warning
+        when dict outputs are used.
+        """
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_outputs = [
+            {
+                "node_label": "output_node_label",
+                "output_handle": "output_parameter_name",
+                "output_label": "custom_output_name",
+            }
+        ]
+
+        with mock_core_api(client) as api, patch(
+            "uncertainty_engine.client.Client._wait_for_job"
+        ) as mock_wait_for_job:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                expect_body={
+                    "inputs": None,
+                    "outputs": override_outputs,
+                },
+                response=expected_job_id,
+            )
+            mock_wait_for_job.return_value = JobInfo(
+                status=JobStatus.COMPLETED,
+                message="Workflow completed",
+                inputs={},
+                outputs={"custom_output_name": "success"},
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'outputs' is deprecated",
+            ):
+                client.run_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    outputs=override_outputs,
+                )
+
+    def test_queue_workflow_deprecation_warning_on_any_item_in_inputs(
+        self, client: Client
+    ):
+        """
+        Test if any item in inputs is dict then throws deprecation warning
+        """
+
+        project_id = "test_project_id"
+        workflow_id = "test_workflow_id"
+        expected_job_id = "test_job_id"
+        override_inputs = [
+            OverrideWorkflowInput(
+                node_label="input_node_label",
+                input_handle="input_parameter_name",
+                value="new_value",
+            ),
+            {
+                "node_label": "input_node_label",
+                "input_handle": "input_parameter_name",
+                "value": "new_value",
+            },
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
+                response=expected_job_id,
+            )
+
+            with pytest.warns(
+                DeprecationWarning,
+                match="Passing dict objects for 'inputs' is deprecated",
+            ):
+                client.queue_workflow(
+                    project_id=project_id,
+                    workflow_id=workflow_id,
+                    inputs=override_inputs,
+                )
