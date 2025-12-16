@@ -636,10 +636,8 @@ class TestClientMethods:
 
     def test_queue_workflow_with_dict_inputs_deprecation(self, client: Client):
         """
-        Verify that the queue_workflow method raises a deprecation warning when dict inputs are used.
-
-        Args:
-            client: A Client instance.
+        Verify that the queue_workflow method raises a deprecation warning
+        when dict inputs are used.
         """
         project_id = "test_project_id"
         workflow_id = "test_workflow_id"
@@ -674,10 +672,8 @@ class TestClientMethods:
 
     def test_queue_workflow_with_dict_outputs_deprecation(self, client: Client):
         """
-        Verify that the queue_workflow method raises a deprecation warning when dict outputs are used.
-
-        Args:
-            client: A Client instance.
+        Verify that the queue_workflow method raises a deprecation warning
+        when dict outputs are used.
         """
         project_id = "test_project_id"
         workflow_id = "test_workflow_id"
