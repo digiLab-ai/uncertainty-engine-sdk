@@ -311,7 +311,6 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
-        processed_inputs: list[OverrideWorkflowInput] = []
         if inputs is not None:
             if isinstance(inputs[0], dict):
                 warnings.warn(
@@ -321,9 +320,8 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                processed_inputs = [OverrideWorkflowInput(**input) for input in inputs]
+                inputs = [OverrideWorkflowInput(**input) for input in inputs]
 
-        processed_outputs: list[OverrideWorkflowOutput] = []
         if outputs is not None:
             if isinstance(outputs[0], dict):
                 warnings.warn(
@@ -333,11 +331,9 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                processed_outputs = [
-                    OverrideWorkflowOutput(**output) for output in outputs
-                ]
+                outputs = [OverrideWorkflowOutput(**output) for output in outputs]
 
-        payload = RunWorkflowRequest(inputs=processed_inputs, outputs=processed_outputs)
+        payload = RunWorkflowRequest(inputs=inputs, outputs=outputs)
 
         job_id = self.core_api.post(
             f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",

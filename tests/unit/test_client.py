@@ -330,8 +330,8 @@ class TestClientMethods:
             api.expect_post(
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
-                    "inputs": [],
-                    "outputs": [],
+                    "inputs": None,
+                    "outputs": None,
                 },
                 response=expected_job_id,
             )
@@ -367,7 +367,7 @@ class TestClientMethods:
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
                     "inputs": override_inputs,
-                    "outputs": [],
+                    "outputs": None,
                 },
                 response=expected_job_id,
             )
@@ -403,7 +403,7 @@ class TestClientMethods:
             api.expect_post(
                 f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
                 expect_body={
-                    "inputs": [],
+                    "inputs": None,
                     "outputs": override_outputs,
                 },
                 response=expected_job_id,
