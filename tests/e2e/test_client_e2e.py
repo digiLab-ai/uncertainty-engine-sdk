@@ -1,6 +1,10 @@
 import time
 
-from uncertainty_engine_types import JobStatus
+from uncertainty_engine_types import (
+    JobStatus,
+    OverrideWorkflowInput,
+    OverrideWorkflowOutput,
+)
 
 from uncertainty_engine.client import Client
 
@@ -129,16 +133,16 @@ class TestClientMethods:
         """
 
         override_inputs = [
-            {
-                "node_label": "num node",
-                "input_handle": "value",
-                "value": "12",
-            },
-            {
-                "node_label": "add node",
-                "input_handle": "lhs",
-                "value": "12",
-            },
+            OverrideWorkflowInput(
+                node_label="num node",
+                input_handle="value",
+                value="12",
+            ),
+            OverrideWorkflowInput(
+                node_label="add node",
+                input_handle="lhs",
+                value="12",
+            ),
         ]
 
         job_id = e2e_client.queue_workflow(
@@ -167,11 +171,11 @@ class TestClientMethods:
         """
 
         override_outputs = [
-            {
-                "node_label": "num node",
-                "output_handle": "value",
-                "output_label": "number node output",
-            }
+            OverrideWorkflowOutput(
+                node_label="num node",
+                output_handle="value",
+                output_label="number node output",
+            )
         ]
 
         job_id = e2e_client.queue_workflow(
@@ -201,24 +205,24 @@ class TestClientMethods:
         """
 
         override_inputs = [
-            {
-                "node_label": "num node",
-                "input_handle": "value",
-                "value": "6",
-            },
-            {
-                "node_label": "add node",
-                "input_handle": "lhs",
-                "value": "6",
-            },
+            OverrideWorkflowInput(
+                node_label="num node",
+                input_handle="value",
+                value="6",
+            ),
+            OverrideWorkflowInput(
+                node_label="add node",
+                input_handle="lhs",
+                value="6",
+            ),
         ]
 
         override_outputs = [
-            {
-                "node_label": "add node",
-                "output_handle": "ans",
-                "output_label": "add output override",
-            }
+            OverrideWorkflowOutput(
+                node_label="add node",
+                output_handle="ans",
+                output_label="add output override",
+            )
         ]
 
         job_id = e2e_client.queue_workflow(
