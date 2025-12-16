@@ -312,7 +312,8 @@ class Client:
             ... )
         """
         if inputs is not None and len(inputs) > 0:
-            if isinstance(inputs[0], dict):
+            has_dicts = any(isinstance(item, dict) for item in inputs)
+            if has_dicts:
                 warnings.warn(
                     "Passing dict objects for 'inputs' is deprecated. "
                     "Please use OverrideWorkflowInput objects instead. "
@@ -320,10 +321,15 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                inputs = [OverrideWorkflowInput(**input) for input in inputs]
+                # Convert any dict items to OverrideWorkflowInput
+                inputs = [
+                    OverrideWorkflowInput(**item) if isinstance(item, dict) else item
+                    for item in inputs
+                ]
 
         if outputs is not None and len(outputs) > 0:
-            if isinstance(outputs[0], dict):
+            has_dicts = any(isinstance(item, dict) for item in outputs)
+            if has_dicts:
                 warnings.warn(
                     "Passing dict objects for 'outputs' is deprecated. "
                     "Please use OverrideWorkflowOutput objects instead. "
@@ -331,7 +337,10 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                outputs = [OverrideWorkflowOutput(**output) for output in outputs]
+                outputs = [
+                    OverrideWorkflowOutput(**item) if isinstance(item, dict) else item
+                    for item in outputs
+                ]
 
         payload = RunWorkflowRequest(inputs=inputs, outputs=outputs)
 
