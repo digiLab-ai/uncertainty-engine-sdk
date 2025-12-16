@@ -311,7 +311,7 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
-        if inputs is not None:
+        if inputs is not None and len(inputs) > 0:
             if isinstance(inputs[0], dict):
                 warnings.warn(
                     "Passing dict objects for 'inputs' is deprecated. "
@@ -322,7 +322,7 @@ class Client:
                 )
                 inputs = [OverrideWorkflowInput(**input) for input in inputs]
 
-        if outputs is not None:
+        if outputs is not None and len(outputs) > 0:
             if isinstance(outputs[0], dict):
                 warnings.warn(
                     "Passing dict objects for 'outputs' is deprecated. "
@@ -424,7 +424,10 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
-        job = self.queue_workflow(project_id, workflow_id, inputs, outputs)
+        # catch deprecation warning from `queue_workflow`
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            job = self.queue_workflow(project_id, workflow_id, inputs, outputs)
 
         return self._wait_for_job(job)
 
