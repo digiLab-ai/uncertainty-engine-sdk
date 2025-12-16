@@ -1,3 +1,4 @@
+import warnings
 from os import environ
 from time import sleep
 from typing import Any, Optional, Union
@@ -309,6 +310,28 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
+        if inputs is not None:
+            if isinstance(inputs[0], dict):
+                warnings.warn(
+                    "Passing dict objects for 'inputs' is deprecated. "
+                    "Please use OverrideWorkflowInput objects instead. "
+                    "This functionality will be removed in a future version.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                inputs = [OverrideWorkflowInput(**input) for input in inputs]
+
+        if outputs is not None:
+            if isinstance(outputs[0], dict):
+                warnings.warn(
+                    "Passing dict objects for 'outputs' is deprecated. "
+                    "Please use OverrideWorkflowOutput objects instead. "
+                    "This functionality will be removed in a future version.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                outputs = [OverrideWorkflowOutput(**output) for output in outputs]
+
         payload = {
             "inputs": inputs if inputs is not None else [],
             "outputs": outputs if outputs is not None else [],
