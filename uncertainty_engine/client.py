@@ -12,6 +12,7 @@ from uncertainty_engine_types import (
     NodeInfo,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
+    RunWorkflowRequest,
 )
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
@@ -310,6 +311,7 @@ class Client:
             ...     outputs=override_outputs
             ... )
         """
+        processed_inputs: list[OverrideWorkflowInput] = []
         if inputs is not None:
             if isinstance(inputs[0], dict):
                 warnings.warn(
@@ -319,8 +321,9 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                inputs = [OverrideWorkflowInput(**input) for input in inputs]
+                processed_inputs = [OverrideWorkflowInput(**input) for input in inputs]
 
+        processed_outputs: list[OverrideWorkflowOutput] = []
         if outputs is not None:
             if isinstance(outputs[0], dict):
                 warnings.warn(
@@ -330,16 +333,15 @@ class Client:
                     DeprecationWarning,
                     stacklevel=2,
                 )
-                outputs = [OverrideWorkflowOutput(**output) for output in outputs]
+                processed_outputs = [
+                    OverrideWorkflowOutput(**output) for output in outputs
+                ]
 
-        payload = {
-            "inputs": inputs if inputs is not None else [],
-            "outputs": outputs if outputs is not None else [],
-        }
+        payload = RunWorkflowRequest(inputs=processed_inputs, outputs=processed_outputs)
 
         job_id = self.core_api.post(
             f"/workflows/projects/{project_id}/workflows/{workflow_id}/run",
-            payload,
+            payload.model_dump(),
         )
         return Job(node_id="Workflow", job_id=job_id)
 
