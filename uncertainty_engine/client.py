@@ -5,7 +5,13 @@ from typing import Any, Optional, Union
 from pydantic import BaseModel
 from requests import HTTPError
 from typeguard import typechecked
-from uncertainty_engine_types import JobInfo, JobStatus, NodeInfo
+from uncertainty_engine_types import (
+    JobInfo,
+    JobStatus,
+    NodeInfo,
+    OverrideWorkflowInput,
+    OverrideWorkflowOutput,
+)
 
 from uncertainty_engine.api_invoker import ApiInvoker, HttpApiInvoker
 from uncertainty_engine.api_providers import (
@@ -249,8 +255,12 @@ class Client:
         self,
         project_id: str,
         workflow_id: str,
-        inputs: Optional[list[dict[str, Any]]] = None,
-        outputs: Optional[list[dict[str, Any]]] = None,
+        inputs: Optional[
+            Union[list[OverrideWorkflowInput], list[dict[str, Any]]]
+        ] = None,
+        outputs: Optional[
+            Union[list[OverrideWorkflowOutput], list[dict[str, Any]]]
+        ] = None,
     ) -> Job:
         """
         Queue a workflow for execution
@@ -273,11 +283,11 @@ class Client:
 
             >>> # With input overrides
             >>> override_inputs = [
-            ...     {
-            ...         "node_label": "input_node_label",
-            ...         "input_handle": "input_parameter_name",
-            ...         "value": "new_value"
-            ...     }
+            ...     OverrideWorkflowInput(
+            ...         node_label="input_node_label",
+            ...         input_handle="input_parameter_name",
+            ...         value="new_value"
+            ...     )
             ... ]
             >>> job = client.queue_workflow(
             ...     project_id="your_project_id",
@@ -287,11 +297,11 @@ class Client:
 
             >>> # With output overrides
             >>> override_outputs = [
-            ...     {
-            ...         "node_label": "output_node_label",
-            ...         "output_handle": "output_parameter_name",
-            ...         "output_label": "custom_output_name"
-            ...     }
+            ...     OverrideWorkflowOutput(
+            ...         node_label="output_node_label",
+            ...         output_handle="output_parameter_name",
+            ...         output_label="custom_output_name"
+            ...     )
             ... ]
             >>> job = client.queue_workflow(
             ...     project_id="your_project_id",
@@ -339,8 +349,12 @@ class Client:
         self,
         project_id: str,
         workflow_id: str,
-        inputs: Optional[list[dict[str, Any]]] = None,
-        outputs: Optional[list[dict[str, Any]]] = None,
+        inputs: Optional[
+            Union[list[OverrideWorkflowInput], list[dict[str, Any]]]
+        ] = None,
+        outputs: Optional[
+            Union[list[OverrideWorkflowOutput], list[dict[str, Any]]]
+        ] = None,
     ) -> JobInfo:
         """
         Run a workflow synchronously.
@@ -363,11 +377,11 @@ class Client:
 
             >>> # With input overrides
             >>> override_inputs = [
-            ...     {
-            ...         "node_label": "input_node_label",
-            ...         "input_handle": "input_parameter_name",
-            ...         "value": "new_value"
-            ...     }
+            ...     OverrideWorkflowInput(
+            ...         node_label="input_node_label",
+            ...         input_handle="input_parameter_name",
+            ...         value="new_value"
+            ...     )
             ... ]
             >>> job_info = client.run_workflow(
             ...     project_id="your_project_id",
@@ -377,11 +391,11 @@ class Client:
 
             >>> # With output overrides
             >>> override_outputs = [
-            ...     {
-            ...         "node_label": "output_node_label",
-            ...         "output_handle": "output_parameter_name",
-            ...         "output_label": "custom_output_name"
-            ...     }
+            ...     OverrideWorkflowOutput(
+            ...         node_label="output_node_label",
+            ...         output_handle="output_parameter_name",
+            ...         output_label="custom_output_name"
+            ...     )
             ... ]
             >>> job_info = client.run_workflow(
             ...     project_id="your_project_id",
