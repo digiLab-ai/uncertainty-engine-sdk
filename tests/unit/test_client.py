@@ -798,7 +798,7 @@ class TestClientMethods:
         self, client: Client
     ):
         """
-        Test if any item in inputs is dict than throws deprecation warning
+        Test if any item in inputs is dict then throws deprecation warning
         """
 
         project_id = "test_project_id"
