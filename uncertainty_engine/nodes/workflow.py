@@ -7,13 +7,9 @@ from uncertainty_engine_types import NodeInfo
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.protocols import Client
+from uncertainty_engine.tool_models import ToolMetadata
 from uncertainty_engine.utils import handle_input_deprecation
 from uncertainty_engine.workflow_validator import WorkflowValidator
-
-
-class ToolMetadata(TypedDict):
-    inputs: dict[str, Any]
-    outputs: dict[str, Any]
 
 
 @typechecked
@@ -69,12 +65,16 @@ class Workflow(Node):
         if final_inputs is None:
             raise ValueError("'inputs' must be provided.")
 
+        if tool_metadata:
+            tool_metadata.validate_complete()
+
+            tool_metadata = tool_metadata if not tool_metadata.is_empty() else None
+
         # Store as Workflow attributes
         self.graph = graph
         self.requested_output = requested_output
         self.external_input_id = external_input_id
         self.inputs = final_inputs
-        self.tool_metadata = tool_metadata
         self.nodes_list = self._get_nodes_list(client) if client else None
 
         super().__init__(
@@ -103,11 +103,12 @@ class Workflow(Node):
         Returns:
             Workflow instance
         """
-        tool_metadata = getattr(graph_obj, "tool_metadata", None)
+        # Validate tool metadata completeness before creating workflow
+        graph_obj.validate_tool_metadata()
 
-        # Check if tool_metadata is empty and set it to None if so
-        if tool_metadata == {"inputs": {}, "outputs": {}}:
-            tool_metadata = None
+        tool_metadata = (
+            graph_obj.tool_metadata if not graph_obj.tool_metadata.is_empty() else None
+        )
 
         return cls(
             graph=graph_obj.nodes,
