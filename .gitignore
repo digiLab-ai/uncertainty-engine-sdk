@@ -34,3 +34,6 @@ dist/
 coverage.xml
 htmlcov/
 .coverage
+
+# Docs
+docs/build_html/
