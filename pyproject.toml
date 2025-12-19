@@ -33,6 +33,10 @@ coverage = "^7.8.0"
 flake8 = "^7.1.1"
 black = "^24.10.0"
 
+
+[tool.poetry.group.docs.dependencies]
+sphinx = {version = "^9.0.4", python = ">=3.11,<3.14"}
+
 [tool.poetry.extras]
 vis = ["matplotlib", "networkx"]
 notebook = ["ipykernel"]
