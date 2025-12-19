@@ -36,6 +36,8 @@ black = "^24.10.0"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = {version = "^9.0.4", python = ">=3.11,<3.14"}
+sphinx-markdown-builder = {version = "^0.6.9", python = ">=3.11,<3.14"}
+sphinx-rtd-theme = {version = "^3.0.2", python = ">=3.11,<3.14"}
 
 [tool.poetry.extras]
 vis = ["matplotlib", "networkx"]

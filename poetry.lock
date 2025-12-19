@@ -1289,15 +1289,15 @@ files = [
 
 [[package]]
 name = "docutils"
-version = "0.22.4"
+version = "0.21.2"
 description = "Docutils -- Python Documentation Utilities"
 optional = false
 python-versions = ">=3.9"
 groups = ["docs"]
 markers = "python_version >= \"3.11\""
 files = [
-    {file = "docutils-0.22.4-py3-none-any.whl", hash = "sha256:d0013f540772d1420576855455d050a2180186c91c15779301ac2ccb3eeb68de"},
-    {file = "docutils-0.22.4.tar.gz", hash = "sha256:4db53b1fde9abecbb74d91230d32ab626d94f6badfc575d6db9194a49df29968"},
+    {file = "docutils-0.21.2-py3-none-any.whl", hash = "sha256:dafca5b9e384f0e419294eb4d2ff9fa826435bf15f15b7bd45723e8ad76811b2"},
+    {file = "docutils-0.21.2.tar.gz", hash = "sha256:3a6b18732edf182daa3cd12775bbb338cf5691468f91eeeb109deff6ebfa986f"},
 ]
 
 [[package]]
@@ -3284,6 +3284,48 @@ sphinxcontrib-qthelp = ">=1.0.6"
 sphinxcontrib-serializinghtml = ">=1.1.9"
 
 [[package]]
+name = "sphinx-markdown-builder"
+version = "0.6.9"
+description = "A Sphinx extension to add markdown generation support."
+optional = false
+python-versions = ">=3.7"
+groups = ["docs"]
+markers = "python_version >= \"3.11\""
+files = [
+    {file = "sphinx_markdown_builder-0.6.9-py3-none-any.whl", hash = "sha256:35b555760c48d4a38fe4b27813cb5ca636bbd22d8ef0742ac6959043f8000840"},
+    {file = "sphinx_markdown_builder-0.6.9.tar.gz", hash = "sha256:e89dc1b9eb837da430c2c230011fad95a3dfab0345ad503a32e35a31d284a722"},
+]
+
+[package.dependencies]
+docutils = "*"
+sphinx = ">=5.1.0"
+tabulate = "*"
+
+[package.extras]
+dev = ["black", "bumpver", "coveralls", "flake8", "isort", "pip-tools", "pylint", "pytest", "pytest-cov", "sphinx (>=9.0.4)", "sphinxcontrib-plantuml", "sphinxcontrib.httpdomain"]
+
+[[package]]
+name = "sphinx-rtd-theme"
+version = "3.1.0rc1"
+description = "Read the Docs theme for Sphinx"
+optional = false
+python-versions = ">=3.8"
+groups = ["docs"]
+markers = "python_version >= \"3.11\""
+files = [
+    {file = "sphinx_rtd_theme-3.1.0rc1-py2.py3-none-any.whl", hash = "sha256:4d956e807a83b5a89f61abca5615ff80c34249d462e5efe11bb93ce23c148ef6"},
+    {file = "sphinx_rtd_theme-3.1.0rc1.tar.gz", hash = "sha256:7989a0002a0685ac4bd3cf2f0c39cf8b5e8f4a7d37db8484df2fe39cb6dcb70b"},
+]
+
+[package.dependencies]
+docutils = ">0.18,<0.22"
+sphinx = ">=6,<10"
+sphinxcontrib-jquery = ">=4,<5"
+
+[package.extras]
+dev = ["bump2version", "transifex-client", "twine", "wheel"]
+
+[[package]]
 name = "sphinxcontrib-applehelp"
 version = "2.0.0"
 description = "sphinxcontrib-applehelp is a Sphinx extension which outputs Apple help books"
@@ -3336,6 +3378,22 @@ files = [
 lint = ["mypy", "ruff (==0.5.5)", "types-docutils"]
 standalone = ["Sphinx (>=5)"]
 test = ["html5lib", "pytest"]
+
+[[package]]
+name = "sphinxcontrib-jquery"
+version = "4.1"
+description = "Extension to include jQuery on newer Sphinx releases"
+optional = false
+python-versions = ">=2.7"
+groups = ["docs"]
+markers = "python_version >= \"3.11\""
+files = [
+    {file = "sphinxcontrib-jquery-4.1.tar.gz", hash = "sha256:1620739f04e36a2c779f1a131a2dfd49b2fd07351bf1968ced074365933abc7a"},
+    {file = "sphinxcontrib_jquery-4.1-py2.py3-none-any.whl", hash = "sha256:f936030d7d0147dd026a4f2b5a57343d233f1fc7b363f68b3d4f1cb0993878ae"},
+]
+
+[package.dependencies]
+Sphinx = ">=1.8"
 
 [[package]]
 name = "sphinxcontrib-jsmath"
@@ -3409,6 +3467,22 @@ pure-eval = "*"
 
 [package.extras]
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
+
+[[package]]
+name = "tabulate"
+version = "0.9.0"
+description = "Pretty-print tabular data"
+optional = false
+python-versions = ">=3.7"
+groups = ["docs"]
+markers = "python_version >= \"3.11\""
+files = [
+    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
+    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[package.extras]
+widechars = ["wcwidth"]
 
 [[package]]
 name = "tomli"
@@ -3770,4 +3844,4 @@ vis = ["matplotlib", "networkx"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.14"
-content-hash = "ef5eed32d39056e3e00666a7faaccd49a0e8412829a555e59001abd848559d3d"
+content-hash = "5b54878c2a58fb42a2309de8e527aaf4f6542ba0512ea525878c96d62568d40b"
