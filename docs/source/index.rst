@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-uncertainty-engine documentation
+Uncertainty Engine SDK Documentation
 ================================
 
 Add your content using ``reStructuredText`` syntax. See the
