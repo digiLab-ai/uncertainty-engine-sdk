@@ -364,8 +364,8 @@ def test_process_metadata_with_no_tool_metadata():
     graph.add_node(node)
 
     # Verify that tool metadata remains empty
-    assert graph.tool_metadata["inputs"] == {}
-    assert graph.tool_metadata["outputs"] == {}
+    assert graph.tool_metadata.inputs == {}
+    assert graph.tool_metadata.outputs == {}
 
 
 def test_graph_add_node_duplicate_label_raises_error():
