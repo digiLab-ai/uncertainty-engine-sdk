@@ -164,7 +164,7 @@ def test_add_tool_input_raises_error_if_node_label_missing(
     default_node_info: NodeInfo,
 ):
     """
-    Verify that add_tool_output raises ValueError is node does not have label
+    Verify that add_tool_output raises ValueError if node does not have label
     """
     node = Node("test_node")
     node_input_info = NodeInputInfo(
@@ -212,7 +212,7 @@ def test_add_tool_output_raises_error_if_node_label_missing(
     default_node_info: NodeInfo,
 ):
     """
-    Verify that add_tool_output raises ValueError is node does not have label
+    Verify that add_tool_output raises ValueError if node does not have label
     """
     node = Node("test_node")
     node_output_info = NodeOutputInfo(
