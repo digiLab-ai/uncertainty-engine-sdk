@@ -189,3 +189,62 @@ def test_workflow_tool_metadata_none_by_default():
     )
 
     assert workflow.tool_metadata is None
+
+
+def test_from_graph_validate_tool_metadata_called():
+    """Assert validate_tool_metadata is called on the graph object."""
+    mock_graph = MagicMock(spec=Graph)
+    mock_graph.nodes = {"nodes": {}}
+    mock_graph.external_input = {}
+    mock_graph.external_input_id = "_"
+    mock_graph.tool_metadata = MagicMock(spec=ToolMetadata)
+    mock_graph.tool_metadata.is_empty.return_value = True
+    mock_graph.validate_tool_metadata = MagicMock()
+
+    Workflow.from_graph(mock_graph)
+
+    mock_graph.validate_tool_metadata.assert_called_once()
+
+
+def test_from_graph_tool_metadata_none_when_empty():
+    """Assert tool_metadata is set to None when graph's tool_metadata is empty."""
+    mock_graph = MagicMock(spec=Graph)
+    mock_graph.nodes = {"nodes": {}}
+    mock_graph.external_input = {}
+    mock_graph.external_input_id = "_"
+    mock_graph.tool_metadata = MagicMock(spec=ToolMetadata)
+    mock_graph.tool_metadata.is_empty.return_value = True
+    mock_graph.validate_tool_metadata = MagicMock()
+
+    workflow = Workflow.from_graph(mock_graph)
+
+    assert workflow.tool_metadata is None
+
+
+def test_from_graph_tool_metadata_preserved_when_not_empty():
+    """Assert tool_metadata is passed through when not empty."""
+    mock_graph = MagicMock(spec=Graph)
+    mock_graph.nodes = {"nodes": {}}
+    mock_graph.external_input = {}
+    mock_graph.external_input_id = "_"
+    mock_tool_metadata = MagicMock(spec=ToolMetadata)
+    mock_tool_metadata.is_empty.return_value = False
+    mock_graph.tool_metadata = mock_tool_metadata
+    mock_graph.validate_tool_metadata = MagicMock()
+
+    workflow = Workflow.from_graph(mock_graph)
+
+    assert workflow.tool_metadata == mock_tool_metadata
+
+
+def test_from_graph_raises_error_when_validation_fails():
+    """Assert ValueError is raised when validate_tool_metadata fails."""
+    mock_graph = MagicMock(spec=Graph)
+    mock_graph.nodes = {"nodes": {}}
+    mock_graph.external_input = {}
+    mock_graph.validate_tool_metadata = MagicMock(
+        side_effect=ValueError("Tool metadata validation failed")
+    )
+
+    with raises(ValueError, match="Tool metadata validation failed"):
+        Workflow.from_graph(mock_graph)
