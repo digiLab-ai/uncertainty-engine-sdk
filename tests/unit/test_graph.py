@@ -1,10 +1,10 @@
 import pytest
-from uncertainty_engine_types import Handle
+from uncertainty_engine_types import Handle, NodeInputInfo
 
+from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.nodes.basic import Add
-from uncertainty_engine.exceptions import GraphValidationError
 
 
 @pytest.mark.parametrize(
@@ -310,13 +310,10 @@ def test_process_metadata_with_tool_inputs():
     """
     # Define a node with tool metadata
     node = Node("test_node", label="test_label")
-    node.tool_metadata["tool_inputs"] = {
-        "input1": {
-            "type": "int",
-            "label": "Input 1",
-            "description": "Description for input 1",
-        }
-    }
+    node_input_info = NodeInputInfo(
+        type="int", label="Input 1", description="Description for input 1"
+    )
+    node.tool_metadata.inputs["test_label"] = {"input1": node_input_info}
 
     # Define a graph
     graph = Graph()
@@ -325,14 +322,9 @@ def test_process_metadata_with_tool_inputs():
     graph.add_node(node)
 
     # Verify that tool inputs were added to the graph's metadata
-    assert "test_label" in graph.tool_metadata["inputs"]
-    assert "input1" in graph.tool_metadata["inputs"]["test_label"]
-    assert graph.tool_metadata["inputs"]["test_label"]["input1"]["type"] == "int"
-    assert graph.tool_metadata["inputs"]["test_label"]["input1"]["label"] == "Input 1"
-    assert (
-        graph.tool_metadata["inputs"]["test_label"]["input1"]["description"]
-        == "Description for input 1"
-    )
+    assert "test_label" in graph.tool_metadata.inputs
+    assert "input1" in graph.tool_metadata.inputs["test_label"]
+    assert graph.tool_metadata.inputs["test_label"]["input1"] == node_input_info
 
 
 def test_process_metadata_with_tool_outputs():
