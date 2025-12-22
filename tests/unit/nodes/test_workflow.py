@@ -1,5 +1,4 @@
 from typing import Any
-
 from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
 
@@ -9,6 +8,7 @@ from uncertainty_engine_types import NodeInfo
 from uncertainty_engine.client import Client
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.workflow import Workflow
+from uncertainty_engine.tool_models import ToolMetadata
 
 
 def test_workflow_initialization_with_client(
@@ -115,3 +115,18 @@ def test_validate_value_error():
 
     with raises(ValueError, match="Nodes list is not available for validation."):
         workflow.validate()
+
+
+def test_workflow_tool_metadata_validate_complete_called():
+    """Assert validate_complete is called when tool_metadata is provided."""
+    mock_tool_metadata = MagicMock(spec=ToolMetadata)
+    mock_tool_metadata.is_empty.return_value = False
+    mock_tool_metadata.validate_complete = MagicMock()
+
+    Workflow(
+        graph={"nodes": {}},
+        inputs={},
+        tool_metadata=mock_tool_metadata,
+    )
+
+    mock_tool_metadata.validate_complete.assert_called_once()
