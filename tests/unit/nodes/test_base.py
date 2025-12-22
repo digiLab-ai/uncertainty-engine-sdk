@@ -160,6 +160,22 @@ def test_add_tool_input(default_node_info: NodeInfo):
     assert node.tool_metadata.inputs["test_node"]["input1"] == node_input_info
 
 
+def test_add_tool_input_raises_error_if_node_label_missing(
+    default_node_info: NodeInfo,
+):
+    """
+    Verify that add_tool_output raises ValueError is node does not have label
+    """
+    node = Node("test_node")
+    node_input_info = NodeInputInfo(
+        type="int", label="test node", description="test node desc"
+    )
+    default_node_info.inputs = {"input1": node_input_info}
+
+    with pytest.raises(ValueError, match="Node must have a label to add tool metadata"):
+        node.add_tool_input("input1", default_node_info)
+
+
 def test_add_tool_input_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_input raises a KeyError if the handle does not exist in the inputs.
@@ -190,6 +206,22 @@ def test_add_tool_output(default_node_info: NodeInfo):
     assert "test_node" in node.tool_metadata.outputs
     assert "output1" in node.tool_metadata.outputs["test_node"]
     assert node.tool_metadata.outputs["test_node"]["output1"] == node_output_info
+
+
+def test_add_tool_output_raises_error_if_node_label_missing(
+    default_node_info: NodeInfo,
+):
+    """
+    Verify that add_tool_output raises ValueError is node does not have label
+    """
+    node = Node("test_node")
+    node_output_info = NodeOutputInfo(
+        type="int", label="test node", description="test node desc"
+    )
+    default_node_info.outputs = {"output1": node_output_info}
+
+    with pytest.raises(ValueError, match="Node must have a label to add tool metadata"):
+        node.add_tool_output("output1", default_node_info)
 
 
 def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
