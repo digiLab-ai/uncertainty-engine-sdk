@@ -1,5 +1,5 @@
 import pytest
-from uncertainty_engine_types import Handle, NodeInputInfo
+from uncertainty_engine_types import Handle, NodeInputInfo, NodeOutputInfo
 
 from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.graph import Graph
@@ -333,13 +333,10 @@ def test_process_metadata_with_tool_outputs():
     """
     # Define a node with tool metadata
     node = Node("test_node", label="test_label")
-    node.tool_metadata["tool_outputs"] = {
-        "output1": {
-            "type": "float",
-            "label": "Output 1",
-            "description": "Description for output 1",
-        }
-    }
+    node_output_info = NodeOutputInfo(
+        type="float", label="Output 1", description="Description for output 1"
+    )
+    node.tool_metadata.outputs["test_label"] = {"output1": node_output_info}
 
     # Define a graph
     graph = Graph()
@@ -348,16 +345,9 @@ def test_process_metadata_with_tool_outputs():
     graph.add_node(node)
 
     # Verify that tool outputs were added to the graph's metadata
-    assert "test_label" in graph.tool_metadata["outputs"]
-    assert "output1" in graph.tool_metadata["outputs"]["test_label"]
-    assert graph.tool_metadata["outputs"]["test_label"]["output1"]["type"] == "float"
-    assert (
-        graph.tool_metadata["outputs"]["test_label"]["output1"]["label"] == "Output 1"
-    )
-    assert (
-        graph.tool_metadata["outputs"]["test_label"]["output1"]["description"]
-        == "Description for output 1"
-    )
+    assert "test_label" in graph.tool_metadata.outputs
+    assert "output1" in graph.tool_metadata.outputs["test_label"]
+    assert graph.tool_metadata.outputs["test_label"]["output1"] == node_output_info
 
 
 def test_process_metadata_with_no_tool_metadata():
