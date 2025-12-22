@@ -3,12 +3,11 @@ from unittest.mock import MagicMock, patch
 from warnings import catch_warnings
 
 from pytest import raises
-from uncertainty_engine_types import NodeInfo
+from uncertainty_engine_types import NodeInfo, ToolMetadata
 
 from uncertainty_engine.client import Client
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.workflow import Workflow
-from uncertainty_engine.tool_models import ToolMetadata
 
 
 def test_workflow_initialization_with_client(

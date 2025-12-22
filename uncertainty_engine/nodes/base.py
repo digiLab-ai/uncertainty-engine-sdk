@@ -3,11 +3,16 @@ from typing import Any
 from warnings import warn
 
 from typeguard import typechecked
-from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+from uncertainty_engine_types import (
+    Handle,
+    NodeInfo,
+    NodeInputInfo,
+    NodeOutputInfo,
+    ToolMetadata,
+)
 
 from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.protocols import Client
-from uncertainty_engine.tool_models import ToolMetadata
 from uncertainty_engine.validation import (
     validate_inputs_exist,
     validate_outputs_exist,

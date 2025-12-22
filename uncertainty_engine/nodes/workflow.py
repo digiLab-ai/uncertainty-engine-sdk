@@ -2,12 +2,11 @@ from typing import Any
 from warnings import warn
 
 from typeguard import typechecked
-from uncertainty_engine_types import NodeInfo
+from uncertainty_engine_types import NodeInfo, ToolMetadata
 
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.protocols import Client
-from uncertainty_engine.tool_models import ToolMetadata
 from uncertainty_engine.utils import handle_input_deprecation
 from uncertainty_engine.workflow_validator import WorkflowValidator
 
