@@ -147,7 +147,7 @@ def test_add_tool_input(default_node_info: NodeInfo):
     """
     Verify that add_tool_input correctly adds a tool input to the node's metadata.
     """
-    node = Node("test_node")
+    node = Node("test_node", label="test_node")
     default_node_info.inputs = {
         "input1": NodeInputInfo(
             type="int", label="test node", description="test node desc"
@@ -169,7 +169,7 @@ def test_add_tool_input_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_input raises a KeyError if the handle does not exist in the inputs.
     """
-    node = Node("test_node")
+    node = Node("test_node", label="test_node")
     default_node_info.inputs = {
         "input1": NodeInputInfo(
             type="int", label="test node", description="test node desc"
@@ -184,7 +184,7 @@ def test_add_tool_output(default_node_info: NodeInfo):
     """
     Verify that add_tool_output correctly adds a tool output to the node's metadata.
     """
-    node = Node("test_node")
+    node = Node("test_node", label="test_node")
     default_node_info.outputs = {
         "output1": NodeOutputInfo(
             type="int", label="test node", description="test node desc"
@@ -206,7 +206,7 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_output raises a KeyError if the handle does not exist in the outputs.
     """
-    node = Node("test_node")
+    node = Node("test_node", label="test_node")
     default_node_info.outputs = {
         "output1": NodeOutputInfo(
             type="int", label="test node", description="test node desc"
