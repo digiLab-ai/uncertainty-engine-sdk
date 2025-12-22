@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from uncertainty_engine_types import NodeInputInfo, NodeOutputInfo
 
 NodeId = str
@@ -9,8 +9,10 @@ HandleLabel = str
 class ToolMetadata(BaseModel):
     """Metadata for tool inputs/outputs organized by node"""
 
-    inputs: dict[NodeId, dict[HandleLabel, NodeInputInfo]] = {}
-    outputs: dict[NodeId, dict[HandleLabel, NodeOutputInfo]] = {}
+    inputs: dict[NodeId, dict[HandleLabel, NodeInputInfo]] = Field(default_factory=dict)
+    outputs: dict[NodeId, dict[HandleLabel, NodeOutputInfo]] = Field(
+        default_factory=dict
+    )
 
     def is_empty(self) -> bool:
         """Check if the metadata is completely empty"""
