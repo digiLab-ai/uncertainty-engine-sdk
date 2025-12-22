@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import Any
 from warnings import warn
 
 from typeguard import typechecked

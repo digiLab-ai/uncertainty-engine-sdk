@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from uncertainty_engine_types import NodeInputInfo, NodeOutputInfo
 
 NodeId = str
