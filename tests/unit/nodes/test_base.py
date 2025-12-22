@@ -148,21 +148,16 @@ def test_add_tool_input(default_node_info: NodeInfo):
     Verify that add_tool_input correctly adds a tool input to the node's metadata.
     """
     node = Node("test_node", label="test_node")
-    default_node_info.inputs = {
-        "input1": NodeInputInfo(
-            type="int", label="test node", description="test node desc"
-        )
-    }
+    node_input_info = NodeInputInfo(
+        type="int", label="test node", description="test node desc"
+    )
+    default_node_info.inputs = {"input1": node_input_info}
 
     node.add_tool_input("input1", default_node_info)
 
-    assert "tool_inputs" in node.tool_metadata
-    assert "input1" in node.tool_metadata["tool_inputs"]
-    assert node.tool_metadata["tool_inputs"]["input1"]["type"] == "int"
-    assert node.tool_metadata["tool_inputs"]["input1"]["label"] == "test node"
-    assert (
-        node.tool_metadata["tool_inputs"]["input1"]["description"] == "test node desc"
-    )
+    assert "test_node" in node.tool_metadata.inputs
+    assert "input1" in node.tool_metadata.inputs["test_node"]
+    assert node.tool_metadata.inputs["test_node"]["input1"] == node_input_info
 
 
 def test_add_tool_input_missing_handle(default_node_info: NodeInfo):
