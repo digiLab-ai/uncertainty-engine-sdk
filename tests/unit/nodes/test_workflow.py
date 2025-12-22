@@ -179,3 +179,13 @@ def test_workflow_tool_metadata_incomplete_raises_error():
             inputs={},
             tool_metadata=mock_tool_metadata,
         )
+
+
+def test_workflow_tool_metadata_none_by_default():
+    """Assert tool_metadata is None when not provided."""
+    workflow = Workflow(
+        graph={"nodes": {}},
+        inputs={},
+    )
+
+    assert workflow.tool_metadata is None
