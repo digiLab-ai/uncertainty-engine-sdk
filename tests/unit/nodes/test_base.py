@@ -180,21 +180,16 @@ def test_add_tool_output(default_node_info: NodeInfo):
     Verify that add_tool_output correctly adds a tool output to the node's metadata.
     """
     node = Node("test_node", label="test_node")
-    default_node_info.outputs = {
-        "output1": NodeOutputInfo(
-            type="int", label="test node", description="test node desc"
-        )
-    }
+    node_output_info = NodeOutputInfo(
+        type="int", label="test node", description="test node desc"
+    )
+    default_node_info.outputs = {"output1": node_output_info}
 
     node.add_tool_output("output1", default_node_info)
 
-    assert "tool_outputs" in node.tool_metadata
-    assert "output1" in node.tool_metadata["tool_outputs"]
-    assert node.tool_metadata["tool_outputs"]["output1"]["type"] == "int"
-    assert node.tool_metadata["tool_outputs"]["output1"]["label"] == "test node"
-    assert (
-        node.tool_metadata["tool_outputs"]["output1"]["description"] == "test node desc"
-    )
+    assert "test_node" in node.tool_metadata.outputs
+    assert "output1" in node.tool_metadata.outputs["test_node"]
+    assert node.tool_metadata.outputs["test_node"]["output1"] == node_output_info
 
 
 def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
