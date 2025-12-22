@@ -164,3 +164,18 @@ def test_workflow_tool_metadata_preserved_when_complete():
 
     mock_tool_metadata.validate_complete.assert_called_once()
     assert workflow.tool_metadata == mock_tool_metadata
+
+
+def test_workflow_tool_metadata_incomplete_raises_error():
+    """Assert ValueError is raised when tool_metadata is incomplete."""
+    mock_tool_metadata = MagicMock(spec=ToolMetadata)
+    mock_tool_metadata.validate_complete = MagicMock(
+        side_effect=ValueError("ToolMetadata must have both inputs and outputs")
+    )
+
+    with raises(ValueError, match="ToolMetadata must have both inputs and outputs"):
+        Workflow(
+            graph={"nodes": {}},
+            inputs={},
+            tool_metadata=mock_tool_metadata,
+        )
