@@ -1,10 +1,10 @@
 import pytest
-from uncertainty_engine_types import Handle
+from uncertainty_engine_types import Handle, NodeInputInfo, NodeOutputInfo
 
+from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.nodes.basic import Add
-from uncertainty_engine.exceptions import GraphValidationError
 
 
 @pytest.mark.parametrize(
@@ -310,13 +310,10 @@ def test_process_metadata_with_tool_inputs():
     """
     # Define a node with tool metadata
     node = Node("test_node", label="test_label")
-    node.tool_metadata["tool_inputs"] = {
-        "input1": {
-            "type": "int",
-            "label": "Input 1",
-            "description": "Description for input 1",
-        }
-    }
+    node_input_info = NodeInputInfo(
+        type="int", label="Input 1", description="Description for input 1"
+    )
+    node.tool_metadata.inputs["test_label"] = {"input1": node_input_info}
 
     # Define a graph
     graph = Graph()
@@ -325,14 +322,9 @@ def test_process_metadata_with_tool_inputs():
     graph.add_node(node)
 
     # Verify that tool inputs were added to the graph's metadata
-    assert "test_label" in graph.tool_metadata["inputs"]
-    assert "input1" in graph.tool_metadata["inputs"]["test_label"]
-    assert graph.tool_metadata["inputs"]["test_label"]["input1"]["type"] == "int"
-    assert graph.tool_metadata["inputs"]["test_label"]["input1"]["label"] == "Input 1"
-    assert (
-        graph.tool_metadata["inputs"]["test_label"]["input1"]["description"]
-        == "Description for input 1"
-    )
+    assert "test_label" in graph.tool_metadata.inputs
+    assert "input1" in graph.tool_metadata.inputs["test_label"]
+    assert graph.tool_metadata.inputs["test_label"]["input1"] == node_input_info
 
 
 def test_process_metadata_with_tool_outputs():
@@ -341,13 +333,10 @@ def test_process_metadata_with_tool_outputs():
     """
     # Define a node with tool metadata
     node = Node("test_node", label="test_label")
-    node.tool_metadata["tool_outputs"] = {
-        "output1": {
-            "type": "float",
-            "label": "Output 1",
-            "description": "Description for output 1",
-        }
-    }
+    node_output_info = NodeOutputInfo(
+        type="float", label="Output 1", description="Description for output 1"
+    )
+    node.tool_metadata.outputs["test_label"] = {"output1": node_output_info}
 
     # Define a graph
     graph = Graph()
@@ -356,16 +345,9 @@ def test_process_metadata_with_tool_outputs():
     graph.add_node(node)
 
     # Verify that tool outputs were added to the graph's metadata
-    assert "test_label" in graph.tool_metadata["outputs"]
-    assert "output1" in graph.tool_metadata["outputs"]["test_label"]
-    assert graph.tool_metadata["outputs"]["test_label"]["output1"]["type"] == "float"
-    assert (
-        graph.tool_metadata["outputs"]["test_label"]["output1"]["label"] == "Output 1"
-    )
-    assert (
-        graph.tool_metadata["outputs"]["test_label"]["output1"]["description"]
-        == "Description for output 1"
-    )
+    assert "test_label" in graph.tool_metadata.outputs
+    assert "output1" in graph.tool_metadata.outputs["test_label"]
+    assert graph.tool_metadata.outputs["test_label"]["output1"] == node_output_info
 
 
 def test_process_metadata_with_no_tool_metadata():
@@ -382,8 +364,8 @@ def test_process_metadata_with_no_tool_metadata():
     graph.add_node(node)
 
     # Verify that tool metadata remains empty
-    assert graph.tool_metadata["inputs"] == {}
-    assert graph.tool_metadata["outputs"] == {}
+    assert graph.tool_metadata.inputs == {}
+    assert graph.tool_metadata.outputs == {}
 
 
 def test_graph_add_node_duplicate_label_raises_error():
@@ -461,3 +443,26 @@ def test_graph_add_node_duplicate_label_warning():
         " overwrite nodes.",
     ):
         Graph()
+
+
+def test_validate_tool_metadata_raises_error_for_incomplete_metadata():
+    """
+    Verify that a ValueError is if ToolMetadata is missing an input or output
+    """
+    node = Node("test_node", label="test_label")
+    node_input_info = NodeInputInfo(
+        type="int", label="Input 1", description="Description for input 1"
+    )
+    node.tool_metadata.inputs["test_label"] = {"input1": node_input_info}
+
+    # Define a graph
+    graph = Graph()
+
+    # Process metadata
+    graph.add_node(node)
+
+    # assert tool_metadata not valid as no outputs exist
+    with pytest.raises(
+        ValueError, match="Tool metadata must have both inputs AND outputs defined."
+    ):
+        graph.validate_tool_metadata()

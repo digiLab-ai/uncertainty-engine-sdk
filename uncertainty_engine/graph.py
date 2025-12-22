@@ -3,7 +3,7 @@ from typing import Optional, Type, Union
 from warnings import warn
 
 from typeguard import typechecked
-from uncertainty_engine_types import Handle
+from uncertainty_engine_types import Handle, ToolMetadata
 
 from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.nodes.base import Node
@@ -39,7 +39,7 @@ class Graph:
         self.nodes = {"nodes": dict()}
         self.external_input_id = external_input_id
         self.external_input = dict()
-        self.tool_metadata = {"inputs": {}, "outputs": {}}
+        self.tool_metadata: ToolMetadata = ToolMetadata()
         if prevent_node_overwrite is None:
             warn(
                 "The default value of `prevent_node_overwrite` "
@@ -153,6 +153,18 @@ class Graph:
         if label in self.nodes["nodes"]:
             raise GraphValidationError(f"Label '{label}' already used in the graph")
 
+    def validate_tool_metadata(self) -> None:
+        """
+        Validate that tool metadata is complete (has both inputs and outputs).
+
+        This should be called before saving/serializing the graph.
+
+        Raises:
+            ValueError: If tool metadata is partially defined (only inputs or only outputs)
+        """
+        if not self.tool_metadata.is_empty():
+            self.tool_metadata.validate_complete()
+
     def _process_metadata(self, node: Union[Node, Type[Node]]) -> None:
         """
         Process metadata for a given node.
@@ -165,15 +177,13 @@ class Graph:
             node: The node whose metadata is to be processed.
         """
 
-        if hasattr(node, "tool_metadata"):
-            if "tool_inputs" in node.tool_metadata:
-                # directly assign inputs
-                self.tool_metadata["inputs"][node.label] = node.tool_metadata[
-                    "tool_inputs"
-                ]
+        if not hasattr(node, "tool_metadata") or not isinstance(node, Node):
+            return
 
-            if "tool_outputs" in node.tool_metadata:
-                # directly assign outputs
-                self.tool_metadata["outputs"][node.label] = node.tool_metadata[
-                    "tool_outputs"
-                ]
+        node_metadata: ToolMetadata = node.tool_metadata
+
+        # Merge inputs - update existing dict with node's inputs
+        self.tool_metadata.inputs.update(node_metadata.inputs)
+
+        # Merge outputs - update existing dict with node's outputs
+        self.tool_metadata.outputs.update(node_metadata.outputs)

@@ -1,9 +1,15 @@
 import warnings
-from typing import Any, TypedDict
+from typing import Any
 from warnings import warn
 
 from typeguard import typechecked
-from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+from uncertainty_engine_types import (
+    Handle,
+    NodeInfo,
+    NodeInputInfo,
+    NodeOutputInfo,
+    ToolMetadata,
+)
 
 from uncertainty_engine.exceptions import NodeValidationError
 from uncertainty_engine.protocols import Client
@@ -16,11 +22,6 @@ from uncertainty_engine.validation import (
 warnings.showwarning = lambda message, category, *_, **__: print(  # type: ignore
     f"{category.__name__}: {message}"
 )
-
-
-class ToolMetadata(TypedDict, total=False):
-    tool_inputs: dict[str, dict[str, Any]]
-    tool_outputs: dict[str, dict[str, Any]]
 
 
 @typechecked
@@ -67,7 +68,7 @@ class Node:
         self.node_info = client.get_node_info(self.node_name) if client else None
         """The node information. This includes the input parameters."""
 
-        self.tool_metadata: ToolMetadata = {}
+        self.tool_metadata: ToolMetadata = ToolMetadata()
         """The node input and output handles to be used as tools."""
 
         for key, value in kwargs.items():
@@ -143,6 +144,7 @@ class Node:
 
         Raises:
             KeyError: If the handle_name does not exist on the inputs of the node
+            ValueError: If the node does not have a label
 
 
         Example:
@@ -155,6 +157,9 @@ class Node:
         >>> add_node.add_tool_input("lhs", add_node_info)
         """
 
+        if self.label is None:
+            raise ValueError("Node must have a label to add tool metadata")
+
         if handle_name not in node_info.inputs:
             raise KeyError(
                 f"Input handle '{handle_name}' does not exist on inputs: {node_info.inputs}"
@@ -162,10 +167,11 @@ class Node:
 
         node_input: NodeInputInfo = node_info.inputs[handle_name]
 
-        if "tool_inputs" not in self.tool_metadata:
-            self.tool_metadata["tool_inputs"] = {}
+        # Initialize the node's entry only when adding the first input
+        if self.label not in self.tool_metadata.inputs:
+            self.tool_metadata.inputs[self.label] = {}
 
-        self.tool_metadata["tool_inputs"][handle_name] = node_input.model_dump()
+        self.tool_metadata.inputs[self.label][handle_name] = node_input
 
     def add_tool_output(self, handle_name: str, node_info: NodeInfo) -> None:
         """
@@ -189,6 +195,9 @@ class Node:
         >>> add_node.add_tool_output("ans", add_node_info)
         """
 
+        if self.label is None:
+            raise ValueError("Node must have a label to add tool metadata")
+
         if handle_name not in node_info.outputs:
             raise KeyError(
                 f"Output handle '{handle_name}' does not exist on outputs: {node_info.outputs}"
@@ -196,10 +205,11 @@ class Node:
 
         node_output: NodeOutputInfo = node_info.outputs[handle_name]
 
-        if "tool_outputs" not in self.tool_metadata:
-            self.tool_metadata["tool_outputs"] = {}
+        # Initialize the node's entry only when adding the first output
+        if self.label not in self.tool_metadata.outputs:
+            self.tool_metadata.outputs[self.label] = {}
 
-        self.tool_metadata["tool_outputs"][handle_name] = node_output.model_dump()
+        self.tool_metadata.outputs[self.label][handle_name] = node_output
 
     def validate(self) -> None:
         """

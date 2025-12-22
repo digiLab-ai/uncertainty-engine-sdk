@@ -147,29 +147,40 @@ def test_add_tool_input(default_node_info: NodeInfo):
     """
     Verify that add_tool_input correctly adds a tool input to the node's metadata.
     """
-    node = Node("test_node")
-    default_node_info.inputs = {
-        "input1": NodeInputInfo(
-            type="int", label="test node", description="test node desc"
-        )
-    }
+    node = Node("test_node", label="test_node")
+    node_input_info = NodeInputInfo(
+        type="int", label="test node", description="test node desc"
+    )
+    default_node_info.inputs = {"input1": node_input_info}
 
     node.add_tool_input("input1", default_node_info)
 
-    assert "tool_inputs" in node.tool_metadata
-    assert "input1" in node.tool_metadata["tool_inputs"]
-    assert node.tool_metadata["tool_inputs"]["input1"]["type"] == "int"
-    assert node.tool_metadata["tool_inputs"]["input1"]["label"] == "test node"
-    assert (
-        node.tool_metadata["tool_inputs"]["input1"]["description"] == "test node desc"
+    assert "test_node" in node.tool_metadata.inputs
+    assert "input1" in node.tool_metadata.inputs["test_node"]
+    assert node.tool_metadata.inputs["test_node"]["input1"] == node_input_info
+
+
+def test_add_tool_input_raises_error_if_node_label_missing(
+    default_node_info: NodeInfo,
+):
+    """
+    Verify that add_tool_output raises ValueError if node does not have label
+    """
+    node = Node("test_node")
+    node_input_info = NodeInputInfo(
+        type="int", label="test node", description="test node desc"
     )
+    default_node_info.inputs = {"input1": node_input_info}
+
+    with pytest.raises(ValueError, match="Node must have a label to add tool metadata"):
+        node.add_tool_input("input1", default_node_info)
 
 
 def test_add_tool_input_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_input raises a KeyError if the handle does not exist in the inputs.
     """
-    node = Node("test_node")
+    node = Node("test_node", label="test_node")
     default_node_info.inputs = {
         "input1": NodeInputInfo(
             type="int", label="test node", description="test node desc"
@@ -184,29 +195,40 @@ def test_add_tool_output(default_node_info: NodeInfo):
     """
     Verify that add_tool_output correctly adds a tool output to the node's metadata.
     """
-    node = Node("test_node")
-    default_node_info.outputs = {
-        "output1": NodeOutputInfo(
-            type="int", label="test node", description="test node desc"
-        )
-    }
+    node = Node("test_node", label="test_node")
+    node_output_info = NodeOutputInfo(
+        type="int", label="test node", description="test node desc"
+    )
+    default_node_info.outputs = {"output1": node_output_info}
 
     node.add_tool_output("output1", default_node_info)
 
-    assert "tool_outputs" in node.tool_metadata
-    assert "output1" in node.tool_metadata["tool_outputs"]
-    assert node.tool_metadata["tool_outputs"]["output1"]["type"] == "int"
-    assert node.tool_metadata["tool_outputs"]["output1"]["label"] == "test node"
-    assert (
-        node.tool_metadata["tool_outputs"]["output1"]["description"] == "test node desc"
+    assert "test_node" in node.tool_metadata.outputs
+    assert "output1" in node.tool_metadata.outputs["test_node"]
+    assert node.tool_metadata.outputs["test_node"]["output1"] == node_output_info
+
+
+def test_add_tool_output_raises_error_if_node_label_missing(
+    default_node_info: NodeInfo,
+):
+    """
+    Verify that add_tool_output raises ValueError if node does not have label
+    """
+    node = Node("test_node")
+    node_output_info = NodeOutputInfo(
+        type="int", label="test node", description="test node desc"
     )
+    default_node_info.outputs = {"output1": node_output_info}
+
+    with pytest.raises(ValueError, match="Node must have a label to add tool metadata"):
+        node.add_tool_output("output1", default_node_info)
 
 
 def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_output raises a KeyError if the handle does not exist in the outputs.
     """
-    node = Node("test_node")
+    node = Node("test_node", label="test_node")
     default_node_info.outputs = {
         "output1": NodeOutputInfo(
             type="int", label="test node", description="test node desc"
