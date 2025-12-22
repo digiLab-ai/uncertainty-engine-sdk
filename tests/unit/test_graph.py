@@ -443,3 +443,26 @@ def test_graph_add_node_duplicate_label_warning():
         " overwrite nodes.",
     ):
         Graph()
+
+
+def test_validate_tool_metadata_raises_error_for_incomplete_metadata():
+    """
+    Verify that a ValueError is if ToolMetadata is missing an input or output
+    """
+    node = Node("test_node", label="test_label")
+    node_input_info = NodeInputInfo(
+        type="int", label="Input 1", description="Description for input 1"
+    )
+    node.tool_metadata.inputs["test_label"] = {"input1": node_input_info}
+
+    # Define a graph
+    graph = Graph()
+
+    # Process metadata
+    graph.add_node(node)
+
+    # assert tool_metadata not valid as no outputs exist
+    with pytest.raises(
+        ValueError, match="Tool metadata must have both inputs AND outputs defined."
+    ):
+        graph.validate_tool_metadata()
