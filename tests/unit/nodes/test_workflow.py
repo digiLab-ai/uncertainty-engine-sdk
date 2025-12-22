@@ -130,3 +130,21 @@ def test_workflow_tool_metadata_validate_complete_called():
     )
 
     mock_tool_metadata.validate_complete.assert_called_once()
+
+
+def test_workflow_tool_metadata_set_to_none_when_empty():
+    """Assert tool_metadata is set to None when is_empty() returns True."""
+    mock_tool_metadata = MagicMock(spec=ToolMetadata)
+    mock_tool_metadata.is_empty.return_value = True
+    mock_tool_metadata.validate_complete = MagicMock()
+
+    workflow = Workflow(
+        graph={"nodes": {}},
+        inputs={},
+        tool_metadata=mock_tool_metadata,
+    )
+
+    # Check that validate_complete was called
+    mock_tool_metadata.validate_complete.assert_called_once()
+    # Check that tool_metadata was set to None
+    assert workflow.tool_metadata is None
