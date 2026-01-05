@@ -9,6 +9,27 @@ Uncertainty Engine SDK Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
 
-   api
+   overview
+   installation
+   usage
+   examples/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   api/uncertainty_engine
+   api/uncertainty_engine.client
+   api/uncertainty_engine.api_providers
+   api/uncertainty_engine.nodes
+   api/uncertainty_engine.protocols
+   api/uncertainty_engine.utils
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Guide
+
+   contributing
+   changelog
