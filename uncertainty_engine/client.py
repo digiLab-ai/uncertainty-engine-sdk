@@ -469,6 +469,24 @@ class Client:
         response_data = self.core_api.get(f"/nodes/status/{job.node_id}/{job.job_id}")
         return JobInfo(**response_data)
 
+    def cancel_job(self, job: Job) -> bool:
+        """
+        Cancel a job.
+
+        Args:
+            job: The job to cancel.
+
+        Returns:
+            True if the job was successfully cancelled.
+
+        Example:
+            >>> job = client.queue_node(add_node)
+            >>> client.cancel_job(job)
+            True
+        """
+        response = self.core_api.post(f"/jobs/{job.job_id}/cancel", {})
+        return response
+
     def view_tokens(self) -> int:
         """
         View the number of tokens currently available to the user's

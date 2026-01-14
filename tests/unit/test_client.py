@@ -146,6 +146,26 @@ class TestClientMethods:
             assert isinstance(response, JobInfo)
             assert response == mock_job_info
 
+    def test_cancel_job(self, client: Client, mock_job: Job):
+        """
+        Verify that the cancel_job method pokes the correct endpoint with the user-defined job_id.
+
+        Args:
+            client: A Client instance.
+            mock_job: A Job instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                f"/jobs/{mock_job.job_id}/cancel",
+                expect_body={},
+                response=True,
+            )
+
+            response = client.cancel_job(mock_job)
+
+            assert response is True
+
     def test_queue_node_node_input(self, client: Client, mock_job: Job):
         """
         Verify that the queue_node method pokes the correct endpoint with the user
