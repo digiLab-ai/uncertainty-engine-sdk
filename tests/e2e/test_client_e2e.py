@@ -6,7 +6,7 @@ from uncertainty_engine_types import (
     OverrideWorkflowOutput,
 )
 
-from uncertainty_engine.client import Client, Job
+from uncertainty_engine.client import Client
 
 
 class TestClientMethods:
