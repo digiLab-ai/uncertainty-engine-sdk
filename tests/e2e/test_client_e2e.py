@@ -254,9 +254,7 @@ class TestClientMethods:
             "rhs": 20,
         }
 
-        job_id = e2e_client.queue_node(node=node_name, inputs=inputs)
-
-        job = Job(node_id=node_name, job_id=job_id)
+        job = e2e_client.queue_node(node=node_name, inputs=inputs)
 
         result = e2e_client.cancel_job(job)
 
@@ -264,5 +262,5 @@ class TestClientMethods:
         assert result is True
 
         # Verify the job status is cancelled
-        job_info = e2e_client.job_status(job_id)
+        job_info = e2e_client.job_status(job.job_id)
         assert job_info.status == JobStatus.CANCELLED
