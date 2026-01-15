@@ -157,7 +157,7 @@ class TestClientMethods:
 
         with mock_core_api(client) as api:
             api.expect_post(
-                f"/jobs/{mock_job.job_id}/cancel",
+                f"/nodes/jobs/{mock_job.job_id}/cancel",
                 expect_body={},
                 response=True,
             )

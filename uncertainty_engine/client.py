@@ -484,7 +484,7 @@ class Client:
             >>> client.cancel_job(job)
             True
         """
-        response = self.core_api.post(f"/jobs/{job.job_id}/cancel", {})
+        response = self.core_api.post(f"/nodes/jobs/{job.job_id}/cancel", {})
         return response
 
     def view_tokens(self) -> int:
