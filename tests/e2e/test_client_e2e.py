@@ -262,5 +262,5 @@ class TestClientMethods:
         assert result is True
 
         # Verify the job status is cancelled
-        job_info = e2e_client.job_status(job.job_id)
+        job_info = e2e_client.job_status(job)
         assert job_info.status == JobStatus.CANCELLED
