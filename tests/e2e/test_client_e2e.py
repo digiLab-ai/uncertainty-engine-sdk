@@ -239,3 +239,87 @@ class TestClientMethods:
         assert status == JobStatus.COMPLETED.value
 
         assert response.outputs["outputs"]["add output override"] == 12.0
+
+    def test_cancel_job(self, e2e_client: Client):
+        """
+        Verify that a job can be cancelled successfully.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        # Queue a job that we'll cancel
+        node_name = "Add"
+        inputs = {
+            "lhs": 10,
+            "rhs": 20,
+        }
+
+        job = e2e_client.queue_node(node=node_name, inputs=inputs)
+
+        result = e2e_client.cancel_job(job)
+
+        # Verify the cancellation was successful
+        assert result is True
+
+        # Verify the job status is cancelled
+        job_info = e2e_client.job_status(job)
+        assert job_info.status == JobStatus.CANCELLED
+
+    def test_filter_dataset(self, e2e_client: Client):
+        """
+        Verify that the filter_dataset node filters data correctly.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        node_name = "FilterDataset"
+        # Create a dataset with 10 rows and 4 columns
+        csv_data = "col1,col2,col3,col4\n"
+        for i in range(10):
+            csv_data += f"{i*4+1},{i*4+2},{i*4+3},{i*4+4}\n"
+        
+        inputs = {
+            "dataset": {"csv": csv_data},
+            "columns": ["col1", "col2"],  # List of columns to keep
+        }
+
+        job_id = e2e_client.queue_node(node=node_name, inputs=inputs)
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+        
+        # TODO pull from S3, check it's correct
+        
+
+    def test_filter_dataset_with_thinning(self, e2e_client: Client):
+        """
+        Verify that the filter_dataset node can thin data correctly,
+        as part of filtering.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        node_name = "FilterDataset"
+        # Create a dataset with 20 rows and 3 columns
+        csv_data = "col1,col2,col3\n"
+        for i in range(20):
+            csv_data += f"{i*3+1},{i*3+2},{i*3+3}\n"
+        
+        inputs = {
+            "dataset": {"csv": csv_data},
+            "columns": ["col1", "col2"],  # List of columns to keep
+            "sample_fraction": 0.5,  # Thin to 50% of rows
+        }
+
+        job_id = e2e_client.queue_node(node=node_name, inputs=inputs)
+
+        response = e2e_client._wait_for_job(job_id)
+
+        status = response.status.value
+
+        assert status == JobStatus.COMPLETED.value
+        
+        # TODO pull from S3, check it's correct
