@@ -278,8 +278,8 @@ class TestClientMethods:
         # Create a dataset with 10 rows and 4 columns
         csv_data = "col1,col2,col3,col4\n"
         for i in range(10):
-            csv_data += f"{i*4+1},{i*4+2},{i*4+3},{i*4+4}\n"
-        
+            csv_data += f"{i * 4 + 1},{i * 4 + 2},{i * 4 + 3},{i * 4 + 4}\n"
+
         inputs = {
             "dataset": {"csv": csv_data},
             "columns": ["col1", "col2"],  # List of columns to keep
@@ -292,24 +292,24 @@ class TestClientMethods:
         status = response.status.value
 
         assert status == JobStatus.COMPLETED.value
-        
+
         output_dataset = response.outputs["dataset"]
         assert output_dataset is not None
         assert isinstance(output_dataset, dict)
         assert "bucket" in output_dataset and "key" in output_dataset
-        
+
         # Download from S3
         s3_client = boto3.client("s3", region_name=e2e_client.env.region)
         s3_object = s3_client.get_object(
             Bucket=output_dataset["bucket"], Key=output_dataset["key"]
         )
         output_csv = s3_object["Body"].read().decode("utf-8")
-        
+
         # Verify the output dataset has all 10 rows
         output_lines = output_csv.strip().split("\n")
         # 1 header line + 10 data rows = 11 total lines
         assert len(output_lines) == 11, f"Expected 11 lines, got {len(output_lines)}"
-        
+
         # Verify only col1 and col2 are present in the output
         header = output_lines[0]
         assert "col1" in header and "col2" in header
@@ -327,8 +327,8 @@ class TestClientMethods:
         # Create a dataset with 20 rows and 3 columns
         csv_data = "col1,col2,col3\n"
         for i in range(20):
-            csv_data += f"{i*3+1},{i*3+2},{i*3+3}\n"
-        
+            csv_data += f"{i * 3 + 1},{i * 3 + 2},{i * 3 + 3}\n"
+
         inputs = {
             "dataset": {"csv": csv_data},
             "columns": ["col1", "col2"],  # List of columns to keep
@@ -342,7 +342,7 @@ class TestClientMethods:
         status = response.status.value
 
         assert status == JobStatus.COMPLETED.value
-        
+
         output_dataset = response.outputs["dataset"]
         assert output_dataset is not None
         assert isinstance(output_dataset, dict)
@@ -350,7 +350,7 @@ class TestClientMethods:
 
         # TODO Code below here is pending
         # https://github.com/digiLab-ai/uncertainty-engine-filter-dataset-node/pull/22
-        
+
         # Download from S3
         # s3_client = boto3.client("s3", region_name=e2e_client.env.region)
         # s3_object = s3_client.get_object(
@@ -358,7 +358,7 @@ class TestClientMethods:
         # )
 
         # output_csv = s3_object["Body"].read().decode("utf-8")
-        
+
         # Verify the output dataset has been reduced by 50%
         # output_lines = output_csv.strip().split("\n")
         # assert len(output_lines) == 11, f"Expected 11 lines (50% reduction), got {len(output_lines)}"
