@@ -1,5 +1,7 @@
 import time
 
+import boto3
+
 from uncertainty_engine_types import (
     JobStatus,
     OverrideWorkflowInput,
@@ -291,8 +293,27 @@ class TestClientMethods:
 
         assert status == JobStatus.COMPLETED.value
         
-        # TODO pull from S3, check it's correct
+        output_dataset = response.outputs["dataset"]
+        assert output_dataset is not None
+        assert isinstance(output_dataset, dict)
+        assert "bucket" in output_dataset and "key" in output_dataset
         
+        # Download from S3
+        s3_client = boto3.client("s3", region_name=e2e_client.env.region)
+        s3_object = s3_client.get_object(
+            Bucket=output_dataset["bucket"], Key=output_dataset["key"]
+        )
+        output_csv = s3_object["Body"].read().decode("utf-8")
+        
+        # Verify the output dataset has all 10 rows
+        output_lines = output_csv.strip().split("\n")
+        # 1 header line + 10 data rows = 11 total lines
+        assert len(output_lines) == 11, f"Expected 11 lines, got {len(output_lines)}"
+        
+        # Verify only col1 and col2 are present in the output
+        header = output_lines[0]
+        assert "col1" in header and "col2" in header
+        assert "col3" not in header and "col4" not in header
 
     def test_filter_dataset_with_thinning(self, e2e_client: Client):
         """
@@ -322,4 +343,22 @@ class TestClientMethods:
 
         assert status == JobStatus.COMPLETED.value
         
-        # TODO pull from S3, check it's correct
+        output_dataset = response.outputs["dataset"]
+        assert output_dataset is not None
+        assert isinstance(output_dataset, dict)
+        assert "bucket" in output_dataset and "key" in output_dataset
+
+        # TODO Code below here is pending
+        # https://github.com/digiLab-ai/uncertainty-engine-filter-dataset-node/pull/22
+        
+        # Download from S3
+        # s3_client = boto3.client("s3", region_name=e2e_client.env.region)
+        # s3_object = s3_client.get_object(
+        #     Bucket=output_dataset["bucket"], Key=output_dataset["key"]
+        # )
+
+        # output_csv = s3_object["Body"].read().decode("utf-8")
+        
+        # Verify the output dataset has been reduced by 50%
+        # output_lines = output_csv.strip().split("\n")
+        # assert len(output_lines) == 11, f"Expected 11 lines (50% reduction), got {len(output_lines)}"
