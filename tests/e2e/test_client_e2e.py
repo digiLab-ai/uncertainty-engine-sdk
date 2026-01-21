@@ -239,3 +239,28 @@ class TestClientMethods:
         assert status == JobStatus.COMPLETED.value
 
         assert response.outputs["outputs"]["add output override"] == 12.0
+
+    def test_cancel_job(self, e2e_client: Client):
+        """
+        Verify that a job can be cancelled successfully.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        # Queue a job that we'll cancel
+        node_name = "Add"
+        inputs = {
+            "lhs": 10,
+            "rhs": 20,
+        }
+
+        job = e2e_client.queue_node(node=node_name, inputs=inputs)
+
+        result = e2e_client.cancel_job(job)
+
+        # Verify the cancellation was successful
+        assert result is True
+
+        # Verify the job status is cancelled
+        job_info = e2e_client.job_status(job)
+        assert job_info.status == JobStatus.CANCELLED
