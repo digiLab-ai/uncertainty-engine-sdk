@@ -242,7 +242,7 @@ class TestClientMethods:
 
     @pytest.mark.skipif(
         os.getenv("UE_ENVIRONMENT") != "dev",
-        reason="Canel feature only available in dev environment",
+        reason="Cancel feature only available in dev environment",
     )
     def test_cancel_job(self, e2e_client: Client):
         """
