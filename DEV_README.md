@@ -103,3 +103,19 @@ client = Client()
 # Authenticate with credentials
 client.authenticate()
 ```
+
+### Developer Authentication
+
+To authenticate as a developer using the development environment, pass the `env="dev"` argument when creating the client:
+
+```python
+# Create client for development environment
+client = Client(env="dev")
+
+# Authenticate with development credentials
+client.authenticate()
+```
+
+This will use the credentials and endpoints specified for the development environment.
+
+You can also authenticate with any other supported environment by specifying the desired environment name (e.g., `env="uat"`).
