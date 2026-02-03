@@ -62,6 +62,7 @@ from uncertainty_engine.nodes.basic import Add
 
 # Set up the client
 client = Client()
+client.authenticate()
 
 # Create a node
 add = Add(lhs=1, rhs=2)
