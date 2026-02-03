@@ -44,8 +44,6 @@ from uncertainty_engine import Client
 client = Client()
 ```
 
-### Authentication
-
 With an instantiated `Client` object, and username and password set as environmental variables, authentication can be carried via the following:
 
 ```
