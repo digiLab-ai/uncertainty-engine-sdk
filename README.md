@@ -89,14 +89,7 @@ from uncertainty_engine import Client, Environment
 from uncertainty_engine.nodes.basic import Add
 
 # Set up the client
-client = Client(
-   env=Environment(
-        cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
-        core_api="<UNCERTAINTY ENGINE CORE API URL>",
-        region="<REGION>",
-        resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
-   ),
-)
+client = Client()
 
 # Create a node
 add = Add(lhs=1, rhs=2)
