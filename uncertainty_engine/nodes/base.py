@@ -186,13 +186,13 @@ class Node:
 
 
         Example:
-        >>> add_node = Add(
-        ...     label="Add node",
-        ...     lhs=1,
-        ...     rhs=2,
-        ... )
-        >>> add_node_info = client.get_node_info("Add")
-        >>> add_node.add_tool_output("ans", add_node_info)
+            >>> add_node = Add(
+            ...     label="Add node",
+            ...     lhs=1,
+            ...     rhs=2,
+            ... )
+            >>> add_node_info = client.get_node_info("Add")
+            >>> add_node.add_tool_output("ans", add_node_info)
         """
 
         if self.label is None:
