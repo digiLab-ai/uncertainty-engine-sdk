@@ -119,3 +119,6 @@ client.authenticate()
 This will use the credentials and endpoints specified for the development environment.
 
 You can also authenticate with any other supported environment by specifying the desired environment name (e.g., `env="uat"`).
+
+***Note***
+If you are switching between different environments, you need to delete your `~/.ue_auth` file before trying to change between the environments.
