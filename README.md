@@ -8,8 +8,8 @@
 
 ## Requirements
 
--   Python >=3.10, <3.13
--   Valid Uncertainty Engine account
+- Python >=3.10, <3.13
+- Valid Uncertainty Engine account
 
 ## Installation
 
@@ -42,6 +42,14 @@ All interactions with the Uncertainty Engine API are performed via a `Client`. T
 from uncertainty_engine import Client
 
 client = Client()
+```
+
+### Authentication
+
+With an instantiated `Client` object, and username and password set as environmental variables, authentication can be carried via the following:
+
+```
+client.authenticate()
 ```
 
 ### Running a node
