@@ -44,42 +44,6 @@ from uncertainty_engine import Client
 client = Client()
 ```
 
-To create a `Client` for a named environment:
-
-```python
-from uncertainty_engine import Client
-
-client = Client(env="<NAME>")
-
-# For example:
-client = Client(env="dev")
-```
-
-To create a `Client` for a custom environment:
-
-```python
-from uncertainty_engine import Client, Environment
-
-client = Client(
-   env=Environment(
-        cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
-        core_api="<UNCERTAINTY ENGINE CORE API URL>",
-        region="<REGION>",
-        resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
-   ),
-)
-
-# For example:
-client = Client(
-   env=Environment(
-        cognito_user_pool_client_id="3n437fei4uhp4ouj8b4mmt09l9",
-        core_api="https://s0r8fczyag.execute-api.eu-west-2.amazonaws.com",
-        region="eu-west-2",
-        resource_api="https://hmqdnx48x6.execute-api.eu-west-2.amazonaws.com",
-   ),
-)
-```
-
 ### Running a node
 
 ```python
