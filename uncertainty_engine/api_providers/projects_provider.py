@@ -82,8 +82,6 @@ class ProjectsProvider(ApiProviderBase):
                 - updated_at: The date of the last update to the project (ISO 8601 format)
 
         Example:
-            >>> client = Client()
-            >>> client.authenticate()
             >>> projects = client.projects.list_projects()
             >>> for project in projects:
             ...     print(project.id, project.name)
