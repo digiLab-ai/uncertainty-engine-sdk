@@ -121,6 +121,17 @@ class Node:
 
         Returns:
             A string handle for the output.
+
+        Example:
+            >>> add_node = Node(
+            ...     node_name="Add",
+            ...     label="my-add-node",
+            ...     lhs=1,
+            ...     rhs=2,
+            ...     client=client,
+            ... )
+            >>> handle = add_node.make_handle("ans")
+            >>> print(handle)
         """
         if self.label is None:
             raise ValueError("Nodes must have a label to make a handle.")
@@ -148,13 +159,13 @@ class Node:
 
 
         Example:
-        >>> add_node = Add(
-        ...     label="Add node",
-        ...     lhs=1,
-        ...     rhs=2,
-        ... )
-        >>> add_node_info = client.get_node_info("Add")
-        >>> add_node.add_tool_input("lhs", add_node_info)
+            >>> add_node = Add(
+            ...     label="Add node",
+            ...     lhs=1,
+            ...     rhs=2,
+            ... )
+            >>> add_node_info = client.get_node_info("Add")
+            >>> add_node.add_tool_input("lhs", add_node_info)
         """
 
         if self.label is None:
@@ -186,13 +197,13 @@ class Node:
 
 
         Example:
-        >>> add_node = Add(
-        ...     label="Add node",
-        ...     lhs=1,
-        ...     rhs=2,
-        ... )
-        >>> add_node_info = client.get_node_info("Add")
-        >>> add_node.add_tool_output("ans", add_node_info)
+            >>> add_node = Add(
+            ...     label="Add node",
+            ...     lhs=1,
+            ...     rhs=2,
+            ... )
+            >>> add_node_info = client.get_node_info("Add")
+            >>> add_node.add_tool_output("ans", add_node_info)
         """
 
         if self.label is None:

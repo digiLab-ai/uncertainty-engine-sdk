@@ -57,16 +57,9 @@ class Client:
                 Defaults to the main Uncertainty Engine environment.
 
         Example:
-            >>> client = Client(
-            ...     env=Environment(
-            ...         cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
-            ...         core_api="<UNCERTAINTY ENGINE CORE API URL>",
-            ...         region="<REGION>",
-            ...         resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
-            ...     ),
-            ... )
-            >>> client.authenticate("<ACCOUNT ID>")
-            >>> add_node = Add(lhs=1, rhs=2, label="add")
+            >>> client = Client()
+            >>> client.authenticate()
+            >>> add_node = Node(node_name="Add", lhs=1, rhs=2, label="add")
             >>> client.queue_node(add_node)
             "<job-id>"
         """
@@ -177,6 +170,10 @@ class Client:
 
         Returns:
             List of available nodes. Each list item is a dictionary of information about the node.
+
+        Example:
+            >>> all_nodes = client.list_nodes()
+            >>> print(all_nodes)
         """
 
         nodes = self.core_api.get("/nodes/list")
@@ -200,6 +197,11 @@ class Client:
         Raises:
             HTTPError: If the node does not exist (404) or another
                 HTTP error occurs.
+
+        Example:
+            >>> node_info = client.get_node_info("Add")
+            >>> print(node_info.inputs)
+            >>> print(node_info.outputs)
         """
 
         try:
@@ -495,6 +497,10 @@ class Client:
         Returns:
             The number of tokens currently available to the user's
             organisation.
+
+        Example:
+            >>> tokens = client.view_tokens()
+            >>> print(f"Available tokens: {tokens}")
         """
 
         tokens = self.core_api.get("/organizations/tokens/available")

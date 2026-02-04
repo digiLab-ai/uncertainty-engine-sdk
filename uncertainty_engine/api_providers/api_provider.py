@@ -71,12 +71,13 @@ class ApiProviderBase:
             ValueError: If no resource is found with the specified name
 
         Example:
-            # Find a resource ID by name
-            user_id = self.get_id_by_name(
-                list_func=self.resources.list_resource(),
-                name="resource_name",
-                resource_type="resource"
-            )
+            >>> user_id = api_provider.get_id_by_name(
+            ...     list_func=api_provider.resources.list_resource,
+            ...     name="resource_name",
+            ...     resource_type="resource"
+            ... )
+            >>> print(user_id)
+            "<resource-id>"
         """
         items = list_func()
         for item in items:

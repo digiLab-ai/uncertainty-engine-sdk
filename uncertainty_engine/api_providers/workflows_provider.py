@@ -109,6 +109,11 @@ class WorkflowsProvider(ApiProviderBase):
                 - owner_id: The ID of the user who owns the workflow
                 - created_at: The creation date of the workflow in ISO 8601 format
                 - versions: A list of version IDs associated with the workflow
+
+        Example:
+            >>> workflows = client.workflows.list_workflows(project_id="your_project_id")
+            >>> for workflow in workflows:
+            ...     print(workflow.id, workflow.name)
         """
         # Check if account ID is set
         if not self.account_id:
@@ -149,6 +154,14 @@ class WorkflowsProvider(ApiProviderBase):
                 - name: The version name
                 - owner_id: The ID of the owner of the version (who created it)
                 - created_at: The creation date of the version in ISO format
+
+        Example:
+            >>> versions = client.workflows.list_workflow_versions(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id"
+            ... )
+            >>> for version in versions:
+            ...     print(version.id, version.name)
         """
         # Check if account ID is set
         if not self.account_id:
@@ -191,6 +204,14 @@ class WorkflowsProvider(ApiProviderBase):
 
         Returns:
             The loaded Workflow object.
+
+        Example:
+            >>> workflow = client.workflows.load(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id",
+            ...     client=client
+            ... )
+            >>> print(workflow)
         """
         # Check if account ID is set
         if not self.account_id:
@@ -232,6 +253,14 @@ class WorkflowsProvider(ApiProviderBase):
 
         Returns:
             The ID of the saved workflow.
+
+        Example:
+            >>> workflow_id = client.workflows.save(
+            ...     project_id="your_project_id",
+            ...     workflow=workflow,
+            ...     workflow_name="My New Workflow"
+            ... )
+            >>> print(f"Saved workflow ID: {workflow_id}")
         """
         # Check if account ID is set
         if not self.account_id:
@@ -278,6 +307,12 @@ class WorkflowsProvider(ApiProviderBase):
         Args:
             project_id: Your project's unique identifier
             workflow_id: The ID of the workflow you want to delete
+
+        Example:
+            >>> client.workflows.delete_workflow(
+            ...     project_id="your_project_id",
+            ...     workflow_id="your_workflow_id"
+            ... )
         """
         try:
             self.workflows_client.delete_workflow_record(
