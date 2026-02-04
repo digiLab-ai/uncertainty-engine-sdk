@@ -59,7 +59,7 @@ class Client:
         Example:
             >>> client = Client()
             >>> client.authenticate()
-            >>> add_node = Add(lhs=1, rhs=2, label="add")
+            >>> add_node = Node(node_name="Add", lhs=1, rhs=2, label="add")
             >>> client.queue_node(add_node)
             "<job-id>"
         """
