@@ -6,7 +6,6 @@ Please include a summary of the change and which issue is fixed. Also include re
 
 Resolves #SDK- (issue)
 
-
 ## Docstring & Example Checklist
 
 - [ ] I have added or updated docstrings for all public classes, methods, and functions
