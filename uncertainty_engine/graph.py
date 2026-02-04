@@ -24,7 +24,7 @@ class Graph:
     Example:
         >>> graph = Graph()
         >>> graph.add_node(
-        ...    node=Add(lhs=1, rhs=2),
+        ...    node=Node(node_name="Add", lhs=1, rhs=2),
         ...    label="add_1"
         ... )
         >>> graph.nodes
@@ -61,6 +61,17 @@ class Graph:
             node: The node to add.
             label: The label of the node. This must be unique. If not provided must be an attribute of the node.
                 Defaults to None.
+
+        Example:
+            >>> graph = Graph()
+            >>> graph.add_node(
+            ...    node=Node(node_name="Number", value=5),
+            ...    label="number_1"
+            ... )
+            >>> graph.nodes
+            {'nodes': {'number_1': {'type': 'Number',
+            'inputs': {'value': {'node_name': '_',
+            'node_handle': 'number_1_value'}}}}}
         """
 
         # Make sure we have a label to use
@@ -123,6 +134,18 @@ class Graph:
             source_key: The output key of the source node.
             target: The target node.
             target_key: The input key of the target node.
+
+        Example:
+            >>> graph = Graph()
+            >>> graph.add_node(Node(node_name="Number", value=5, label="number_1"))
+            >>> graph.add_node(Node(node_name="Add", lhs=0, rhs=0, label="add_1"))
+            >>> graph.add_edge("number_1", "value", "add_1", "lhs")
+            >>> print(graph.nodes)
+            {'nodes': {'number_1': {'type': 'Number',
+            'inputs': {'value': {'node_name': '_',
+            'node_handle': 'number_1_value'}}},
+            'add_1': {'type': 'Add', 'inputs': {'lhs': {'node_name': 'number_1',
+            'node_handle': 'value'}, 'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
         """
         self.nodes["nodes"][target]["inputs"][target_key] = {
             "node_name": source,
