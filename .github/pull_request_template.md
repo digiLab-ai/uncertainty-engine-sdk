@@ -11,4 +11,4 @@ Resolves #SDK- (issue)
 - [ ] I have added or updated docstrings for all public classes, methods, and functions
 - [ ] I have included doctest-style examples in docstrings where appropriate
 - [ ] All examples use correct Python prompt formatting (``>>>``, ``...`` for continuation lines)
-- [ ] All code, class, and method names in docstrings are wrapped in backticks (``)
+- [ ] All code, class, and method names in docstrings are wrapped in backticks (e.g. `` `Add` ``)
