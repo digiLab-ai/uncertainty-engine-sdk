@@ -272,7 +272,7 @@ class TestClientMethods:
         # or we unexpectedly enter a terminal status
         poll_interval_seconds = 2
         max_wait_seconds = 60
-        timeout_at = time.time() + max_wait_seconds
+        timeout_at = time.monotonic() + max_wait_seconds
 
         while True:
             job_info = e2e_client.job_status(job)
@@ -282,7 +282,7 @@ class TestClientMethods:
                 pytest.fail(
                     f"Job entered terminal status {job_info.status.value} before cancellation could be confirmed"
                 )
-            if time.time() >= timeout_at:
+            if time.monotonic() >= timeout_at:
                 pytest.fail("Timed out waiting for job to cancel")
             time.sleep(poll_interval_seconds)
 
