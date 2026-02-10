@@ -268,6 +268,22 @@ class TestClientMethods:
         # Verify the cancellation was successful
         assert result is True
 
-        # Verify the job status is cancelled
-        job_info = e2e_client.job_status(job)
+        # Poll job status until it is cancelled, or until a timeout is reached,
+        # or we unexpectedly enter a terminal status
+        poll_interval_seconds = 2
+        max_wait_seconds = 60
+        timeout_at = time.time() + max_wait_seconds
+
+        while True:
+            job_info = e2e_client.job_status(job)
+            if job_info.status == JobStatus.CANCELLED:
+                break
+            if job_info.status in (JobStatus.COMPLETED, JobStatus.FAILED):
+                pytest.fail(
+                    f"Job entered terminal status {job_info.status.value} before cancellation could be confirmed"
+                )
+            if time.time() >= timeout_at:
+                pytest.fail("Timed out waiting for job to cancel")
+            time.sleep(poll_interval_seconds)
+
         assert job_info.status == JobStatus.CANCELLED
