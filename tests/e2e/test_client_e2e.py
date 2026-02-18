@@ -243,10 +243,6 @@ class TestClientMethods:
 
         assert response.outputs["outputs"]["add output override"] == 12.0
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
-        reason="Cancel feature only available in dev environment",
-    )
     def test_cancel_job(self, e2e_client: Client):
         """
         Verify that a job can be cancelled successfully.
