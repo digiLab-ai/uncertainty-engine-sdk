@@ -880,6 +880,10 @@ class TestClientMethods:
                 client.get_node_versions(node_id)
             assert exc_info.value.response.status_code == 404
             assert exc_info.value.response.reason == "Not Found"
+            assert (
+                str(exc_info.value)
+                == f"404 Not Found: The node '{node_id}' does not exist."
+            )
 
     def test_get_node_versions_http_error_non_404(self, client: Client):
         """
