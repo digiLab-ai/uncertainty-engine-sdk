@@ -31,6 +31,7 @@ class Node:
 
     Args:
         node_name: The name of the node.
+        version: The version of the node.
         label: A human-readable label for the node. Defaults to None.
         client: An (optional) instance of the client being used. This is
             required for performing validation.
@@ -41,6 +42,7 @@ class Node:
         >>> client = Client()
         >>> add_node = Node(
         ...     node_name="Add",
+        ...     version="0.2.0",
         ...     lhs=1,
         ...     rhs=2,
         ...     client=client,
