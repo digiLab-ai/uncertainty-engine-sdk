@@ -1,4 +1,5 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
+from requests import HTTPError
 
 import pytest
 from uncertainty_engine_types import (
@@ -852,3 +853,56 @@ class TestClientMethods:
                     workflow_id=workflow_id,
                     inputs=override_inputs,
                 )
+
+    def test_get_node_versions_happy_path(self, client: Client):
+        """
+        Verify that get_node_versions returns the expected versions list on success.
+        """
+        with mock_core_api(client) as api:
+            node_id = "Add"
+            expected_versions = ["0.2.0", "latest"]
+            api.expect_get(f"/nodes/{node_id}/versions", expected_versions)
+            result = client.get_node_versions(node_id)
+            assert result == expected_versions
+
+    def test_get_node_versions_404(self, client: Client):
+        """
+        Verify that get_node_versions raises HTTPError with 404 message if node not found.
+        """
+        with mock_core_api(client) as api:
+            node_id = "MissingNode"
+            response_404 = Mock()
+            response_404.status_code = 404
+            response_404.reason = "Not Found"
+            http_error = HTTPError(response=response_404)
+            api.expect_get(f"/nodes/{node_id}/versions", http_error)
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_node_versions(node_id)
+            assert exc_info.value.response.status_code == 404
+            assert exc_info.value.response.reason == "Not Found"
+
+    def test_get_node_versions_http_error_non_404(self, client: Client):
+        """
+        Verify that get_node_versions raises HTTPError for non-404 HTTP errors.
+        """
+        with mock_core_api(client) as api:
+            node_id = "Add"
+            response_500 = Mock()
+            response_500.status_code = 500
+            response_500.reason = "Internal Server Error"
+            http_error = HTTPError(response=response_500)
+            api.expect_get(f"/nodes/{node_id}/versions", http_error)
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_node_versions(node_id)
+            assert exc_info.value.response.status_code == 500
+            assert exc_info.value.response.reason == "Internal Server Error"
+
+    def test_get_node_versions_other_exception(self, client: Client):
+        """
+        Verify that get_node_versions raises any other exception as-is.
+        """
+        with mock_core_api(client) as api:
+            node_id = "Add"
+            api.expect_get(f"/nodes/{node_id}/versions", RuntimeError("boom"))
+            with pytest.raises(RuntimeError, match="boom"):
+                client.get_node_versions(node_id)
