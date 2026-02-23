@@ -211,7 +211,9 @@ class Client:
         except HTTPError as e:
             if e.response is not None and e.response.status_code == 404:
                 reason = e.response.reason
-                raise HTTPError(f"404 {reason}: The node '{node}' does not exist.")
+                raise HTTPError(
+                    f"404 {reason}: The node '{node}' does not exist."
+                ) from e
             raise
 
     def get_node_versions(self, node_id: str) -> list[str | int]:
