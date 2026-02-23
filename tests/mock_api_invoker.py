@@ -56,7 +56,7 @@ class MockApiInvoker(ApiInvoker):
             body: Optional body.
 
         Returns:
-            Mocked response.
+            Mocked response, or raises if the response is an Exception.
         """
 
         if self._next_expectation_index >= len(self._expect_methods):
@@ -81,6 +81,8 @@ class MockApiInvoker(ApiInvoker):
 
         response = self._responses[self._next_expectation_index]
         self._next_expectation_index += 1
+        if isinstance(response, Exception):
+            raise response
         return response
 
     def expect_get(self, expect_path: str, *response: Any) -> None:
