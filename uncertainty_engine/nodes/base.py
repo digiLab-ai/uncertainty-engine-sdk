@@ -52,12 +52,16 @@ class Node:
     def __init__(
         self,
         node_name: str,
+        version: str | int,
         label: str | None = None,
         client: Client | None = None,
         **kwargs: Any,
     ):
         self.node_name = node_name
         """The name of the node."""
+
+        self.version = version
+        """The version of the node."""
 
         self.label = label
         """A human-readable label for the node."""
@@ -104,6 +108,7 @@ class Node:
                 "node_info",
                 "nodes_list",
                 "tool_metadata",
+                "version",
             ]
         }
 
