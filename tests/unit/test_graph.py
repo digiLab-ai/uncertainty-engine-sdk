@@ -309,7 +309,7 @@ def test_process_metadata_with_tool_inputs():
     Test that _process_metadata correctly processes tool inputs from a node.
     """
     # Define a node with tool metadata
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
     node_input_info = NodeInputInfo(
         type="int", label="Input 1", description="Description for input 1"
     )
@@ -332,7 +332,7 @@ def test_process_metadata_with_tool_outputs():
     Test that _process_metadata correctly processes tool outputs from a node.
     """
     # Define a node with tool metadata
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
     node_output_info = NodeOutputInfo(
         type="float", label="Output 1", description="Description for output 1"
     )
@@ -355,7 +355,7 @@ def test_process_metadata_with_no_tool_metadata():
     Test that _process_metadata does nothing if the node has no tool metadata.
     """
     # Define a node without tool metadata
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
 
     # Define a graph
     graph = Graph()
@@ -376,7 +376,7 @@ def test_graph_add_node_duplicate_label_raises_error():
     graph = Graph(prevent_node_overwrite=True)
 
     node1 = Add(lhs=1, rhs=2, label="duplicate")
-    node2 = Node("test_node", label="duplicate", arg1=5)
+    node2 = Node("test_node", "0.2.0", label="duplicate", arg1=5)
 
     graph.add_node(node1)
 
@@ -449,7 +449,7 @@ def test_validate_tool_metadata_raises_error_for_incomplete_metadata():
     """
     Verify that a ValueError is if ToolMetadata is missing an input or output
     """
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
     node_input_info = NodeInputInfo(
         type="int", label="Input 1", description="Description for input 1"
     )
