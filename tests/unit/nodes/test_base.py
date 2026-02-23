@@ -15,7 +15,7 @@ def test_node():
     """
     Verify result for arbitrary test node.
     """
-    node = Node("test_node", a=1, b=2)
+    node = Node("test_node", "0.2.0", a=1, b=2)
     assert node.node_name == "test_node"
     assert node.client is None
     assert node.node_info is None
@@ -29,7 +29,7 @@ def test_node_no_inputs():
     """
     Verify result for test node with no inputs.
     """
-    node = Node("test_node")
+    node = Node("test_node", "0.2.0")
     assert node.node_name == "test_node"
     assert node() == ("test_node", {})
 
@@ -42,7 +42,7 @@ def test_node_no_client_warnings():
         # Patch validate (before creating `Node` instance)
         # We mock it to make sure no calls are made
         with patch.object(Node, "validate") as mock_validate:
-            node = Node(node_name="test_node")
+            node = Node(node_name="test_node", version="0.2.0")
 
         assert node.client is None
         assert node.node_info is None
@@ -71,7 +71,7 @@ def test_node_with_client(default_node_info: NodeInfo):
 
     # Patch validate (before creating `Node` instance)
     with patch.object(Node, "validate") as mock_validate:
-        node = Node("test_node", client=test_client, a=1, b=2)
+        node = Node("test_node", "0.2.0", client=test_client, a=1, b=2)
 
     assert node.node_name == "test_node"
     assert node.client == test_client
@@ -93,14 +93,14 @@ def test_node_name_type():
     Verify error is raised if node name is not a string.
     """
     with pytest.raises(TypeCheckError):
-        Node(5)
+        Node(5, "0.2.0")
 
 
 def test_node_make_handle():
     """
     Verify result for test node with make_handle method.
     """
-    node = Node("test_node", label="test_label", a=1, b=2)
+    node = Node("test_node", "0.2.0", label="test_label", a=1, b=2)
     assert node.make_handle("output") == Handle("test_label.output")
 
 
@@ -108,7 +108,7 @@ def test_node_make_handle_no_label():
     """
     Verify error is raised if node has no label.
     """
-    node = Node("test_node", a=1, b=2)
+    node = Node("test_node", "0.2.0", a=1, b=2)
     with pytest.raises(ValueError):
         node.make_handle("output")
 
@@ -118,7 +118,7 @@ def test_node_make_handle_with_node_info(add_node_info: NodeInfo):
     Verify result for test node with `make_handle` method when
     `node_info` is available.
     """
-    node = Node("TestAdd", label="test_label", lhs=1, rhs=2)
+    node = Node("TestAdd", "0.2.0", label="test_label", lhs=1, rhs=2)
     node.node_info = add_node_info
     with catch_warnings(record=True) as warnings:
         assert node.make_handle("ans") == Handle("test_label.ans")
@@ -133,7 +133,7 @@ def test_node_make_handle_invalid_handle_error(
     Verify result for test node with `make_handle` method and that
     correct error is raised when output name does not exist.
     """
-    node = Node("TestAdd", label="test_label")
+    node = Node("TestAdd", "0.2.0", label="test_label")
     node.node_info = add_node_info
     with pytest.raises(NodeValidationError) as excinfo:
         assert node.make_handle(output_name) == Handle(f"test_label.{output_name}")
@@ -147,7 +147,7 @@ def test_add_tool_input(default_node_info: NodeInfo):
     """
     Verify that add_tool_input correctly adds a tool input to the node's metadata.
     """
-    node = Node("test_node", label="test_node")
+    node = Node("test_node", "0.2.0", label="test_node")
     node_input_info = NodeInputInfo(
         type="int", label="test node", description="test node desc"
     )
@@ -166,7 +166,7 @@ def test_add_tool_input_raises_error_if_node_label_missing(
     """
     Verify that add_tool_output raises ValueError if node does not have label
     """
-    node = Node("test_node")
+    node = Node("test_node", "0.2.0")
     node_input_info = NodeInputInfo(
         type="int", label="test node", description="test node desc"
     )
@@ -180,7 +180,7 @@ def test_add_tool_input_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_input raises a KeyError if the handle does not exist in the inputs.
     """
-    node = Node("test_node", label="test_node")
+    node = Node("test_node", "0.2.0", label="test_node")
     default_node_info.inputs = {
         "input1": NodeInputInfo(
             type="int", label="test node", description="test node desc"
@@ -195,7 +195,7 @@ def test_add_tool_output(default_node_info: NodeInfo):
     """
     Verify that add_tool_output correctly adds a tool output to the node's metadata.
     """
-    node = Node("test_node", label="test_node")
+    node = Node("test_node", "0.2.0", label="test_node")
     node_output_info = NodeOutputInfo(
         type="int", label="test node", description="test node desc"
     )
@@ -214,7 +214,7 @@ def test_add_tool_output_raises_error_if_node_label_missing(
     """
     Verify that add_tool_output raises ValueError if node does not have label
     """
-    node = Node("test_node")
+    node = Node("test_node", "0.2.0")
     node_output_info = NodeOutputInfo(
         type="int", label="test node", description="test node desc"
     )
@@ -228,7 +228,7 @@ def test_add_tool_output_missing_handle(default_node_info: NodeInfo):
     """
     Verify that add_tool_output raises a KeyError if the handle does not exist in the outputs.
     """
-    node = Node("test_node", label="test_node")
+    node = Node("test_node", "0.2.0", label="test_node")
     default_node_info.outputs = {
         "output1": NodeOutputInfo(
             type="int", label="test node", description="test node desc"
@@ -246,7 +246,7 @@ def test_validate_no_errors(
     Assert `validate` does not raise and return `None` when validators
     do not raise.
     """
-    node = Node(node_name="test_node")
+    node = Node(node_name="test_node", version="0.2.0")
     node.node_info = default_node_info
 
     with patch(
@@ -279,7 +279,7 @@ def test_validate_errors(
     Assert `validate` raises a collection of all errors raised by
     validators.
     """
-    node = Node(node_name="test_node")
+    node = Node(node_name="test_node", version="0.2.0")
     node.node_info = default_node_info
 
     with patch(
@@ -304,7 +304,7 @@ def test_validate_raises_without_node_info():
     Assert that `validate` raises a `ValueError` when `self.node_info`
     is `None`.
     """
-    node = Node(node_name="test_node", a=1)
+    node = Node(node_name="test_node", version="0.2.0", a=1)
 
     with raises(ValueError, match="Node info is not available for validation."):
         node.validate()
@@ -314,7 +314,7 @@ def test_call_basic_functionality():
     """
     Verify that __call__ returns correct tuple with node name and filtered inputs.
     """
-    node = Node("test_node", a=1, b=2, c="test")
+    node = Node("test_node", "0.2.0", a=1, b=2, c="test")
     node_name, inputs = node()
 
     assert node_name == "test_node"
@@ -325,7 +325,7 @@ def test_call_excludes_internal_attributes(default_node_info: NodeInfo):
     """
     Verify that internal attributes are excluded from the input dictionary.
     """
-    node = Node("test_node", label="test_label", a=1, b=2)
+    node = Node("test_node", "0.2.0", label="test_label", a=1, b=2)
     default_node_info.inputs = {
         "input1": NodeInputInfo(
             type="int", label="test node", description="test node desc"
