@@ -202,7 +202,7 @@ def test_graph_w_node_class():
     graph = Graph()
 
     # Add the node to the graph
-    graph.add_node(Add, "add1")
+    graph.add_node(Add, "add1", version="0.2.0")
 
     # Verify that the node was added to the graph
     assert graph.nodes == {
@@ -274,7 +274,7 @@ def test_graph_connect_nodes():
     graph.add_node(add, "add1")
 
     # Add another node to the graph
-    graph.add_node(Add, "add2")
+    graph.add_node(Add, "add2", version="0.2.0")
 
     # Verify that the nodes were added to the graph
     assert graph.nodes == {
