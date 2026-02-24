@@ -52,7 +52,10 @@ class Graph:
         self.prevent_node_overwrite = prevent_node_overwrite
 
     def add_node(
-        self, node: Union[Node, Type[Node]], label: Optional[str] = None
+        self,
+        node: Union[Node, Type[Node]],
+        label: Optional[str] = None,
+        version: int | str | None = None,
     ) -> None:
         """
         Add a node to the graph.
@@ -100,17 +103,24 @@ class Graph:
                         "node_handle": f"{label}_{ki}",
                     }
                     self.external_input[f"{label}_{ki}"] = vi
+            node_version = node.version
 
         else:
+            # node is a class, version must be provided
+            if version is None:
+                raise ValueError(
+                    "When adding a node class, the 'version' argument is required.",
+                )
             node_input_dict = {
                 ki: None
                 for ki in inspect.signature(node.__init__).parameters.keys()
                 if ki not in ["self", "label", "client"]
             }
+            node_version = version
 
         self.nodes["nodes"][label] = {
             "type": node.node_name,
-            "version": node.version,
+            "version": node_version,
             "inputs": node_input_dict,
         }
 
