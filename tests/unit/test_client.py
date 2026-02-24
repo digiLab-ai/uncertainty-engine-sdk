@@ -1,7 +1,7 @@
-from unittest.mock import patch, Mock
-from requests import HTTPError
+from unittest.mock import Mock, patch
 
 import pytest
+from requests import HTTPError
 from uncertainty_engine_types import (
     JobInfo,
     JobStatus,
