@@ -55,6 +55,7 @@ class BuildSensorDesigner(Node):
 
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             sensor_data=sensor_data_processed,
@@ -96,6 +97,7 @@ class SuggestSensorDesign(Node):
 
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             sensor_designer=sensor_designer_processed,
@@ -135,6 +137,7 @@ class ScoreSensorDesign(Node):
 
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             sensor_designer=sensor_designer_processed,

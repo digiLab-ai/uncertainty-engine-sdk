@@ -31,6 +31,7 @@ class Node:
 
     Args:
         node_name: The name of the node.
+        version: The version of the node.
         label: A human-readable label for the node. Defaults to None.
         client: An (optional) instance of the client being used. This is
             required for performing validation.
@@ -41,6 +42,7 @@ class Node:
         >>> client = Client()
         >>> add_node = Node(
         ...     node_name="Add",
+        ...     version="0.2.0",
         ...     lhs=1,
         ...     rhs=2,
         ...     client=client,
@@ -52,6 +54,7 @@ class Node:
     def __init__(
         self,
         node_name: str,
+        version: str | int,
         label: str | None = None,
         client: Client | None = None,
         **kwargs: Any,
@@ -59,12 +62,16 @@ class Node:
         self.node_name = node_name
         """The name of the node."""
 
+        self.version = version
+        """The version of the node."""
+
         self.label = label
         """A human-readable label for the node."""
 
         self.client = client
         """The Uncertainty Engine client."""
 
+        # TODO: this will need to be updated to make use of the version
         self.node_info = client.get_node_info(self.node_name) if client else None
         """The node information. This includes the input parameters."""
 
@@ -104,6 +111,7 @@ class Node:
                 "node_info",
                 "nodes_list",
                 "tool_metadata",
+                "version",
             ]
         }
 

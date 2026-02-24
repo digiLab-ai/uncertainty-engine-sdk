@@ -77,6 +77,7 @@ class ExportTorchScript(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             model=model,
@@ -154,6 +155,7 @@ class ModelConfig(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             input_variance=input_variance,
@@ -207,6 +209,7 @@ class PredictModel(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             model=model,
@@ -267,6 +270,7 @@ class PredictPosteriorConditioning(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             conditioning_inputs=conditioning_inputs,
@@ -321,6 +325,7 @@ class Recommend(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             acquisition_function=acquisition_function,
@@ -370,6 +375,7 @@ class TrainModel(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             config=config,
@@ -439,6 +445,7 @@ class ScoreModel(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             predictions=predictions,
             truth=truth,

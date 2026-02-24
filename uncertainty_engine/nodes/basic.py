@@ -36,6 +36,7 @@ class Add(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             lhs=lhs,

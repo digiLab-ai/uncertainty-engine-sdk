@@ -188,7 +188,7 @@ class TestClientMethods:
 
             node_name = mock_job.node_id
             inputs = {"key": "value"}
-            node = Node(node_name, **inputs)
+            node = Node(node_name, "0.2.0", **inputs)
             response = client.queue_node(node)
 
             assert response == mock_job

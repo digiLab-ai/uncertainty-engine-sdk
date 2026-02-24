@@ -78,6 +78,7 @@ class Workflow(Node):
 
         super().__init__(
             node_name=self.node_name,
+            version=4,
             client=client,
             external_input_id=external_input_id,
             graph=graph,
