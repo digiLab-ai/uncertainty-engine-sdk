@@ -24,11 +24,11 @@ class Graph:
     Example:
         >>> graph = Graph()
         >>> graph.add_node(
-        ...    node=Node(node_name="Add", lhs=1, rhs=2),
+        ...    node=Node(node_name="Add", version="0.2.0", lhs=1, rhs=2),
         ...    label="add_1"
         ... )
         >>> graph.nodes
-        {'nodes': {'add_1': {'type': 'Add',
+        {'nodes': {'add_1': {'type': 'Add', 'version': '0.2.0',
         'inputs': {'lhs': {'node_name': '_', 'node_handle': 'add_1_lhs'},
         'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
     """
@@ -65,11 +65,11 @@ class Graph:
         Example:
             >>> graph = Graph()
             >>> graph.add_node(
-            ...    node=Node(node_name="Number", value=5),
+            ...    node=Node(node_name="Number", version="0.2.0", value=5),
             ...    label="number_1"
             ... )
             >>> graph.nodes
-            {'nodes': {'number_1': {'type': 'Number',
+            {'nodes': {'number_1': {'type': 'Number', 'version': '0.2.0',
             'inputs': {'value': {'node_name': '_',
             'node_handle': 'number_1_value'}}}}}
         """
@@ -108,7 +108,11 @@ class Graph:
                 if ki not in ["self", "label", "client"]
             }
 
-        self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
+        self.nodes["nodes"][label] = {
+            "type": node.node_name,
+            "version": node.version,
+            "inputs": node_input_dict,
+        }
 
         # add tool_metadata
         self._process_metadata(node)
@@ -137,14 +141,14 @@ class Graph:
 
         Example:
             >>> graph = Graph()
-            >>> graph.add_node(Node(node_name="Number", value=5, label="number_1"))
-            >>> graph.add_node(Node(node_name="Add", lhs=0, rhs=0, label="add_1"))
+            >>> graph.add_node(Node(node_name="Number", version="0.2.0", value=5, label="number_1"))
+            >>> graph.add_node(Node(node_name="Add", version="0.2.0", lhs=0, rhs=0, label="add_1"))
             >>> graph.add_edge("number_1", "value", "add_1", "lhs")
             >>> print(graph.nodes)
-            {'nodes': {'number_1': {'type': 'Number',
+            {'nodes': {'number_1': {'type': 'Number', 'version': '0.2.0',
             'inputs': {'value': {'node_name': '_',
             'node_handle': 'number_1_value'}}},
-            'add_1': {'type': 'Add', 'inputs': {'lhs': {'node_name': 'number_1',
+            'add_1': {'type': 'Add', 'version': '0.2.0', 'inputs': {'lhs': {'node_name': 'number_1',
             'node_handle': 'value'}, 'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
         """
         self.nodes["nodes"][target]["inputs"][target_key] = {
