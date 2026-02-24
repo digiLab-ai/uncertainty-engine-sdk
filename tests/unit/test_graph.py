@@ -35,6 +35,7 @@ def test_graph_w_node_instance(node_instance, node_label):
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -84,6 +85,7 @@ def test_graph_w_node_instance_handle():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "a", "node_handle": "b"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -119,6 +121,7 @@ def test_graph_w_node_multiple():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -126,6 +129,7 @@ def test_graph_w_node_multiple():
             },
             "add2": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
@@ -163,6 +167,7 @@ def test_graph_w_node_multiple_from_list():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -170,6 +175,7 @@ def test_graph_w_node_multiple_from_list():
             },
             "add2": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
@@ -203,6 +209,7 @@ def test_graph_w_node_class():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": None,
                     "rhs": None,
@@ -230,6 +237,7 @@ def test_graph_w_node_class():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -273,6 +281,7 @@ def test_graph_connect_nodes():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -280,6 +289,7 @@ def test_graph_connect_nodes():
             },
             "add2": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": None,
                     "rhs": None,
@@ -390,6 +400,7 @@ def test_graph_add_node_duplicate_label_raises_error():
     assert graph.nodes["nodes"] == {
         "duplicate": {
             "type": "Add",
+            "version": "0.2.0",
             "inputs": {
                 "lhs": {"node_name": "_", "node_handle": "duplicate_lhs"},
                 "rhs": {"node_name": "_", "node_handle": "duplicate_rhs"},
