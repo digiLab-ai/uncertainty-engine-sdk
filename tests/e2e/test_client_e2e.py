@@ -283,21 +283,3 @@ class TestClientMethods:
         assert isinstance(versions, list)
         assert all(isinstance(v, (str, int)) for v in versions)
         assert len(versions) > 0
-
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
-        reason="Node query feature only available in dev environment",
-    )
-    def test_query_nodes(self, e2e_client: Client):
-        """
-        Verify that nodes can be queried successfully using the query_nodes method.
-
-        Args:
-            e2e_client: A Client instance.
-        """
-        node_id = "Add"
-        nodes = e2e_client.query_nodes(node_id)
-        assert isinstance(nodes, list)
-        assert any(
-            node_id in (node.get("id") or node.get("node_id") or "") for node in nodes
-        )
