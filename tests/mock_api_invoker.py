@@ -55,6 +55,8 @@ class MockApiInvoker(ApiInvoker):
             path: API path.
             body: Optional body.
 
+        Raises:
+            Raises exception if the response is an Exception.
         Returns:
             Mocked response.
         """
@@ -81,6 +83,8 @@ class MockApiInvoker(ApiInvoker):
 
         response = self._responses[self._next_expectation_index]
         self._next_expectation_index += 1
+        if isinstance(response, Exception):
+            raise response
         return response
 
     def expect_get(self, expect_path: str, *response: Any) -> None:
