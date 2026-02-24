@@ -245,6 +245,22 @@ class Client:
                 ) from e
             raise
 
+    def query_nodes(self, node_queries: list[NodeQueryRequest]) -> dict[str, NodeInfo]:
+        """
+        Query information for a set of nodes specified by node_id and version.
+
+        Args:
+            node_queries: List of NodeQueryRequest objects.
+
+        Returns:
+            Dict mapping node query string (node_id@version) to NodeInfo.
+
+        Raises:
+            HTTPError: If the API returns an error.
+        """
+        request = NodeQueryRequest(nodes=node_queries)
+        return self.core_api.post("/nodes/query", request.model_dump())
+
     def queue_node(
         self,
         node: Union[str, Node],

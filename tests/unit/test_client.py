@@ -48,6 +48,43 @@ def test_init_with_custom_env() -> None:
 
 
 class TestClientMethods:
+
+        def test_query_nodes_happy_path(self, client: Client):
+            """
+            Verify that query_nodes returns the expected nodes list on success.
+            """
+            with mock_core_api(client) as api:
+                expected_nodes = [
+                    {"id": "Add", "category": "Basic"},
+                    {"id": "Multiply", "category": "Basic"},
+                ]
+                api.expect_post("/nodes/query", expected_nodes)
+                result = client.query_nodes("add")
+                assert result == expected_nodes
+
+        def test_query_nodes_empty_result(self, client: Client):
+            """
+            Verify that query_nodes returns an empty list if no nodes match.
+            """
+            with mock_core_api(client) as api:
+                api.expect_post("/nodes/query", [])
+                result = client.query_nodes("nonexistent")
+                assert result == []
+
+        def test_query_nodes_http_error(self, client: Client):
+            """
+            Verify that query_nodes raises HTTPError for API errors.
+            """
+            with mock_core_api(client) as api:
+                response_500 = Mock()
+                response_500.status_code = 500
+                response_500.reason = "Internal Server Error"
+                http_error = HTTPError(response=response_500)
+                api.expect_post("/nodes/query", http_error)
+                with pytest.raises(HTTPError) as exc_info:
+                    client.query_nodes("add")
+                assert exc_info.value.response.status_code == 500
+                assert exc_info.value.response.reason == "Internal Server Error"
     def test_list_nodes(self, client: Client):
         """
         Verify that the list_nodes method pokes the correct endpoint.
