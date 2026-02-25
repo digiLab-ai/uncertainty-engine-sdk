@@ -540,10 +540,10 @@ class Client:
 
     def query_nodes(self, queries: NodeQueryRequest) -> dict[str, NodeInfo]:
         """
-        Query information for a set of nodes specified by node_id and version using a NodeQueryRequest.
+        Query information for a set of nodes specified by node_id and version.
 
         Args:
-            query: NodeQueryRequest object containing a list of NodeQuery items.
+            queries: NodeQueryRequest object containing a list of NodeQuery items.
 
         Returns:
             Dictionary mapping '<node_id>@<version>' to NodeInfo objects.
@@ -552,16 +552,16 @@ class Client:
             HTTPError: If any node is not found or another HTTP error occurs. If multiple errors, detail will contain all errors.
 
         Example:
-            >>> from uncertainty_engine_types import NodeQuery, NodeQueryRequest
-            >>> queries = NodeQueryRequest(
-            ...     nodes=[
-            ...         NodeQuery(node_id="nodeA", version="1"),
-            ...         NodeQuery(node_id="nodeB", version="2"),
-            ...     ]
-            ... )
-            >>> result = client.query_nodes(queries)
-            >>> print(result)
-            >>> print(result["nodeA@1"])
+            from uncertainty_engine_types import NodeQuery, NodeQueryRequest
+            queries = NodeQueryRequest(
+                nodes=[
+                    NodeQuery(node_id="nodeA", version="1"),
+                    NodeQuery(node_id="nodeB", version="2"),
+                ]
+            )
+            result = client.query_nodes(queries)
+            print(result)
+            print(result["nodeA@1"])
         """
         request_body = queries.model_dump()
         try:
