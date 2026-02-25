@@ -4,10 +4,9 @@ import time
 import pytest
 from uncertainty_engine_types import (
     JobStatus,
+    NodeQuery,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
-    NodeQuery,
-    NodeQueryRequest,
 )
 
 from uncertainty_engine.client import Client
@@ -298,7 +297,7 @@ class TestClientMethods:
         Args:
             e2e_client: A Client instance.
         """
-        queries = NodeQueryRequest(nodes=[NodeQuery(node_id="Add", version="latest")])
+        queries = [NodeQuery(node_id="Add", version="latest")]
         result = e2e_client.query_nodes(queries)
         assert "Add@latest" in result
         node_info = result["Add@latest"]
