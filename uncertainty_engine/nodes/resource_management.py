@@ -48,6 +48,7 @@ class LoadChatHistory(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             project_id=project_id,
@@ -93,6 +94,7 @@ class LoadDataset(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             project_id=project_id,
@@ -138,6 +140,7 @@ class LoadDocument(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             project_id=project_id,
@@ -190,6 +193,7 @@ class LoadMultiple(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             project_id=project_id,
@@ -235,6 +239,7 @@ class LoadModel(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             project_id=project_id,
@@ -296,6 +301,7 @@ class Save(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             data=data,
@@ -343,6 +349,7 @@ class Download(Node):
     ):
         super().__init__(
             node_name=self.node_name,
+            version="0.2.0",
             label=label,
             client=client,
             file=file,

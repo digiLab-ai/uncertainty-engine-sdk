@@ -55,6 +55,8 @@ class MockApiInvoker(ApiInvoker):
             path: API path.
             body: Optional body.
 
+        Raises:
+            Raises exception if the response is an Exception.
         Returns:
             Mocked response, or raises if the response is an Exception.
         """

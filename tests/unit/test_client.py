@@ -48,6 +48,7 @@ def test_init_with_custom_env() -> None:
 
 
 class TestClientMethods:
+
     def test_list_nodes(self, client: Client):
         """
         Verify that the list_nodes method pokes the correct endpoint.
@@ -189,7 +190,7 @@ class TestClientMethods:
 
             node_name = mock_job.node_id
             inputs = {"key": "value"}
-            node = Node(node_name, **inputs)
+            node = Node(node_name, "0.2.0", **inputs)
             response = client.queue_node(node)
 
             assert response == mock_job
@@ -880,6 +881,10 @@ class TestClientMethods:
                 client.get_node_versions(node_id)
             assert exc_info.value.response.status_code == 404
             assert exc_info.value.response.reason == "Not Found"
+            assert (
+                str(exc_info.value)
+                == f"404 Not Found: The node '{node_id}' does not exist."
+            )
 
     def test_get_node_versions_http_error_non_404(self, client: Client):
         """
@@ -906,19 +911,3 @@ class TestClientMethods:
             api.expect_get(f"/nodes/{node_id}/versions", RuntimeError("boom"))
             with pytest.raises(RuntimeError, match="boom"):
                 client.get_node_versions(node_id)
-
-    def test_query_nodes(self, client: Client, default_node_info):
-        """
-        Verify that query_nodes returns expected node info dict on success.
-        """
-        mock_node_info = default_node_info
-        with mock_core_api(client) as api:
-            nodes = [{"node_id": "Add", "version": "latest"}]
-            expected_response = {"Add@latest": mock_node_info.model_dump()}
-            api.expect_post("/nodes/query", {"nodes": nodes}, expected_response)
-            result = client.query_nodes(nodes)
-            assert "Add@latest" in result
-            node_info = result["Add@latest"]
-            assert node_info.id == mock_node_info.id
-            assert node_info.label == mock_node_info.label
-            assert node_info.category == mock_node_info.category

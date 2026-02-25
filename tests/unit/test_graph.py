@@ -35,6 +35,7 @@ def test_graph_w_node_instance(node_instance, node_label):
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -84,6 +85,7 @@ def test_graph_w_node_instance_handle():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "a", "node_handle": "b"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -119,6 +121,7 @@ def test_graph_w_node_multiple():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -126,6 +129,7 @@ def test_graph_w_node_multiple():
             },
             "add2": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
@@ -163,6 +167,7 @@ def test_graph_w_node_multiple_from_list():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -170,6 +175,7 @@ def test_graph_w_node_multiple_from_list():
             },
             "add2": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add2_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add2_rhs"},
@@ -196,13 +202,14 @@ def test_graph_w_node_class():
     graph = Graph()
 
     # Add the node to the graph
-    graph.add_node(Add, "add1")
+    graph.add_node(Add, "add1", version="0.2.0")
 
     # Verify that the node was added to the graph
     assert graph.nodes == {
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": None,
                     "rhs": None,
@@ -230,6 +237,7 @@ def test_graph_w_node_class():
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -266,13 +274,14 @@ def test_graph_connect_nodes():
     graph.add_node(add, "add1")
 
     # Add another node to the graph
-    graph.add_node(Add, "add2")
+    graph.add_node(Add, "add2", version="0.2.0")
 
     # Verify that the nodes were added to the graph
     assert graph.nodes == {
         "nodes": {
             "add1": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": {"node_name": "_", "node_handle": "add1_lhs"},
                     "rhs": {"node_name": "_", "node_handle": "add1_rhs"},
@@ -280,6 +289,7 @@ def test_graph_connect_nodes():
             },
             "add2": {
                 "type": "Add",
+                "version": "0.2.0",
                 "inputs": {
                     "lhs": None,
                     "rhs": None,
@@ -309,7 +319,7 @@ def test_process_metadata_with_tool_inputs():
     Test that _process_metadata correctly processes tool inputs from a node.
     """
     # Define a node with tool metadata
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
     node_input_info = NodeInputInfo(
         type="int", label="Input 1", description="Description for input 1"
     )
@@ -332,7 +342,7 @@ def test_process_metadata_with_tool_outputs():
     Test that _process_metadata correctly processes tool outputs from a node.
     """
     # Define a node with tool metadata
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
     node_output_info = NodeOutputInfo(
         type="float", label="Output 1", description="Description for output 1"
     )
@@ -355,7 +365,7 @@ def test_process_metadata_with_no_tool_metadata():
     Test that _process_metadata does nothing if the node has no tool metadata.
     """
     # Define a node without tool metadata
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
 
     # Define a graph
     graph = Graph()
@@ -376,7 +386,7 @@ def test_graph_add_node_duplicate_label_raises_error():
     graph = Graph(prevent_node_overwrite=True)
 
     node1 = Add(lhs=1, rhs=2, label="duplicate")
-    node2 = Node("test_node", label="duplicate", arg1=5)
+    node2 = Node("test_node", "0.2.0", label="duplicate", arg1=5)
 
     graph.add_node(node1)
 
@@ -390,6 +400,7 @@ def test_graph_add_node_duplicate_label_raises_error():
     assert graph.nodes["nodes"] == {
         "duplicate": {
             "type": "Add",
+            "version": "0.2.0",
             "inputs": {
                 "lhs": {"node_name": "_", "node_handle": "duplicate_lhs"},
                 "rhs": {"node_name": "_", "node_handle": "duplicate_rhs"},
@@ -449,7 +460,7 @@ def test_validate_tool_metadata_raises_error_for_incomplete_metadata():
     """
     Verify that a ValueError is if ToolMetadata is missing an input or output
     """
-    node = Node("test_node", label="test_label")
+    node = Node("test_node", "0.2.0", label="test_label")
     node_input_info = NodeInputInfo(
         type="int", label="Input 1", description="Description for input 1"
     )

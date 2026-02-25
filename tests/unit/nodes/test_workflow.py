@@ -59,6 +59,7 @@ def test_workflow_initialization_no_client(simple_graph: Graph):
                     },
                 },
                 "type": "Add",
+                "version": "0.2.0",
             },
         },
     }
