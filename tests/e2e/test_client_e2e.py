@@ -267,10 +267,6 @@ class TestClientMethods:
         job_info = e2e_client.job_status(job)
         assert job_info.status == JobStatus.CANCELLED
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
-        reason="Get node versions feature only available in dev environment",
-    )
     def test_get_node_versions(self, e2e_client: Client):
         """
         Verify that the node versions can be retrieved successfully.
