@@ -248,35 +248,6 @@ class Client:
                 ) from e
             raise
 
-    def get_node_versions(self, node_id: str) -> list[str | int]:
-        """
-        Get node versions for a specific node.
-
-        Args:
-            node_id: The ID of the node to get versions for.
-
-        Returns:
-            A list of available versions for the node.
-
-        Raises:
-            HTTPError: If the node does not exist (404) or another HTTP error occurs.
-
-        Example:
-            >>> versions = client.get_node_versions("Add")
-            >>> print(versions)
-        """
-        try:
-            versions = self.core_api.get(f"/nodes/{node_id}/versions")
-            return versions
-        except HTTPError as e:
-            if e.response is not None and e.response.status_code == 404:
-                reason = e.response.reason
-                raise HTTPError(
-                    f"404 {reason}: The node '{node_id}' does not exist.",
-                    response=e.response,
-                ) from e
-            raise
-
     def queue_node(
         self,
         node: Union[str, Node],
