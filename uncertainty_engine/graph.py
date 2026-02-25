@@ -24,11 +24,11 @@ class Graph:
     Example:
         >>> graph = Graph()
         >>> graph.add_node(
-        ...    node=Node(node_name="Add", lhs=1, rhs=2),
+        ...    node=Node(node_name="Add", version="0.2.0", lhs=1, rhs=2),
         ...    label="add_1"
         ... )
         >>> graph.nodes
-        {'nodes': {'add_1': {'type': 'Add',
+        {'nodes': {'add_1': {'type': 'Add', 'version': '0.2.0',
         'inputs': {'lhs': {'node_name': '_', 'node_handle': 'add_1_lhs'},
         'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
     """
@@ -52,7 +52,10 @@ class Graph:
         self.prevent_node_overwrite = prevent_node_overwrite
 
     def add_node(
-        self, node: Union[Node, Type[Node]], label: Optional[str] = None
+        self,
+        node: Union[Node, Type[Node]],
+        label: Optional[str] = None,
+        version: int | str | None = None,
     ) -> None:
         """
         Add a node to the graph.
@@ -65,11 +68,11 @@ class Graph:
         Example:
             >>> graph = Graph()
             >>> graph.add_node(
-            ...    node=Node(node_name="Number", value=5),
+            ...    node=Node(node_name="Number", version="0.2.0", value=5),
             ...    label="number_1"
             ... )
             >>> graph.nodes
-            {'nodes': {'number_1': {'type': 'Number',
+            {'nodes': {'number_1': {'type': 'Number', 'version': '0.2.0',
             'inputs': {'value': {'node_name': '_',
             'node_handle': 'number_1_value'}}}}}
         """
@@ -100,15 +103,26 @@ class Graph:
                         "node_handle": f"{label}_{ki}",
                     }
                     self.external_input[f"{label}_{ki}"] = vi
+            node_version = node.version
 
         else:
+            # node is a class, version must be provided
+            if version is None:
+                raise ValueError(
+                    "When adding a node class, the 'version' argument is required.",
+                )
             node_input_dict = {
                 ki: None
                 for ki in inspect.signature(node.__init__).parameters.keys()
                 if ki not in ["self", "label", "client"]
             }
+            node_version = version
 
-        self.nodes["nodes"][label] = {"type": node.node_name, "inputs": node_input_dict}
+        self.nodes["nodes"][label] = {
+            "type": node.node_name,
+            "version": node_version,
+            "inputs": node_input_dict,
+        }
 
         # add tool_metadata
         self._process_metadata(node)
@@ -137,14 +151,14 @@ class Graph:
 
         Example:
             >>> graph = Graph()
-            >>> graph.add_node(Node(node_name="Number", value=5, label="number_1"))
-            >>> graph.add_node(Node(node_name="Add", lhs=0, rhs=0, label="add_1"))
+            >>> graph.add_node(Node(node_name="Number", version="0.2.0", value=5, label="number_1"))
+            >>> graph.add_node(Node(node_name="Add", version="0.2.0", lhs=0, rhs=0, label="add_1"))
             >>> graph.add_edge("number_1", "value", "add_1", "lhs")
             >>> print(graph.nodes)
-            {'nodes': {'number_1': {'type': 'Number',
+            {'nodes': {'number_1': {'type': 'Number', 'version': '0.2.0',
             'inputs': {'value': {'node_name': '_',
             'node_handle': 'number_1_value'}}},
-            'add_1': {'type': 'Add', 'inputs': {'lhs': {'node_name': 'number_1',
+            'add_1': {'type': 'Add', 'version': '0.2.0', 'inputs': {'lhs': {'node_name': 'number_1',
             'node_handle': 'value'}, 'rhs': {'node_name': '_', 'node_handle': 'add_1_rhs'}}}}}
         """
         self.nodes["nodes"][target]["inputs"][target_key] = {
