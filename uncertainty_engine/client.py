@@ -539,12 +539,12 @@ class Client:
 
         return tokens
 
-    def query_nodes(self, nodes: list[dict[str, str]]) -> dict[str, NodeInfo]:
+    def query_nodes(self, queries: NodeQueryRequest) -> dict[str, NodeInfo]:
         """
-        Query information for a set of nodes specified by node_id and version.
+        Query information for a set of nodes specified by node_id and version using a NodeQueryRequest.
 
         Args:
-            nodes: List of dicts with 'node_id' and 'version' keys.
+            query: NodeQueryRequest object containing a list of NodeQuery items.
 
         Returns:
             Dictionary mapping '<node_id>@<version>' to NodeInfo objects.
@@ -553,13 +553,18 @@ class Client:
             HTTPError: If any node is not found or another HTTP error occurs. If multiple errors, detail will contain all errors.
 
         Example:
-            >>> result = client.query_nodes([
-            ...     {"node_id": "Add", "version": "latest"}
-            ... ])
+            >>> from uncertainty_engine_types import NodeQuery, NodeQueryRequest
+            >>> queries = NodeQueryRequest(
+            ...     nodes=[
+            ...         NodeQuery(node_id="nodeA", version="1"),
+            ...         NodeQuery(node_id="nodeB", version="2"),
+            ...     ]
+            ... )
+            >>> result = client.query_nodes(queries)
             >>> print(result)
-            >>> print(result["Add@latest"])
+            >>> print(result["nodeA@1"])
         """
-        request_body = {"nodes": nodes}
+        request_body = queries.model_dump()
         try:
             response = self.core_api.post("/nodes/query", request_body)
             # response is expected to be a dict[str, Any] mapping index to node info
