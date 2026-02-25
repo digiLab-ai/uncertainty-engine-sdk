@@ -554,7 +554,10 @@ class Client:
 
         Example:
             >>> from uncertainty_engine_types import NodeQuery
-            >>> queries = [NodeQuery(node_id="nodeA", version="1"), NodeQuery(node_id="nodeB", version="2")]
+            >>> queries = [
+            ...     NodeQuery(node_id="nodeA", version="1"),
+            ...     NodeQuery(node_id="nodeB", version="2")
+            ... ]
             >>> result = client.query_nodes(queries)
             >>> print(result)
             >>> print(result["nodeA@1"])
