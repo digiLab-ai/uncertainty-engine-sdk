@@ -10,7 +10,6 @@ from uncertainty_engine_types import (
     JobInfo,
     JobStatus,
     NodeInfo,
-    NodeQuery,
     NodeQueryRequest,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
