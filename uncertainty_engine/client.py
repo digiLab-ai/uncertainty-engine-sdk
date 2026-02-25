@@ -544,11 +544,19 @@ class Client:
         Args:
             queries: NodeQueryRequest object containing a list of NodeQuery items.
 
+        """
+        Query information for a set of nodes specified by node_id and version.
+
+        Args:
+            queries: NodeQueryRequest object containing a list of NodeQuery
+                items.
+
         Returns:
             Dictionary mapping '<node_id>@<version>' to NodeInfo objects.
 
         Raises:
-            HTTPError: If any node is not found or another HTTP error occurs. If multiple errors, detail will contain all errors.
+            HTTPError: If any node is not found or another HTTP error occurs.
+                If multiple errors, detail will contain all errors.
 
         Example:
             from uncertainty_engine_types import NodeQuery, NodeQueryRequest
