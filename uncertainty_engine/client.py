@@ -10,6 +10,8 @@ from uncertainty_engine_types import (
     JobInfo,
     JobStatus,
     NodeInfo,
+    NodeQuery,
+    NodeQueryRequest,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
     RunWorkflowRequest,
@@ -536,6 +538,45 @@ class Client:
         tokens = self.core_api.get("/organizations/tokens/available")
 
         return tokens
+
+    def query_nodes(self, nodes: list[dict[str, str]]) -> dict[str, NodeInfo]:
+        """
+        Query information for a set of nodes specified by node_id and version.
+
+        Args:
+            nodes: List of dicts with 'node_id' and 'version' keys.
+
+        Returns:
+            Dictionary mapping '<node_id>@<version>' to NodeInfo objects.
+
+        Raises:
+            HTTPError: If any node is not found or another HTTP error occurs. If multiple errors, detail will contain all errors.
+
+        Example:
+            >>> result = client.query_nodes([
+            ...     {"node_id": "Add", "version": "latest"}
+            ... ])
+            >>> print(result)
+            >>> print(result["Add@latest"])
+        """
+        request_body = {"nodes": nodes}
+        try:
+            response = self.core_api.post("/nodes/query", request_body)
+            # response is expected to be a dict[str, Any] mapping index to node info
+            return {k: NodeInfo(**v) for k, v in response.items()}
+        except HTTPError as e:
+            # If error response contains detail.errors, raise with that info
+            if hasattr(e, "response") and e.response is not None:
+                try:
+                    detail = e.response.json().get("detail")
+                    if detail and "errors" in detail:
+                        raise HTTPError(
+                            f"Node query errors: {detail['errors']}",
+                            response=e.response,
+                        ) from e
+                except Exception:
+                    pass
+            raise
 
     def _wait_for_job(self, job: Job) -> JobInfo:
         """
