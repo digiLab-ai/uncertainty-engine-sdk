@@ -566,20 +566,19 @@ class Client:
         request_body = queries.model_dump()
         try:
             response = self.core_api.post("/nodes/query", request_body)
-            # response is expected to be a dict[str, Any] mapping index to node info
             return {k: NodeInfo(**v) for k, v in response.items()}
         except HTTPError as e:
-            # If error response contains detail.errors, raise with that info
+            detail = None
             if hasattr(e, "response") and e.response is not None:
                 try:
-                    detail = e.response.json().get("detail")
-                    if detail and "errors" in detail:
-                        raise HTTPError(
-                            f"Node query errors: {detail['errors']}",
-                            response=e.response,
-                        ) from e
+                    detail = e.response.json().get("detail", {})
                 except Exception:
-                    pass
+                    detail = {}
+                if detail.get("errors"):
+                    raise HTTPError(
+                        f"Node query errors: {detail['errors']}",
+                        response=e.response,
+                    ) from e
             raise
 
     def _wait_for_job(self, job: Job) -> JobInfo:
