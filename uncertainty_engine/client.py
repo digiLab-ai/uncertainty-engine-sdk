@@ -10,6 +10,8 @@ from uncertainty_engine_types import (
     JobInfo,
     JobStatus,
     NodeInfo,
+    NodeQuery,
+    NodeQueryRequest,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
     RunWorkflowRequest,
@@ -535,6 +537,48 @@ class Client:
         tokens = self.core_api.get("/organizations/tokens/available")
 
         return tokens
+
+    def query_nodes(self, queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        """
+        Query information for a set of nodes specified by node_id and version.
+
+        Args:
+            queries: A list of NodeQuery objects.
+
+        Returns:
+            Dictionary mapping '<node_id>@<version>' to NodeInfo objects.
+
+        Raises:
+            HTTPError: If any node is not found or another HTTP error occurs.
+                If multiple errors, detail will contain all errors.
+
+        Example:
+            >>> from uncertainty_engine_types import NodeQuery
+            >>> queries = [
+            ...     NodeQuery(node_id="nodeA", version="1"),
+            ...     NodeQuery(node_id="nodeB", version="2")
+            ... ]
+            >>> result = client.query_nodes(queries)
+            >>> print(result)
+            >>> print(result["nodeA@1"])
+        """
+        request_body = NodeQueryRequest(nodes=queries).model_dump()
+        try:
+            response = self.core_api.post("/nodes/query", request_body)
+            return {k: NodeInfo(**v) for k, v in response.items()}
+        except HTTPError as e:
+            detail = None
+            if hasattr(e, "response") and e.response is not None:
+                try:
+                    detail = e.response.json().get("detail", {})
+                except Exception:
+                    detail = {}
+                if detail.get("errors"):
+                    raise HTTPError(
+                        f"Node query errors: {detail['errors']}",
+                        response=e.response,
+                    ) from e
+            raise
 
     def _wait_for_job(self, job: Job) -> JobInfo:
         """

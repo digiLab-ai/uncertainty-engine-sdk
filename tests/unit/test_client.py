@@ -5,6 +5,8 @@ from requests import HTTPError
 from uncertainty_engine_types import (
     JobInfo,
     JobStatus,
+    NodeQuery,
+    NodeQueryRequest,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
 )
@@ -911,3 +913,22 @@ class TestClientMethods:
             api.expect_get(f"/nodes/{node_id}/versions", RuntimeError("boom"))
             with pytest.raises(RuntimeError, match="boom"):
                 client.get_node_versions(node_id)
+
+    def test_query_nodes(self, client: Client, default_node_info):
+        """
+        Verify that query_nodes returns expected node info dict on success.
+        """
+        mock_node_info = default_node_info
+        with mock_core_api(client) as api:
+            node_queries = [NodeQuery(node_id="Add", version="latest")]
+            node_query_request = NodeQueryRequest(nodes=node_queries)
+            expected_response = {"Add@latest": mock_node_info.model_dump()}
+            api.expect_post(
+                "/nodes/query", node_query_request.model_dump(), expected_response
+            )
+            result = client.query_nodes(node_queries)
+            assert "Add@latest" in result
+            node_info = result["Add@latest"]
+            assert node_info.id == mock_node_info.id
+            assert node_info.label == mock_node_info.label
+            assert node_info.category == mock_node_info.category

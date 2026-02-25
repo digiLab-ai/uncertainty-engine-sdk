@@ -4,6 +4,7 @@ import time
 import pytest
 from uncertainty_engine_types import (
     JobStatus,
+    NodeQuery,
     OverrideWorkflowInput,
     OverrideWorkflowOutput,
 )
@@ -12,6 +13,7 @@ from uncertainty_engine.client import Client
 
 
 class TestClientMethods:
+
     def test_list_nodes(self, e2e_client: Client):
         """
         Verify that the list_nodes method can be poked successfully.
@@ -283,3 +285,21 @@ class TestClientMethods:
         assert isinstance(versions, list)
         assert all(isinstance(v, (str, int)) for v in versions)
         assert len(versions) > 0
+
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Query node versions feature only available in dev environment",
+    )
+    def test_query_nodes(self, e2e_client: Client):
+        """
+        Verify that query_nodes returns expected node info dict on success.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+        queries = [NodeQuery(node_id="Add", version="latest")]
+        result = e2e_client.query_nodes(queries)
+        assert "Add@latest" in result
+        node_info = result["Add@latest"]
+        assert node_info.id == "Add"
+        assert node_info.label == "Add"
