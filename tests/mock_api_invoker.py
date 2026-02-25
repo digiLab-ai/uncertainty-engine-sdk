@@ -58,7 +58,7 @@ class MockApiInvoker(ApiInvoker):
         Raises:
             Raises exception if the response is an Exception.
         Returns:
-            Mocked response, or raises if the response is an Exception.
+            Mocked response.
         """
 
         if self._next_expectation_index >= len(self._expect_methods):
