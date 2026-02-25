@@ -213,8 +213,7 @@ class Client:
             if e.response is not None and e.response.status_code == 404:
                 reason = e.response.reason
                 raise HTTPError(
-                    f"404 {reason}: The node '{node}' does not exist.",
-                    response=e.response,
+                    f"404 {reason}: The node '{node}' does not exist."
                 ) from e
             raise
 
