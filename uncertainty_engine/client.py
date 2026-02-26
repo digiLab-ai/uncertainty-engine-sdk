@@ -186,37 +186,49 @@ class Client:
 
         return node_list
 
-    def get_node_info(self, node: str) -> NodeInfo:
+    def get_node_info(
+        self,
+        node: str,
+        version: str | int,
+    ) -> NodeInfo:
         """
-        Get information about a specific node.
+        Obtain a `NodeInfo` object containing metadata, input/output
+        schema, and configuration details for a given node and version.
 
         Args:
             node: The ID of the node to get information about.
+            version: The version of the node to get information about.
 
         Returns:
-            Information about the node as a NodeInfo object.
+            Information about the node as a `NodeInfo` object.
 
         Raises:
-            HTTPError: If the node does not exist (404) or another
-                HTTP error occurs.
+            KeyError: If the node information is not found in the
+                response.
 
         Example:
-            >>> node_info = client.get_node_info("Add")
+            >>> node_info = client.get_node_info("Add", "0.2.0")
             >>> print(node_info.inputs)
             >>> print(node_info.outputs)
         """
 
+        queries: list[NodeQuery] = [
+            NodeQuery(
+                node_id=node,
+                version=version,
+            ),
+        ]
+        response = self.query_nodes(queries)
+        versioned_key = f"{node}@{version}"
         try:
-            node_info = self.core_api.get(f"/nodes/{node}")
-            return NodeInfo(**node_info)
-
-        except HTTPError as e:
-            if e.response is not None and e.response.status_code == 404:
-                reason = e.response.reason
-                raise HTTPError(
-                    f"404 {reason}: The node '{node}' does not exist."
-                ) from e
-            raise
+            return response[versioned_key]
+        except KeyError:
+            raise KeyError(
+                f"Node '{node}' with version '{version}' was not found. "
+                "Please check the node name and version, or use "
+                "`list_nodes()` and `get_node_versions()` to see "
+                "available options."
+            )
 
     def get_node_versions(self, node_id: str) -> list[str | int]:
         """
