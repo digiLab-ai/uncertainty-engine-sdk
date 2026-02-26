@@ -94,7 +94,7 @@ class TestClientMethods:
             e2e_client: A Client instance.
         """
 
-        node_info = e2e_client.get_node_info("Add")
+        node_info = e2e_client.get_node_info("Add", "0.2.0")
         assert node_info.id == "Add"
         assert node_info.inputs
         assert node_info.outputs
