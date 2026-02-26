@@ -82,7 +82,10 @@ def test_node_with_client(default_node_info: NodeInfo):
     assert node() == ("test_node", {"a": 1, "b": 2})
 
     # Assert `get_node_info` is called with correct args.
-    test_client.get_node_info.assert_called_once_with("test_node")
+    test_client.get_node_info.assert_called_once_with(
+        "test_node",
+        "0.2.0",
+    )
 
     # Assert `validate` is called once
     mock_validate.assert_called_once()

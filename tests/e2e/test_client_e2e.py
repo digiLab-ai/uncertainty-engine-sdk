@@ -85,6 +85,11 @@ class TestClientMethods:
         assert isinstance(tokens, int)
         assert tokens >= 0
 
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Query node versions feature only available in dev "
+        "environment, and is called by this method.",
+    )
     def test_get_node_info(self, e2e_client: Client) -> None:
         """
         Test that the `Add` node info returns the correct id, and that
@@ -94,7 +99,7 @@ class TestClientMethods:
             e2e_client: A Client instance.
         """
 
-        node_info = e2e_client.get_node_info("Add")
+        node_info = e2e_client.get_node_info("Add", "0.2.0")
         assert node_info.id == "Add"
         assert node_info.inputs
         assert node_info.outputs

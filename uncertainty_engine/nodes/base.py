@@ -71,8 +71,9 @@ class Node:
         self.client = client
         """The Uncertainty Engine client."""
 
-        # TODO: this will need to be updated to make use of the version
-        self.node_info = client.get_node_info(self.node_name) if client else None
+        self.node_info = (
+            client.get_node_info(self.node_name, version) if client else None
+        )
         """The node information. This includes the input parameters."""
 
         self.tool_metadata: ToolMetadata = ToolMetadata()

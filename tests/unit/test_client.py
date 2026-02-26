@@ -326,6 +326,7 @@ class TestClientMethods:
         """
         with mock_core_api(client) as api:
             node_id = "node_a"
+            version = "1.0.0"
             node_info_dict = {
                 "id": node_id,
                 "label": node_id,
@@ -338,11 +339,27 @@ class TestClientMethods:
                 "outputs": {},
                 "version_types_lib": "1.0.0",
                 "version_base_image": 1,
-                "version_node": 1,
+                "version_node": version,
             }
-            api.expect_get(f"/nodes/{node_id}", node_info_dict)
+            # The body sent to /nodes/query
+            expect_body = {
+                "nodes": [
+                    {
+                        "node_id": node_id,
+                        "version": version,
+                    }
+                ],
+            }
+            # The response expected from /nodes/query
+            response = {f"{node_id}@{version}": node_info_dict}
 
-            client.get_node_info(node_id)
+            api.expect_post(
+                "/nodes/query",
+                expect_body=expect_body,
+                response=response,
+            )
+
+            client.get_node_info(node_id, "1.0.0")
 
     def test_queue_workflow_basic(self, client: Client):
         """
