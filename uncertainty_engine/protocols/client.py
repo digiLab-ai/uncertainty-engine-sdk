@@ -1,6 +1,6 @@
 from typing import Any, Protocol, runtime_checkable
 
-from uncertainty_engine_types import NodeInfo, NodeQuery
+from uncertainty_engine_types import NodeInfo
 
 
 @runtime_checkable
