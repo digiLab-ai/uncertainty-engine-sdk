@@ -158,10 +158,7 @@ def mock_client_query_nodes_success(
     }
 
     def _query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
-        return {
-            str(query): node_info_map[query.node_id]
-            for query in queries
-        }
+        return {str(query): node_info_map[query.node_id] for query in queries}
 
     mock_client.query_nodes.side_effect = _query_nodes
     return mock_client

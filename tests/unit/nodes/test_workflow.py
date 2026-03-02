@@ -19,10 +19,7 @@ def test_workflow_initialization_with_client(
     node_info_by_id = {node_info.id: node_info for node_info in node_info_list}
 
     def mock_query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
-        return {
-            str(query): node_info_by_id[query.node_id]
-            for query in queries
-        }
+        return {str(query): node_info_by_id[query.node_id] for query in queries}
 
     mock_client.query_nodes = MagicMock(side_effect=mock_query_nodes)
 
