@@ -144,8 +144,6 @@ class WorkflowValidator:
         # Check node exists and get relevant node info. If this check
         # fails the method will store the error and return as it will be
         # unable to perform input validation without the node info.
-        if self.client is None:
-            return
 
         try:
             query_result = self.client.query_nodes(
@@ -252,9 +250,6 @@ class WorkflowValidator:
         handle_node = self.graph.nodes.get(handle.node_name)
         if handle_node is None:
             return f"Node with label '{handle.node_name}' is referenced but is not in graph."
-
-        if self.client is None:
-            return None
 
         handle_node_version = handle_node.version
 
