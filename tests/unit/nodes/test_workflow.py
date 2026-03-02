@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from pytest import raises
 from uncertainty_engine_types import NodeInfo, NodeQuery, ToolMetadata
@@ -19,9 +19,10 @@ def test_workflow_initialization_with_client(
     node_info_by_id = {node_info.id: node_info for node_info in node_info_list}
 
     def mock_query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
-        # Just one query is fine for this test
-        query = queries[0]
-        return {f"{query.node_id}@{query.version}": node_info_by_id[query.node_id]}
+        return {
+            f"{query.node_id}@{query.version}": node_info_by_id[query.node_id]
+            for query in queries
+        }
 
     mock_client.query_nodes = MagicMock(side_effect=mock_query_nodes)
 
@@ -35,7 +36,23 @@ def test_workflow_initialization_with_client(
     assert node.graph == workflow_node_graph
     assert node.inputs == workflow_node_inputs
     assert node.client == mock_client
-    assert mock_client.query_nodes.call_count > 0
+
+    # Ensure `query_nodes` was called with a non-empty list of NodeQuery
+    assert mock_client.query_nodes.call_count == 1
+    call_args, _ = mock_client.query_nodes.call_args
+    queries = call_args[0]
+    assert isinstance(queries, list)
+    assert queries, "Expected at least one NodeQuery to be issued"
+    assert all(isinstance(q, NodeQuery) for q in queries)
+
+    # Ensure the workflow populated its nodes list with the expected node infos
+    expected_nodes_list = {
+        f"{node_data['type']}@{node_data['version']}": node_info_by_id[
+            node_data["type"]
+        ]
+        for node_data in workflow_node_graph["nodes"].values()
+    }
+    assert getattr(node, "nodes_list", None) == expected_nodes_list
 
 
 def test_workflow_initialization_no_client(simple_graph: Graph):
@@ -68,19 +85,15 @@ def test_workflow_initialization_no_client(simple_graph: Graph):
     }
     assert node.inputs == {"add_lhs": 1, "add_rhs": 2}
     assert node.client is None
+    assert node.nodes_list is None
 
 
 def test_validate():
-    """Assert validator is called if `self.nodes_list` is available."""
+    """Assert validate raises if `self.nodes_list` is unavailable."""
     workflow = Workflow(graph={"nodes": {}}, inputs={})
 
-    with patch("uncertainty_engine.nodes.workflow.WorkflowValidator") as mock_class:
-        mock_instance = mock_class.return_value
-        mock_instance.validate = MagicMock()
-
+    with raises(ValueError, match="Nodes list is not available for validation."):
         workflow.validate()
-
-        mock_instance.validate.assert_called_once()
 
 
 def test_workflow_tool_metadata_validate_complete_called():
