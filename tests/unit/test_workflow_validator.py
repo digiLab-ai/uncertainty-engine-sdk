@@ -87,8 +87,7 @@ def test_workflow_validator_init(
     ],
 )
 def test_workflow_validator_init_value_error(
-    mock_client: MagicMock,
-    invalid_graph: dict[str, Any], expected_error: str
+    mock_client: MagicMock, invalid_graph: dict[str, Any], expected_error: str
 ):
     """
     Assert validator fails to initialise when args cannot be

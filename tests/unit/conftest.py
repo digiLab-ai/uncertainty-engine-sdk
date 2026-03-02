@@ -7,7 +7,13 @@ from warnings import simplefilter
 import boto3
 import jwt
 import pytest
-from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo, NodeQuery
+from uncertainty_engine_types import (
+    Handle,
+    NodeInfo,
+    NodeInputInfo,
+    NodeOutputInfo,
+    NodeQuery,
+)
 
 from uncertainty_engine.auth_service import (
     AUTH_CACHE_ID_TOKEN,
