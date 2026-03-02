@@ -242,7 +242,7 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
 ):
     """
     Asserts `_validate_node_inputs` stores correct error message with
-    associated node id if teh node type does not exist.
+    associated node id if the node type does not exist.
     """
     validator = WorkflowValidator(
         graph=workflow_node_graph,
