@@ -27,15 +27,14 @@ class Client(Protocol):
         "<job-id>"
     """
 
-    def get_node_info(self, node: str) -> NodeInfo:
+    def get_node_info(self, node: str, version: str | int) -> NodeInfo:
         """
-        Get information about a specific node.
+        Obtain a `NodeInfo` object containing metadata, input/output
+        schema, and configuration details for a given node and version.
 
         Args:
             node: The ID of the node to get information about.
-
-        Returns:
-            Information about the node as a NodeInfo object.
+            version: The version of the node to get information about.
         """
         ...
 
