@@ -1,6 +1,7 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import pytest
 from pytest import mark, raises
 from requests import HTTPError
 from uncertainty_engine_types import Handle, NodeElement, NodeInfo
@@ -15,7 +16,14 @@ from uncertainty_engine.exceptions import (
 from uncertainty_engine.workflow_validator import WorkflowValidator
 
 
+@pytest.fixture(autouse=True)
+def _setup_query_nodes_success(mock_client_query_nodes_success: MagicMock) -> None:
+    """Set default query_nodes success behaviour for this module."""
+    return
+
+
 def test_workflow_validator_init(
+    mock_client: MagicMock,
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
     workflow_node_requested_output: dict[str, Any],
@@ -25,6 +33,7 @@ def test_workflow_validator_init(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=workflow_node_requested_output,
+        client=mock_client,
     )
 
     assert validator.node_errors == []
@@ -78,6 +87,7 @@ def test_workflow_validator_init(
     ],
 )
 def test_workflow_validator_init_value_error(
+    mock_client: MagicMock,
     invalid_graph: dict[str, Any], expected_error: str
 ):
     """
@@ -88,10 +98,11 @@ def test_workflow_validator_init_value_error(
         WorkflowValidationError,
         match=expected_error,
     ):
-        WorkflowValidator(invalid_graph)
+        WorkflowValidator(client=mock_client, graph=invalid_graph)
 
 
 def test_validate_no_errors(
+    mock_client: MagicMock,
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
     workflow_node_requested_output: dict[str, Any],
@@ -101,6 +112,7 @@ def test_validate_no_errors(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=workflow_node_requested_output,
+        client=mock_client,
     )
 
     validator.validate()
@@ -109,10 +121,11 @@ def test_validate_no_errors(
     assert validator.requested_output_errors == []
 
 
-def test_validate_empty_graph():
+def test_validate_empty_graph(mock_client: MagicMock):
     """Assert validate doesn't raise for an empty graph."""
     validator = WorkflowValidator(
         graph={"nodes": {}},
+        client=mock_client,
     )
 
     validator.validate()
@@ -147,6 +160,7 @@ def test_validate_node_and_handle_error(
 
 
 def test_validate_node_handle_error(
+    mock_client: MagicMock,
     workflow_node_graph: dict[str, Any],
     workflow_node_requested_output: dict[str, Any],
 ):
@@ -154,6 +168,7 @@ def test_validate_node_handle_error(
     validator = WorkflowValidator(
         graph=workflow_node_graph,
         requested_output=workflow_node_requested_output,
+        client=mock_client,
     )
 
     with raises(
@@ -164,6 +179,7 @@ def test_validate_node_handle_error(
 
 
 def test_validate_requested_output_error(
+    mock_client: MagicMock,
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
@@ -172,6 +188,7 @@ def test_validate_requested_output_error(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output={"Answer": "ans"},
+        client=mock_client,
     )
 
     with raises(
@@ -268,6 +285,7 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
 
 @mark.parametrize("node_id", ["Test Add", "Test Display"])
 def test_validate_handles_no_errors(
+    mock_client: MagicMock,
     node_id: str,
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
@@ -279,6 +297,7 @@ def test_validate_handles_no_errors(
     validator = WorkflowValidator(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
+        client=mock_client,
     )
     validator._validate_handles(test_node)
     assert validator.node_handle_errors == []
@@ -286,6 +305,7 @@ def test_validate_handles_no_errors(
 
 @mark.parametrize("inputs", [None, {}, {"invalid": "Test Add_lhs"}])
 def test_validate_handles_input_error(
+    mock_client: MagicMock,
     inputs: dict[str, Any],
     workflow_node_graph: dict[str, Any],
 ):
@@ -300,6 +320,7 @@ def test_validate_handles_input_error(
     validator = WorkflowValidator(
         graph=workflow_node_graph,
         inputs=inputs,
+        client=mock_client,
     )
     validator._validate_handles(test_node)
     assert validator.node_handle_errors == [
@@ -317,6 +338,7 @@ def test_validate_handles_input_error(
 
 
 def test_validate_handles_not_in_graph(
+    mock_client: MagicMock,
     workflow_node_graph: dict[str, Any],
 ):
     """
@@ -329,6 +351,7 @@ def test_validate_handles_not_in_graph(
 
     validator = WorkflowValidator(
         graph={"nodes": {node_id: node_element.model_dump()}},
+        client=mock_client,
     )
     validator._validate_handles(test_node)
 
@@ -374,7 +397,6 @@ def test_validate_handles_node_does_not_exist(
 
 def test_validate_handles_outputs_invalid(
     mock_client: MagicMock,
-    add_node_info: NodeInfo,
     workflow_node_graph: dict[str, Any],
 ):
     """
@@ -386,7 +408,6 @@ def test_validate_handles_outputs_invalid(
     test_node = (node_id, node_element)
 
     validator = WorkflowValidator(graph=workflow_node_graph, client=mock_client)
-    mock_client.query_nodes.return_value = {"TestAdd@latest": add_node_info}
     with patch(
         "uncertainty_engine.workflow_validator.validate_outputs_exist"
     ) as mock_validate_outputs:
@@ -413,6 +434,7 @@ def test_validate_handles_outputs_invalid(
     ],
 )
 def test_validate_requested_output_no_errors(
+    mock_client: MagicMock,
     requested_output: dict[str, Any],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
@@ -422,6 +444,7 @@ def test_validate_requested_output_no_errors(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
+        client=mock_client,
     )
 
     validator._validate_requested_output()
@@ -439,6 +462,7 @@ def test_validate_requested_output_no_errors(
     ],
 )
 def test_validate_requested_output_handle_obj_error(
+    mock_client: MagicMock,
     requested_output: dict[str, Any],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
@@ -451,6 +475,7 @@ def test_validate_requested_output_handle_obj_error(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
+        client=mock_client,
     )
 
     validator._validate_requested_output()
@@ -478,6 +503,7 @@ def test_validate_requested_output_handle_obj_error(
     ],
 )
 def test_validate_requested_output_invalid_dict_error(
+    mock_client: MagicMock,
     requested_output: dict[str, Any],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
@@ -490,6 +516,7 @@ def test_validate_requested_output_invalid_dict_error(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
+        client=mock_client,
     )
 
     validator._validate_requested_output()
@@ -512,6 +539,7 @@ def test_validate_requested_output_invalid_dict_error(
     ],
 )
 def test_validate_requested_output_input_reference(
+    mock_client: MagicMock,
     requested_output: dict[str, Any],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
@@ -524,6 +552,7 @@ def test_validate_requested_output_input_reference(
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
+        client=mock_client,
     )
 
     validator._validate_requested_output()
@@ -550,7 +579,6 @@ def test_validate_requested_output_input_reference(
 )
 def test_validate_requested_output_invalid_output_error(
     mock_client: MagicMock,
-    display_node_info: NodeInfo,
     requested_output: dict[str, Any],
     expected_message: str,
     workflow_node_graph: dict[str, Any],
@@ -566,7 +594,6 @@ def test_validate_requested_output_invalid_output_error(
         requested_output=requested_output,
         client=mock_client,
     )
-    mock_client.query_nodes.return_value = {"TestDisplay@latest": display_node_info}
 
     validator._validate_requested_output()
     assert validator.requested_output_errors == [

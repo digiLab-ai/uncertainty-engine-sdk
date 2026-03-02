@@ -42,11 +42,11 @@ class WorkflowValidator:
     @typechecked
     def __init__(
         self,
+        client: Client,
         graph: dict[str, Any],
         inputs: dict[str, Any] | None = None,
         requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
-        client: Client | None = None,
     ):
         """
         A dictionary containing all available node infos to validate
@@ -79,7 +79,7 @@ class WorkflowValidator:
         """
 
         self.client = client
-        """Optional client used for node validation."""
+        """Client used for node validation."""
 
         # Categories of errors to be collected and raised once
         # validation is finished.

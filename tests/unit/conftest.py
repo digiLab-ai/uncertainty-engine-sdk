@@ -7,7 +7,7 @@ from warnings import simplefilter
 import boto3
 import jwt
 import pytest
-from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo, NodeQuery
 
 from uncertainty_engine.auth_service import (
     AUTH_CACHE_ID_TOKEN,
@@ -137,6 +137,26 @@ def workflow_node_requested_output() -> dict[str, Any]:
 def mock_client():
     """Creates a mock `client` instance."""
     return MagicMock(spec=Client)
+
+
+@pytest.fixture
+def mock_client_query_nodes_success(
+    mock_client: MagicMock,
+    add_node_info: NodeInfo,
+    display_node_info: NodeInfo,
+) -> MagicMock:
+    """Configure mock client query_nodes to return known node infos."""
+    node_info_map = {
+        "TestAdd": add_node_info,
+        "TestDisplay": display_node_info,
+    }
+
+    def _query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        query = queries[0]
+        return {f"{query.node_id}@{query.version}": node_info_map[query.node_id]}
+
+    mock_client.query_nodes.side_effect = _query_nodes
+    return mock_client
 
 
 # Token values as fixtures
