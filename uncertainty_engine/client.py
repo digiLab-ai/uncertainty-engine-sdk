@@ -212,14 +212,10 @@ class Client:
             >>> print(node_info.outputs)
         """
 
-        queries: list[NodeQuery] = [
-            NodeQuery(
-                node_id=node,
-                version=version,
-            ),
-        ]
-        response = self.query_nodes(queries)
-        versioned_key = f"{node}@{version}"
+        query = NodeQuery(node_id=node, version=version)
+        response = self.query_nodes([query])
+        versioned_key = str(query)
+
         try:
             return response[versioned_key]
         except KeyError:
