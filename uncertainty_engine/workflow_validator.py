@@ -166,7 +166,7 @@ class WorkflowValidator:
                         node_id=node_id,
                         message=(
                             f"The '{node_element.type}' node with version "
-                            f"{node_version} was not found."
+                            f"'{node_version}' was not found."
                         ),
                     )
                 )
@@ -176,7 +176,7 @@ class WorkflowValidator:
                         node_id=node_id,
                         message=(
                             f"Failed to query for node {node_element.type} "
-                            f"and version {node_version}"
+                            f"and version '{node_version}'"
                         ),
                     )
                 )

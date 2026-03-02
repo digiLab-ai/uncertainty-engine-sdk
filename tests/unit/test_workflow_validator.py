@@ -1,8 +1,8 @@
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from requests import HTTPError
 from pytest import mark, raises
+from requests import HTTPError
 from uncertainty_engine_types import Handle, NodeElement, NodeInfo
 
 from uncertainty_engine.exceptions import (
@@ -141,7 +141,7 @@ def test_validate_node_and_handle_error(
 
     with raises(
         WorkflowValidationError,
-        match="Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node with version latest was not found\.\n  - Test Add: The 'TestAdd' node with version latest was not found\.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node does not exist\.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node does not exist\.",
+        match=r"Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node with version 'latest' was not found\.\n  - Test Add: The 'TestAdd' node with version 'latest' was not found\.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node does not exist\.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node does not exist\.",
     ):
         validator.validate()
 
@@ -261,7 +261,7 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
     assert validator.node_errors == [
         NodeErrorInfo(
             node_id="Test Add",
-            message="The 'TestAdd' node with version latest was not found.",
+            message="The 'TestAdd' node with version 'latest' was not found.",
         )
     ]
 
