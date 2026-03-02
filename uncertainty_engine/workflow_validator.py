@@ -264,15 +264,12 @@ class WorkflowValidator:
             )
             node_info = next(iter(query_result.values()))
         except HTTPError as e:
-            response = getattr(e, "response", None)
-            status_code = getattr(response, "status_code", None)
+            status_code = e.response.status_code
             if status_code == 404:
                 return (
                     f"The '{handle_node.type}' node (version '{handle_node_version}') "
                     f"does not exist."
                 )
-            # For non-404 errors, surface a more accurate message rather than
-            # incorrectly reporting that the node does not exist.
             if status_code is not None:
                 return (
                     f"Failed to query node '{handle_node.type}' "

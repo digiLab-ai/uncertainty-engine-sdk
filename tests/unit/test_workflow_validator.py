@@ -141,7 +141,7 @@ def test_validate_node_and_handle_error(
 
     with raises(
         WorkflowValidationError,
-        match=r"Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node with version 'latest' was not found\.\n  - Test Add: The 'TestAdd' node with version 'latest' was not found\.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node does not exist\.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node does not exist\.",
+        match=r"Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node with version 'latest' was not found\.\n  - Test Add: The 'TestAdd' node with version 'latest' was not found\.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node \(version 'latest'\) does not exist\.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node \(version 'latest'\) does not exist\.",
     ):
         validator.validate()
 
@@ -367,7 +367,7 @@ def test_validate_handles_node_does_not_exist(
         NodeHandleErrorInfo(
             node_id=node_id,
             input_id="value",
-            message="The 'TestAdd' node does not exist.",
+            message="The 'TestAdd' node (version 'latest') does not exist.",
         ),
     ]
 
