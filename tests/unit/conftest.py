@@ -107,6 +107,7 @@ def workflow_node_graph() -> dict[str, Any]:
             "Test Display": {
                 "inputs": {"value": {"node_handle": "ans", "node_name": "Test Add"}},
                 "type": "TestDisplay",
+                "version": "latest",
             },
             "Test Add": {
                 "inputs": {
@@ -114,6 +115,7 @@ def workflow_node_graph() -> dict[str, Any]:
                     "rhs": {"node_handle": "Test Add_rhs", "node_name": "_"},
                 },
                 "type": "TestAdd",
+                "version": "latest",
             },
         }
     }
