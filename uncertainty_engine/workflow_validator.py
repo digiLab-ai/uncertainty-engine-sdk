@@ -1,9 +1,10 @@
 from typing import Any
 
 from pydantic import ValidationError
+from requests import HTTPError
 from typeguard import typechecked
 from uncertainty_engine_types import Graph as WorkflowNodeGraph
-from uncertainty_engine_types import Handle, NodeElement, NodeInfo
+from uncertainty_engine_types import Handle, NodeElement, NodeQuery
 
 from uncertainty_engine.exceptions import (
     NodeErrorInfo,
@@ -12,6 +13,7 @@ from uncertainty_engine.exceptions import (
     RequestedOutputErrorInfo,
     WorkflowValidationError,
 )
+from uncertainty_engine.protocols import Client
 from uncertainty_engine.utils import format_pydantic_error
 from uncertainty_engine.validation import (
     validate_inputs_exist,
@@ -27,8 +29,6 @@ class WorkflowValidator:
     validation.
 
     Args:
-        node_info_list: List of `NodeInfo` objects for each of the available
-            nodes.
         graph: Workflow node input graph.
         inputs: Workflow node external inputs. Defaults to `None`.
         requested_output: Workflow node requested output. Defaults to
@@ -44,13 +44,12 @@ class WorkflowValidator:
     @typechecked
     def __init__(
         self,
-        node_info_list: list[NodeInfo],
         graph: dict[str, Any],
         inputs: dict[str, Any] | None = None,
         requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
+        client: Client | None = None,
     ):
-        self.node_infos = {node_info.id: node_info for node_info in node_info_list}
         """
         A dictionary containing all available node infos to validate
         nodes against.
@@ -80,6 +79,9 @@ class WorkflowValidator:
         """
         The requested output from the workflow.
         """
+
+        self.client = client
+        """Optional client used for node metadata validation."""
 
         # Categories of errors to be collected and raised once
         # validation is finished.
@@ -139,18 +141,45 @@ class WorkflowValidator:
                 graph) and value (the assigned inputs and node type).
         """
         node_id, node_element = node
+        node_version = node_element.version
 
         # Check node exists and get relevant node info. If this check
         # fails the method will store the error and return as it will be
         # unable to perform input validation without the node info.
-        node_info = self.node_infos.get(node_element.type)
-        if node_info is None:
-            self.node_errors.append(
-                NodeErrorInfo(
-                    node_id=node_id,
-                    message=f"The '{node_element.type}' node does not exist.",
-                )
+        if self.client is None:
+            return
+
+        try:
+            query_result = self.client.query_nodes(
+                [
+                    NodeQuery(
+                        node_id=node_element.type,
+                        version=node_version,
+                    )
+                ]
             )
+            node_info = next(iter(query_result.values()))
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                self.node_errors.append(
+                    NodeErrorInfo(
+                        node_id=node_id,
+                        message=(
+                            f"The '{node_element.type}' node with version "
+                            f"{node_version} was not found."
+                        ),
+                    )
+                )
+            else:
+                self.node_errors.append(
+                    NodeErrorInfo(
+                        node_id=node_id,
+                        message=(
+                            f"Failed to query for node {node_element.type} "
+                            f"and version {node_version}"
+                        ),
+                    )
+                )
             return
 
         for validator in (validate_required_inputs, validate_inputs_exist):
@@ -226,8 +255,17 @@ class WorkflowValidator:
         if handle_node is None:
             return f"Node with label '{handle.node_name}' is referenced but is not in graph."
 
-        node_info = self.node_infos.get(handle_node.type)
-        if node_info is None:
+        if self.client is None:
+            return None
+
+        handle_node_version = getattr(handle_node, "version", None) or "latest"
+
+        try:
+            query_result = self.client.query_nodes(
+                [NodeQuery(node_id=handle_node.type, version=handle_node_version)]
+            )
+            node_info = next(iter(query_result.values()))
+        except HTTPError:
             return f"The '{handle_node.type}' node does not exist."
 
         try:

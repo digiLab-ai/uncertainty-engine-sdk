@@ -1,8 +1,7 @@
 from typing import Any
-from warnings import warn
 
 from typeguard import typechecked
-from uncertainty_engine_types import NodeInfo, ToolMetadata
+from uncertainty_engine_types import ToolMetadata
 
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
@@ -74,7 +73,6 @@ class Workflow(Node):
         self.requested_output = requested_output
         self.external_input_id = external_input_id
         self.inputs = final_inputs
-        self.nodes_list = self._get_nodes_list(client) if client else None
 
         super().__init__(
             node_name=self.node_name,
@@ -118,22 +116,6 @@ class Workflow(Node):
             requested_output=requested_output,
         )
 
-    def _get_nodes_list(self, client: Client) -> list[NodeInfo] | None:
-        """
-        Returns a list of NodeInfo objects from the client, or None if
-        the client is not provided or a validation error occurs.
-
-        Args:
-            client: Client to be used to fetch node information.
-        """
-        try:
-            return [NodeInfo(**node_info) for node_info in client.list_nodes()]
-        except Exception:
-            warn(
-                "Unable to get node info list. Workflow node will not be able to perform validation."
-            )
-            return None
-
     def validate(self) -> None:
         """
         Validates the entire workflow using the list of nodes fetched
@@ -147,13 +129,11 @@ class Workflow(Node):
             `WorkflowValidationError`: If validation fails. The error
                 message will contain reasons for failure.
         """
-        if self.nodes_list is None:
-            raise ValueError("Nodes list is not available for validation.")
 
         validator = WorkflowValidator(
-            node_info_list=self.nodes_list,
             graph=self.graph,
             inputs=self.inputs,
             requested_output=self.requested_output,
+            client=self.client,
         )
         validator.validate()
