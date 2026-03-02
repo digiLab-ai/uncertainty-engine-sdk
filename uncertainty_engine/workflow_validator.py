@@ -258,7 +258,7 @@ class WorkflowValidator:
         if self.client is None:
             return None
 
-        handle_node_version = getattr(handle_node, "version", None) or "latest"
+        handle_node_version = handle_node.version
 
         try:
             query_result = self.client.query_nodes(
