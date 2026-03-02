@@ -1,5 +1,5 @@
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from pytest import raises
 from uncertainty_engine_types import NodeInfo, NodeQuery, ToolMetadata
@@ -91,6 +91,38 @@ def test_validate():
 
     with raises(ValueError, match="Nodes list is not available for validation."):
         workflow.validate()
+
+
+@patch("uncertainty_engine.nodes.workflow.WorkflowValidator")
+def test_validate_calls_validator_when_nodes_available(mock_class: MagicMock):
+    """Assert validator is called when `self.nodes_list` is available."""
+    workflow = Workflow(graph={"nodes": {}}, inputs={})
+    workflow.nodes_list = {}
+    mock_instance = mock_class.return_value
+    mock_instance.validate = MagicMock()
+
+    workflow.validate()
+
+    mock_class.assert_called_once_with(
+        node_info_map={},
+        graph=workflow.graph,
+        inputs=workflow.inputs,
+        requested_output=workflow.requested_output,
+    )
+    mock_instance.validate.assert_called_once()
+
+
+def test_get_nodes_list_returns_none_on_query_error(
+    mock_client: Client,
+    workflow_node_graph: dict[str, Any],
+):
+    """Assert node list fetch fails fast when `query_nodes` raises an error."""
+    mock_client.query_nodes = MagicMock(side_effect=Exception("query failed"))
+    workflow = Workflow(graph=workflow_node_graph, inputs={})
+
+    nodes_list = workflow._get_nodes_list(mock_client)
+
+    assert nodes_list is None
 
 
 def test_workflow_tool_metadata_validate_complete_called():

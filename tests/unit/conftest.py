@@ -106,6 +106,17 @@ def node_info_list(
 
 
 @pytest.fixture
+def node_info_map(
+    add_node_info: NodeInfo, display_node_info: NodeInfo
+) -> dict[str, NodeInfo]:
+    """Returns a mapping of '<node_id>@latest' to `NodeInfo` objects."""
+    return {
+        "TestAdd@latest": add_node_info,
+        "TestDisplay@latest": display_node_info,
+    }
+
+
+@pytest.fixture
 def workflow_node_graph() -> dict[str, Any]:
     """Returns an example `Workflow` node graph input."""
     return {

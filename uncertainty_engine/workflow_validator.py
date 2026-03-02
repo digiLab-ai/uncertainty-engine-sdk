@@ -27,8 +27,7 @@ class WorkflowValidator:
     validation.
 
     Args:
-        node_info_list: Either a list of `NodeInfo` objects or a mapping
-            of '<node_id>@<version>' to `NodeInfo`.
+        node_info_map: Mapping of '<node_id>@<version>' to `NodeInfo`.
         graph: Workflow node input graph.
         inputs: Workflow node external inputs. Defaults to `None`.
         requested_output: Workflow node requested output. Defaults to
@@ -44,18 +43,13 @@ class WorkflowValidator:
     @typechecked
     def __init__(
         self,
-        node_info_list: list[NodeInfo] | dict[str, NodeInfo],
+        node_info_map: dict[str, NodeInfo],
         graph: dict[str, Any],
         inputs: dict[str, Any] | None = None,
         requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
     ):
-        if isinstance(node_info_list, dict):
-            self.node_infos = node_info_list
-        else:
-            self.node_infos = {
-                f"{node_info.id}@latest": node_info for node_info in node_info_list
-            }
+        self.node_infos = node_info_map
         """
         A dictionary containing all available node infos to validate
         nodes against.

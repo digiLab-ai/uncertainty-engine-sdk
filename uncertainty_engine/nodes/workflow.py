@@ -26,7 +26,7 @@ class Workflow(Node):
             Will be removed in a future version.
         tool_metadata: An optional `ToolMetadata` object containing the
             node input and output handles to be used as tools.
-        client: An instance of the client being used. This is
+        client: An optional instance of the client being used. This is
             required for performing validation.
 
     Raises:
@@ -127,20 +127,24 @@ class Workflow(Node):
         Args:
             client: Client to be used to fetch node information.
         """
+        graph_nodes = self.graph.get("nodes", {})
+        unique_pairs = {
+            (node_type, node_version)
+            for node_data in graph_nodes.values()
+            if isinstance(node_data, dict)
+            and (node_type := node_data.get("type"))
+            and (node_version := node_data.get("version"))
+        }
+
+        if not unique_pairs:
+            return {}
+
+        queries = [
+            NodeQuery(node_id=node_id, version=version)
+            for node_id, version in unique_pairs
+        ]
+
         try:
-            graph_nodes = self.graph.get("nodes", {})
-            unique_pairs = {
-                (node_data["type"], node_data["version"])
-                for node_data in graph_nodes.values()
-            }
-
-            if not unique_pairs:
-                return {}
-
-            queries = [
-                NodeQuery(node_id=node_id, version=version)
-                for node_id, version in unique_pairs
-            ]
             return client.query_nodes(queries)
         except Exception:
             warn(
@@ -165,7 +169,7 @@ class Workflow(Node):
             raise ValueError("Nodes list is not available for validation.")
 
         validator = WorkflowValidator(
-            node_info_list=self.nodes_list,
+            node_info_map=self.nodes_list,
             graph=self.graph,
             inputs=self.inputs,
             requested_output=self.requested_output,
