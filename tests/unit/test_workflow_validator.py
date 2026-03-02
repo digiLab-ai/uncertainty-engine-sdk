@@ -85,7 +85,9 @@ def test_workflow_validator_init(
     ],
 )
 def test_workflow_validator_init_value_error(
-    node_info_map: dict[str, NodeInfo], invalid_graph: dict[str, Any], expected_error: str
+    node_info_map: dict[str, NodeInfo],
+    invalid_graph: dict[str, Any],
+    expected_error: str,
 ):
     """
     Assert validator fails to initialise when args cannot be
