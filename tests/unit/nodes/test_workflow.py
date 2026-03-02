@@ -113,7 +113,7 @@ def test_validate_calls_validator_when_nodes_available(mock_class: MagicMock):
 
 
 @patch("uncertainty_engine.nodes.workflow.WorkflowValidator")
-def test_validate_happy_path_with_client_stub(
+def test_validate_happy_path(
     mock_class: MagicMock,
     mock_client_query_nodes_success: MagicMock,
     workflow_node_graph: dict[str, Any],
