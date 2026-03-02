@@ -112,6 +112,36 @@ def test_validate_calls_validator_when_nodes_available(mock_class: MagicMock):
     mock_instance.validate.assert_called_once()
 
 
+@patch("uncertainty_engine.nodes.workflow.WorkflowValidator")
+def test_validate_happy_path_with_client_stub(
+    mock_class: MagicMock,
+    mock_client_query_nodes_success: MagicMock,
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+):
+    """Assert validate delegates to WorkflowValidator when node infos are fetched."""
+    workflow = Workflow(
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        client=mock_client_query_nodes_success,
+    )
+    mock_instance = mock_class.return_value
+    mock_instance.validate = MagicMock()
+    mock_class.reset_mock()
+    mock_instance.validate.reset_mock()
+
+    workflow.validate()
+
+    assert workflow.nodes_list is not None
+    mock_class.assert_called_once_with(
+        node_info_map=workflow.nodes_list,
+        graph=workflow.graph,
+        inputs=workflow.inputs,
+        requested_output=workflow.requested_output,
+    )
+    mock_instance.validate.assert_called_once()
+
+
 def test_get_nodes_list_returns_none_on_query_error(
     mock_client: Client,
     workflow_node_graph: dict[str, Any],
