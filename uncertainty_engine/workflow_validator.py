@@ -24,9 +24,7 @@ from uncertainty_engine.validation import (
 
 class WorkflowValidator:
     """
-    Takes all workflow node inputs along with a list of all available
-    nodes and their info and is used to perform full workflow
-    validation.
+    Validates a workflow
 
     Args:
         graph: Workflow node input graph.
