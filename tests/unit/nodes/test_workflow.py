@@ -19,6 +19,7 @@ def test_workflow_initialization_with_client(
     node_info_by_id = {node_info.id: node_info for node_info in node_info_list}
 
     def mock_query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        # Just one query is fine for this test
         query = queries[0]
         return {f"{query.node_id}@{query.version}": node_info_by_id[query.node_id]}
 

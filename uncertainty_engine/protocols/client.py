@@ -50,3 +50,17 @@ class Client(Protocol):
             List of available nodes. Each list item is a dictionary of information about the node.
         """
         ...
+
+    def query_nodes(self, queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        """
+        Query one or more nodes by node id and version.
+
+        Args:
+            queries: Node query definitions containing node id and version.
+
+        Returns:
+            Mapping from versioned node identifier to corresponding node information.
+            The keys are string representations of each :class:`NodeQuery`, typically in
+            the form ``"<node_id>@<version>"``.
+        """
+        ...

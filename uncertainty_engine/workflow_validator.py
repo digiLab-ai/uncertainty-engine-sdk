@@ -24,9 +24,7 @@ from uncertainty_engine.validation import (
 
 class WorkflowValidator:
     """
-    Takes all workflow node inputs along with a list of all available
-    nodes and their info and is used to perform full workflow
-    validation.
+    Validates a workflow
 
     Args:
         graph: Workflow node input graph.
@@ -44,15 +42,20 @@ class WorkflowValidator:
     @typechecked
     def __init__(
         self,
+        client: Client,
         graph: dict[str, Any],
         inputs: dict[str, Any] | None = None,
         requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
-        client: Client | None = None,
     ):
         """
-        A dictionary containing all available node infos to validate
-        nodes against.
+        Args:
+            graph: Workflow node input graph.
+            inputs: Workflow node external inputs. Defaults to `None`.
+            requested_output: Workflow node requested output. Defaults to `None`.
+            external_input_id: Workflow node external input id. Defaults to "_"
+                (same as workflow node).
+            client: Client used for node validation.
         """
 
         # Validate graph shape using Pydantic. This is required to
@@ -81,7 +84,7 @@ class WorkflowValidator:
         """
 
         self.client = client
-        """Optional client used for node metadata validation."""
+        """Client used for node validation."""
 
         # Categories of errors to be collected and raised once
         # validation is finished.
@@ -146,8 +149,6 @@ class WorkflowValidator:
         # Check node exists and get relevant node info. If this check
         # fails the method will store the error and return as it will be
         # unable to perform input validation without the node info.
-        if self.client is None:
-            return
 
         try:
             query_result = self.client.query_nodes(
@@ -160,24 +161,32 @@ class WorkflowValidator:
             )
             node_info = next(iter(query_result.values()))
         except HTTPError as e:
-            if e.response.status_code == 404:
+            status_code = e.response.status_code if e.response is not None else None
+            if status_code == 404:
                 self.node_errors.append(
                     NodeErrorInfo(
                         node_id=node_id,
                         message=(
                             f"The '{node_element.type}' node with version "
-                            f"{node_version} was not found."
+                            f"'{node_version}' was not found."
                         ),
                     )
                 )
             else:
+                if status_code is None:
+                    message = (
+                        f"Failed to query for node {node_element.type} and version "
+                        f"'{node_version}' because no HTTP response was provided: {e}"
+                    )
+                else:
+                    message = (
+                        f"Failed to query for node {node_element.type} and version "
+                        f"'{node_version}' [HTTP {status_code}]: {e}"
+                    )
                 self.node_errors.append(
                     NodeErrorInfo(
                         node_id=node_id,
-                        message=(
-                            f"Failed to query for node {node_element.type} "
-                            f"and version {node_version}"
-                        ),
+                        message=message,
                     )
                 )
             return
@@ -255,18 +264,30 @@ class WorkflowValidator:
         if handle_node is None:
             return f"Node with label '{handle.node_name}' is referenced but is not in graph."
 
-        if self.client is None:
-            return None
-
-        handle_node_version = getattr(handle_node, "version", None) or "latest"
+        handle_node_version = handle_node.version
 
         try:
             query_result = self.client.query_nodes(
                 [NodeQuery(node_id=handle_node.type, version=handle_node_version)]
             )
             node_info = next(iter(query_result.values()))
-        except HTTPError:
-            return f"The '{handle_node.type}' node does not exist."
+        except HTTPError as e:
+            status_code = e.response.status_code if e.response is not None else None
+            if status_code == 404:
+                return (
+                    f"The '{handle_node.type}' node (version '{handle_node_version}') "
+                    f"does not exist."
+                )
+            if status_code is not None:
+                return (
+                    f"Failed to query node '{handle_node.type}' "
+                    f"(version '{handle_node_version}') "
+                    f"[HTTP {status_code}]: {e}"
+                )
+            return (
+                f"Failed to query node '{handle_node.type}' "
+                f"(version '{handle_node_version}'): {e}"
+            )
 
         try:
             validate_outputs_exist(node_info, handle.node_handle)

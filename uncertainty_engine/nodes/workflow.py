@@ -25,7 +25,7 @@ class Workflow(Node):
             Will be removed in a future version.
         tool_metadata: An optional `ToolMetadata` object containing the
             node input and output handles to be used as tools.
-        client: An optional instance of the client being used. This is
+        client: An instance of the client being used. This is
             required for performing validation.
 
     Raises:
@@ -118,14 +118,12 @@ class Workflow(Node):
 
     def validate(self) -> None:
         """
-        Validates the entire workflow using the list of nodes fetched
-        from the client and set as `self.nodes_list`:
+        Validate the workflow
 
         The error messages are collected and then re-raised once the
         all checks have finished.
 
         Raises:
-            `ValueError`: If `self.nodes_list` is `None`.
             `WorkflowValidationError`: If validation fails. The error
                 message will contain reasons for failure.
         """
