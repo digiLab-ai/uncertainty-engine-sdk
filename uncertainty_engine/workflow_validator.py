@@ -81,7 +81,7 @@ class WorkflowValidator:
         """
 
         self.client = client
-        """Optional client used for node metadata validation."""
+        """Optional client used for node validation."""
 
         # Categories of errors to be collected and raised once
         # validation is finished.
