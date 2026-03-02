@@ -156,7 +156,8 @@ class WorkflowValidator:
             )
             node_info = next(iter(query_result.values()))
         except HTTPError as e:
-            if e.response.status_code == 404:
+            status_code = e.response.status_code if e.response is not None else None
+            if status_code == 404:
                 self.node_errors.append(
                     NodeErrorInfo(
                         node_id=node_id,
@@ -167,13 +168,20 @@ class WorkflowValidator:
                     )
                 )
             else:
+                if status_code is None:
+                    message = (
+                        f"Failed to query for node {node_element.type} and version "
+                        f"'{node_version}' because no HTTP response was provided: {e}"
+                    )
+                else:
+                    message = (
+                        f"Failed to query for node {node_element.type} and version "
+                        f"'{node_version}' [HTTP {status_code}]: {e}"
+                    )
                 self.node_errors.append(
                     NodeErrorInfo(
                         node_id=node_id,
-                        message=(
-                            f"Failed to query for node {node_element.type} "
-                            f"and version '{node_version}'"
-                        ),
+                        message=message,
                     )
                 )
             return
@@ -259,7 +267,7 @@ class WorkflowValidator:
             )
             node_info = next(iter(query_result.values()))
         except HTTPError as e:
-            status_code = e.response.status_code
+            status_code = e.response.status_code if e.response is not None else None
             if status_code == 404:
                 return (
                     f"The '{handle_node.type}' node (version '{handle_node_version}') "

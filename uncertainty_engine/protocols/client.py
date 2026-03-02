@@ -1,6 +1,6 @@
 from typing import Any, Protocol, runtime_checkable
 
-from uncertainty_engine_types import NodeInfo
+from uncertainty_engine_types import NodeInfo, NodeQuery
 
 
 @runtime_checkable
@@ -48,5 +48,17 @@ class Client(Protocol):
 
         Returns:
             List of available nodes. Each list item is a dictionary of information about the node.
+        """
+        ...
+
+    def query_nodes(self, queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        """
+        Query one or more nodes by node id and version.
+
+        Args:
+            queries: Node query definitions containing node id and version.
+
+        Returns:
+            Mapping of node id to corresponding node information.
         """
         ...
