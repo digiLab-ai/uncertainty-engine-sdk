@@ -50,12 +50,12 @@ class WorkflowValidator:
     ):
         """
         Args:
+            client: Client used for node validation.
             graph: Workflow node input graph.
             inputs: Workflow node external inputs. Defaults to `None`.
             requested_output: Workflow node requested output. Defaults to `None`.
             external_input_id: Workflow node external input id. Defaults to "_"
                 (same as workflow node).
-            client: Client used for node validation.
         """
 
         # Validate graph shape using Pydantic. This is required to
@@ -159,7 +159,7 @@ class WorkflowValidator:
                     )
                 ]
             )
-            node_info = next(iter(query_result.values()))
+            node_info = query_result[f"{node_element.type}@{node_version}"]
         except HTTPError as e:
             status_code = e.response.status_code if e.response is not None else None
             if status_code == 404:
@@ -270,7 +270,7 @@ class WorkflowValidator:
             query_result = self.client.query_nodes(
                 [NodeQuery(node_id=handle_node.type, version=handle_node_version)]
             )
-            node_info = next(iter(query_result.values()))
+            node_info = query_result[f"{handle_node.type}@{handle_node_version}"]
         except HTTPError as e:
             status_code = e.response.status_code if e.response is not None else None
             if status_code == 404:
