@@ -20,7 +20,7 @@ def test_workflow_initialization_with_client(
 
     def mock_query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
         return {
-            f"{query.node_id}@{query.version}": node_info_by_id[query.node_id]
+            str(query): node_info_by_id[query.node_id]
             for query in queries
         }
 

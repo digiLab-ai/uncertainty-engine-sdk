@@ -159,7 +159,7 @@ def mock_client_query_nodes_success(
 
     def _query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
         return {
-            f"{query.node_id}@{query.version}": node_info_map[query.node_id]
+            str(query): node_info_map[query.node_id]
             for query in queries
         }
 
