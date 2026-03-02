@@ -265,8 +265,26 @@ class WorkflowValidator:
                 [NodeQuery(node_id=handle_node.type, version=handle_node_version)]
             )
             node_info = next(iter(query_result.values()))
-        except HTTPError:
-            return f"The '{handle_node.type}' node does not exist."
+        except HTTPError as e:
+            response = getattr(e, "response", None)
+            status_code = getattr(response, "status_code", None)
+            if status_code == 404:
+                return (
+                    f"The '{handle_node.type}' node (version '{handle_node_version}') "
+                    f"does not exist."
+                )
+            # For non-404 errors, surface a more accurate message rather than
+            # incorrectly reporting that the node does not exist.
+            if status_code is not None:
+                return (
+                    f"Failed to query node '{handle_node.type}' "
+                    f"(version '{handle_node_version}') "
+                    f"[HTTP {status_code}]: {e}"
+                )
+            return (
+                f"Failed to query node '{handle_node.type}' "
+                f"(version '{handle_node_version}'): {e}"
+            )
 
         try:
             validate_outputs_exist(node_info, handle.node_handle)
