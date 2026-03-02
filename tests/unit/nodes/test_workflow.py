@@ -2,13 +2,42 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 from pytest import raises
-from uncertainty_engine_types import ToolMetadata
+from uncertainty_engine_types import NodeInfo, NodeQuery, ToolMetadata
 
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.workflow import Workflow
+from uncertainty_engine.protocols import Client
 
 
-def test_workflow_initialization(simple_graph: Graph):
+def test_workflow_initialization_with_client(
+    mock_client: Client,
+    workflow_node_graph: dict[str, Any],
+    workflow_node_inputs: dict[str, Any],
+    node_info_list: list[NodeInfo],
+):
+    """Test the initialization of the `Workflow` node."""
+    node_info_by_id = {node_info.id: node_info for node_info in node_info_list}
+
+    def mock_query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        query = queries[0]
+        return {f"{query.node_id}@{query.version}": node_info_by_id[query.node_id]}
+
+    mock_client.query_nodes = MagicMock(side_effect=mock_query_nodes)
+
+    node = Workflow(
+        graph=workflow_node_graph,
+        inputs=workflow_node_inputs,
+        client=mock_client,
+    )
+
+    assert node.node_name == "Workflow"
+    assert node.graph == workflow_node_graph
+    assert node.inputs == workflow_node_inputs
+    assert node.client == mock_client
+    assert mock_client.query_nodes.call_count > 0
+
+
+def test_workflow_initialization_no_client(simple_graph: Graph):
     """
     Test the initialization of the `Workflow` node
     """
