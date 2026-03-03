@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from pytest import raises
 from uncertainty_engine_types import NodeInfo, NodeQuery, ToolMetadata
 
+from uncertainty_engine.exceptions import WorkflowValidationError
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.workflow import Workflow
 from uncertainty_engine.protocols import Client
@@ -89,7 +90,10 @@ def test_validate():
     """Assert validate raises if `self.nodes_list` is unavailable."""
     workflow = Workflow(graph={"nodes": {}}, inputs={})
 
-    with raises(ValueError, match="Nodes list is not available for validation."):
+    with raises(
+        WorkflowValidationError,
+        match="Failed to validate workflow. Nodes list is not available.",
+    ):
         workflow.validate()
 
 
@@ -153,6 +157,20 @@ def test_get_nodes_list_returns_none_on_query_error(
     nodes_list = workflow._get_nodes_list(mock_client)
 
     assert nodes_list is None
+
+
+def test_init_raises_query_error_context(
+    mock_client: Client,
+    workflow_node_graph: dict[str, Any],
+):
+    """Assert init includes query failure context when node lookup fails."""
+    mock_client.query_nodes = MagicMock(side_effect=Exception("unknown node version"))
+
+    with raises(
+        WorkflowValidationError,
+        match=("Failed to validate workflow. Error: unknown node version"),
+    ):
+        Workflow(graph=workflow_node_graph, inputs={}, client=mock_client)
 
 
 def test_workflow_tool_metadata_validate_complete_called():
