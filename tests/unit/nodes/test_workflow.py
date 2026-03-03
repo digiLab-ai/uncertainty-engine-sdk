@@ -57,7 +57,8 @@ def test_workflow_initialization_with_client(
 
 def test_workflow_initialization_no_client(simple_graph: Graph):
     """
-    Test the initialization of the `Workflow` node
+    Test the initialization of the `Workflow` node when no client is
+    passed.
     """
     node = Workflow(
         graph=simple_graph.nodes,
