@@ -172,7 +172,7 @@ class Workflow(Node):
                 raise WorkflowValidationError(
                     f"Failed to validate workflow. Error: {self._nodes_list_error}"
                 ) from self._nodes_list_error
-            raise WorkflowValidationError(
+            raise ValueError(
                 "Failed to validate workflow. Nodes list is not available."
             )
 
