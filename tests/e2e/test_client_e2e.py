@@ -315,8 +315,13 @@ class TestClientMethods:
         os.getenv("UE_ENVIRONMENT") != "dev",
         reason="Query node versions feature only available in dev environment",
     )
-    def test_query_nodes_http_404(self, client: Client):
-        """Verify that query_nodes re-raises 404 HTTP errors unchanged."""
+    def test_query_nodes_http_error(self, client: Client):
+        """
+        Verify that query_nodes re-raises HTTP errors.
+
+        Args:
+            client: A Client instance.
+        """
         response_404 = Mock()
         response_404.status_code = 404
         response_404.reason = "Not Found"
