@@ -14,13 +14,15 @@ def test_workflow_initialization_with_client(
     mock_client: Client,
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
 ):
     """Test the initialization of the `Workflow` node."""
-    node_info_by_id = {node_info.id: node_info for node_info in node_info_list}
 
     def mock_query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
-        return {str(query): node_info_by_id[query.node_id] for query in queries}
+        return {
+            str(query): node_info_map[f"{query.node_id}@{query.version}"]
+            for query in queries
+        }
 
     mock_client.query_nodes = MagicMock(side_effect=mock_query_nodes)
 
@@ -45,8 +47,8 @@ def test_workflow_initialization_with_client(
 
     # Ensure the workflow populated its nodes list with the expected node infos
     expected_nodes_list = {
-        f"{node_data['type']}@{node_data['version']}": node_info_by_id[
-            node_data["type"]
+        f"{node_data['type']}@{node_data['version']}": node_info_map[
+            f"{node_data['type']}@{node_data['version']}"
         ]
         for node_data in workflow_node_graph["nodes"].values()
     }

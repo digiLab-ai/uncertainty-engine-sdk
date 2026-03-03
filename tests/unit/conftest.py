@@ -96,16 +96,6 @@ def display_node_info() -> NodeInfo:
 
 
 @pytest.fixture
-def node_info_list(
-    add_node_info: NodeInfo, display_node_info: NodeInfo
-) -> list[NodeInfo]:
-    """
-    Returns a list of the add node and display `NodeInfo` objects.
-    """
-    return [add_node_info, display_node_info]
-
-
-@pytest.fixture
 def node_info_map(
     add_node_info: NodeInfo, display_node_info: NodeInfo
 ) -> dict[str, NodeInfo]:
