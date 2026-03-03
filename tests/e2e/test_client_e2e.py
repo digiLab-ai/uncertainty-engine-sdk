@@ -317,7 +317,7 @@ class TestClientMethods:
     )
     def test_query_nodes_http_error(self, client: Client):
         """
-        Verify that query_nodes re-raises HTTP errors.
+        Verify that query_nodes re-raises HTTPError when detail is not a dict.
 
         Args:
             client: A Client instance.
@@ -325,7 +325,7 @@ class TestClientMethods:
         response_404 = Mock()
         response_404.status_code = 404
         response_404.reason = "Not Found"
-        response_404.json.return_value = {"detail": {"message": "not found"}}
+        response_404.json.return_value = {"detail": "Not Found"}
         http_error = HTTPError(response=response_404)
 
         with patch.object(client.core_api, "post", side_effect=http_error):
