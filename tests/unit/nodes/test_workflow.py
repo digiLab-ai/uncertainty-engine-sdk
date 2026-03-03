@@ -91,7 +91,7 @@ def test_validate():
     workflow = Workflow(graph={"nodes": {}}, inputs={})
 
     with raises(
-        WorkflowValidationError,
+        ValueError,
         match="Failed to validate workflow. Nodes list is not available.",
     ):
         workflow.validate()
