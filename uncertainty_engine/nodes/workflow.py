@@ -158,7 +158,7 @@ class Workflow(Node):
     def validate(self) -> None:
         """
         Validates the entire workflow using the nodes fetched
-        from the client and set as `self.nodes_list`.
+        from the client.
 
         The error messages are collected and then re-raised once the
         all checks have finished.
