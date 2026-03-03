@@ -169,6 +169,8 @@ class Workflow(Node):
         """
         if self.nodes_list is None:
             if self._nodes_list_error is not None:
+                # This exception is raised when a node query fails (for example,
+                # unknown node or version), before full workflow validation can run.
                 raise WorkflowValidationError(
                     f"Failed to validate workflow. Error: {self._nodes_list_error}"
                 ) from self._nodes_list_error
