@@ -27,8 +27,7 @@ class WorkflowValidator:
     validation.
 
     Args:
-        node_info_list: List of `NodeInfo` objects for each of the available
-            nodes.
+        node_info_map: Mapping of '<node_id>@<version>' to `NodeInfo`.
         graph: Workflow node input graph.
         inputs: Workflow node external inputs. Defaults to `None`.
         requested_output: Workflow node requested output. Defaults to
@@ -44,13 +43,13 @@ class WorkflowValidator:
     @typechecked
     def __init__(
         self,
-        node_info_list: list[NodeInfo],
+        node_info_map: dict[str, NodeInfo],
         graph: dict[str, Any],
         inputs: dict[str, Any] | None = None,
         requested_output: dict[str, Any] | None = None,
         external_input_id: str = "_",
     ):
-        self.node_infos = {node_info.id: node_info for node_info in node_info_list}
+        self.node_infos = node_info_map
         """
         A dictionary containing all available node infos to validate
         nodes against.
@@ -139,16 +138,21 @@ class WorkflowValidator:
                 graph) and value (the assigned inputs and node type).
         """
         node_id, node_element = node
+        node_version = node_element.version
 
-        # Check node exists and get relevant node info. If this check
-        # fails the method will store the error and return as it will be
-        # unable to perform input validation without the node info.
-        node_info = self.node_infos.get(node_element.type)
+        # Check node exists and get relevant node info from the cache.
+        # If this check fails the method will store the error and return
+        # as it will be unable to perform input validation without the
+        # node info.
+        node_info = self.node_infos.get(f"{node_element.type}@{node_version}")
         if node_info is None:
             self.node_errors.append(
                 NodeErrorInfo(
                     node_id=node_id,
-                    message=f"The '{node_element.type}' node does not exist.",
+                    message=(
+                        f"The '{node_element.type}' node with version "
+                        f"'{node_version}' was not found."
+                    ),
                 )
             )
             return
@@ -226,9 +230,14 @@ class WorkflowValidator:
         if handle_node is None:
             return f"Node with label '{handle.node_name}' is referenced but is not in graph."
 
-        node_info = self.node_infos.get(handle_node.type)
+        handle_node_version = handle_node.version
+
+        node_info = self.node_infos.get(f"{handle_node.type}@{handle_node_version}")
         if node_info is None:
-            return f"The '{handle_node.type}' node does not exist."
+            return (
+                f"The '{handle_node.type}' node (version '{handle_node_version}') "
+                f"does not exist."
+            )
 
         try:
             validate_outputs_exist(node_info, handle.node_handle)

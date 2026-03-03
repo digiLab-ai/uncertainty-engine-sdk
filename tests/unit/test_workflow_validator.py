@@ -15,7 +15,7 @@ from uncertainty_engine.workflow_validator import WorkflowValidator
 
 
 def test_workflow_validator_init(
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     add_node_info: NodeInfo,
     display_node_info: NodeInfo,
     workflow_node_graph: dict[str, Any],
@@ -24,15 +24,15 @@ def test_workflow_validator_init(
 ):
     """Assert validator does not raise when workflow is correct."""
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=workflow_node_requested_output,
     )
 
     assert validator.node_infos == {
-        "TestAdd": add_node_info,
-        "TestDisplay": display_node_info,
+        "TestAdd@latest": add_node_info,
+        "TestDisplay@latest": display_node_info,
     }
     assert validator.node_errors == []
     assert validator.node_handle_errors == []
@@ -85,7 +85,9 @@ def test_workflow_validator_init(
     ],
 )
 def test_workflow_validator_init_value_error(
-    node_info_list: list[NodeInfo], invalid_graph: dict[str, Any], expected_error: str
+    node_info_map: dict[str, NodeInfo],
+    invalid_graph: dict[str, Any],
+    expected_error: str,
 ):
     """
     Assert validator fails to initialise when args cannot be
@@ -95,18 +97,18 @@ def test_workflow_validator_init_value_error(
         WorkflowValidationError,
         match=expected_error,
     ):
-        WorkflowValidator(node_info_list, invalid_graph)
+        WorkflowValidator(node_info_map=node_info_map, graph=invalid_graph)
 
 
 def test_validate_no_errors(
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
     workflow_node_requested_output: dict[str, Any],
 ):
     """Assert validate does not raise for a valid workflow."""
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=workflow_node_requested_output,
@@ -121,7 +123,7 @@ def test_validate_no_errors(
 def test_validate_empty_graph():
     """Assert validate doesn't raise for an empty graph."""
     validator = WorkflowValidator(
-        node_info_list=[],
+        node_info_map={},
         graph={"nodes": {}},
     )
 
@@ -138,7 +140,7 @@ def test_validate_node_and_handle_error(
 ):
     """Assert validate raises correct errors."""
     validator = WorkflowValidator(
-        node_info_list=[],
+        node_info_map={},
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=workflow_node_requested_output,
@@ -146,19 +148,19 @@ def test_validate_node_and_handle_error(
 
     with raises(
         WorkflowValidationError,
-        match="Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node does not exist.\n  - Test Add: The 'TestAdd' node does not exist.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node does not exist.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node does not exist.",
+        match=r"Workflow Validation Failed\n\nNode Errors:\n  - Test Display: The 'TestDisplay' node with version 'latest' was not found\.\n  - Test Add: The 'TestAdd' node with version 'latest' was not found\.\n\nHandle Errors:\n  - Test Display -> value: The 'TestAdd' node \(version 'latest'\) does not exist\.\n\nRequested Output Errors:\n  - Answer: The 'TestDisplay' node \(version 'latest'\) does not exist\.",
     ):
         validator.validate()
 
 
 def test_validate_node_handle_error(
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_requested_output: dict[str, Any],
 ):
     """Assert validate raises correct errors."""
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         requested_output=workflow_node_requested_output,
     )
@@ -171,13 +173,13 @@ def test_validate_node_handle_error(
 
 
 def test_validate_requested_output_error(
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
     """Assert validate raises correct errors."""
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output={"Answer": "ans"},
@@ -201,7 +203,7 @@ def test_validate_requested_output_error(
 )
 def test_workflow_validator_validate_node_inputs(
     add_node_info: NodeInfo,
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     validation_errors: list[str | None],
 ):
@@ -210,7 +212,7 @@ def test_workflow_validator_validate_node_inputs(
     `self.node_errors` with associated node id and error message.
     """
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
     )
 
@@ -249,10 +251,10 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
 ):
     """
     Asserts `_validate_node_inputs` stores correct error message with
-    associated node id if teh node type does not exist.
+    associated node id if the node type does not exist.
     """
     validator = WorkflowValidator(
-        node_info_list=[],
+        node_info_map={},
         graph=workflow_node_graph,
     )
 
@@ -263,14 +265,17 @@ def test_workflow_validator_validate_node_inputs_node_type_error(
     validator._validate_node_inputs(test_node)
 
     assert validator.node_errors == [
-        NodeErrorInfo(node_id="Test Add", message="The 'TestAdd' node does not exist.")
+        NodeErrorInfo(
+            node_id="Test Add",
+            message="The 'TestAdd' node with version 'latest' was not found.",
+        )
     ]
 
 
 @mark.parametrize("node_id", ["Test Add", "Test Display"])
 def test_validate_handles_no_errors(
     node_id: str,
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
@@ -279,7 +284,7 @@ def test_validate_handles_no_errors(
     test_node = (node_id, node_element)
 
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
     )
@@ -290,7 +295,7 @@ def test_validate_handles_no_errors(
 @mark.parametrize("inputs", [None, {}, {"invalid": "Test Add_lhs"}])
 def test_validate_handles_input_error(
     inputs: dict[str, Any],
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
 ):
     """
@@ -302,7 +307,7 @@ def test_validate_handles_input_error(
     test_node = (node_id, node_element)
 
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=inputs,
     )
@@ -322,7 +327,7 @@ def test_validate_handles_input_error(
 
 
 def test_validate_handles_not_in_graph(
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
 ):
     """
@@ -334,7 +339,7 @@ def test_validate_handles_not_in_graph(
     test_node = (node_id, node_element)
 
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph={"nodes": {node_id: node_element.model_dump()}},
     )
     validator._validate_handles(test_node)
@@ -361,7 +366,7 @@ def test_validate_handles_node_does_not_exist(
     test_node = (node_id, node_element)
 
     validator = WorkflowValidator(
-        node_info_list=[display_node_info],
+        node_info_map={"TestDisplay@latest": display_node_info},
         graph=workflow_node_graph,
     )
     validator._validate_handles(test_node)
@@ -370,13 +375,13 @@ def test_validate_handles_node_does_not_exist(
         NodeHandleErrorInfo(
             node_id=node_id,
             input_id="value",
-            message="The 'TestAdd' node does not exist.",
+            message="The 'TestAdd' node (version 'latest') does not exist.",
         ),
     ]
 
 
 def test_validate_handles_outputs_invalid(
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
 ):
     """
@@ -388,7 +393,7 @@ def test_validate_handles_outputs_invalid(
     test_node = (node_id, node_element)
 
     validator = WorkflowValidator(
-        node_info_list=node_info_list, graph=workflow_node_graph
+        node_info_map=node_info_map, graph=workflow_node_graph
     )
     with patch(
         "uncertainty_engine.workflow_validator.validate_outputs_exist"
@@ -417,13 +422,13 @@ def test_validate_handles_outputs_invalid(
 )
 def test_validate_requested_output_no_errors(
     requested_output: dict[str, Any],
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
     """Assert no errors are stored when requested outputs are valid."""
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
@@ -445,7 +450,7 @@ def test_validate_requested_output_no_errors(
 )
 def test_validate_requested_output_handle_obj_error(
     requested_output: dict[str, Any],
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
@@ -454,7 +459,7 @@ def test_validate_requested_output_handle_obj_error(
     serialisable.
     """
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
@@ -486,7 +491,7 @@ def test_validate_requested_output_handle_obj_error(
 )
 def test_validate_requested_output_invalid_dict_error(
     requested_output: dict[str, Any],
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
@@ -495,7 +500,7 @@ def test_validate_requested_output_invalid_dict_error(
     a valid handle reference dictionary.
     """
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
@@ -522,7 +527,7 @@ def test_validate_requested_output_invalid_dict_error(
 )
 def test_validate_requested_output_input_reference(
     requested_output: dict[str, Any],
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
@@ -531,7 +536,7 @@ def test_validate_requested_output_input_reference(
     workflow inputs.
     """
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,
@@ -562,7 +567,7 @@ def test_validate_requested_output_input_reference(
 def test_validate_requested_output_invalid_output_error(
     requested_output: dict[str, Any],
     expected_message: str,
-    node_info_list: list[NodeInfo],
+    node_info_map: dict[str, NodeInfo],
     workflow_node_graph: dict[str, Any],
     workflow_node_inputs: dict[str, Any],
 ):
@@ -571,7 +576,7 @@ def test_validate_requested_output_invalid_output_error(
     invalid output in graph.
     """
     validator = WorkflowValidator(
-        node_info_list=node_info_list,
+        node_info_map=node_info_map,
         graph=workflow_node_graph,
         inputs=workflow_node_inputs,
         requested_output=requested_output,

@@ -2,8 +2,9 @@ from typing import Any
 from warnings import warn
 
 from typeguard import typechecked
-from uncertainty_engine_types import NodeInfo, ToolMetadata
+from uncertainty_engine_types import NodeInfo, NodeQuery, ToolMetadata
 
+from uncertainty_engine.exceptions import WorkflowValidationError
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.protocols import Client
@@ -74,6 +75,7 @@ class Workflow(Node):
         self.requested_output = requested_output
         self.external_input_id = external_input_id
         self.inputs = final_inputs
+        self._nodes_list_error: Exception | None = None
         self.nodes_list = self._get_nodes_list(client) if client else None
 
         super().__init__(
@@ -118,17 +120,36 @@ class Workflow(Node):
             requested_output=requested_output,
         )
 
-    def _get_nodes_list(self, client: Client) -> list[NodeInfo] | None:
+    def _get_nodes_list(self, client: Client) -> dict[str, NodeInfo] | None:
         """
-        Returns a list of NodeInfo objects from the client, or None if
+        Returns a mapping of '<node_id>@<version>' to NodeInfo from the
+        client, or None if
         the client is not provided or a validation error occurs.
 
         Args:
             client: Client to be used to fetch node information.
         """
+        graph_nodes = self.graph.get("nodes", {})
+        unique_pairs = {
+            (node_type, node_version)
+            for node_data in graph_nodes.values()
+            if isinstance(node_data, dict)
+            and (node_type := node_data.get("type"))
+            and (node_version := node_data.get("version"))
+        }
+
+        if not unique_pairs:
+            return {}
+
+        queries = [
+            NodeQuery(node_id=node_id, version=version)
+            for node_id, version in unique_pairs
+        ]
+
         try:
-            return [NodeInfo(**node_info) for node_info in client.list_nodes()]
-        except Exception:
+            return client.query_nodes(queries)
+        except Exception as exc:
+            self._nodes_list_error = exc
             warn(
                 "Unable to get node info list. Workflow node will not be able to perform validation."
             )
@@ -136,22 +157,29 @@ class Workflow(Node):
 
     def validate(self) -> None:
         """
-        Validates the entire workflow using the list of nodes fetched
-        from the client and set as `self.nodes_list`:
+        Validates the entire workflow using the nodes fetched
+        from the client.
 
         The error messages are collected and then re-raised once the
         all checks have finished.
 
         Raises:
-            `ValueError`: If `self.nodes_list` is `None`.
             `WorkflowValidationError`: If validation fails. The error
                 message will contain reasons for failure.
         """
         if self.nodes_list is None:
-            raise ValueError("Nodes list is not available for validation.")
+            if self._nodes_list_error is not None:
+                # This exception is raised when a node query fails (for example,
+                # unknown node or version), before full workflow validation can run.
+                raise WorkflowValidationError(
+                    f"Failed to validate workflow. Error: {self._nodes_list_error}"
+                ) from self._nodes_list_error
+            raise ValueError(
+                "Failed to validate workflow. Nodes list is not available."
+            )
 
         validator = WorkflowValidator(
-            node_info_list=self.nodes_list,
+            node_info_map=self.nodes_list,
             graph=self.graph,
             inputs=self.inputs,
             requested_output=self.requested_output,

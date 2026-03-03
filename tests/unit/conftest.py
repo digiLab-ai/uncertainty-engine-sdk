@@ -7,7 +7,13 @@ from warnings import simplefilter
 import boto3
 import jwt
 import pytest
-from uncertainty_engine_types import Handle, NodeInfo, NodeInputInfo, NodeOutputInfo
+from uncertainty_engine_types import (
+    Handle,
+    NodeInfo,
+    NodeInputInfo,
+    NodeOutputInfo,
+    NodeQuery,
+)
 
 from uncertainty_engine.auth_service import (
     AUTH_CACHE_ID_TOKEN,
@@ -90,13 +96,14 @@ def display_node_info() -> NodeInfo:
 
 
 @pytest.fixture
-def node_info_list(
+def node_info_map(
     add_node_info: NodeInfo, display_node_info: NodeInfo
-) -> list[NodeInfo]:
-    """
-    Returns a list of the add node and display `NodeInfo` objects.
-    """
-    return [add_node_info, display_node_info]
+) -> dict[str, NodeInfo]:
+    """Returns a mapping of '<node_id>@latest' to `NodeInfo` objects."""
+    return {
+        "TestAdd@latest": add_node_info,
+        "TestDisplay@latest": display_node_info,
+    }
 
 
 @pytest.fixture
@@ -107,6 +114,7 @@ def workflow_node_graph() -> dict[str, Any]:
             "Test Display": {
                 "inputs": {"value": {"node_handle": "ans", "node_name": "Test Add"}},
                 "type": "TestDisplay",
+                "version": "latest",
             },
             "Test Add": {
                 "inputs": {
@@ -114,6 +122,7 @@ def workflow_node_graph() -> dict[str, Any]:
                     "rhs": {"node_handle": "Test Add_rhs", "node_name": "_"},
                 },
                 "type": "TestAdd",
+                "version": "latest",
             },
         }
     }
@@ -135,6 +144,25 @@ def workflow_node_requested_output() -> dict[str, Any]:
 def mock_client():
     """Creates a mock `client` instance."""
     return MagicMock(spec=Client)
+
+
+@pytest.fixture
+def mock_client_query_nodes_success(
+    mock_client: MagicMock,
+    add_node_info: NodeInfo,
+    display_node_info: NodeInfo,
+) -> MagicMock:
+    """Configure mock client query_nodes to return known node infos."""
+    node_info_map = {
+        "TestAdd": add_node_info,
+        "TestDisplay": display_node_info,
+    }
+
+    def _query_nodes(queries: list[NodeQuery]) -> dict[str, NodeInfo]:
+        return {str(query): node_info_map[query.node_id] for query in queries}
+
+    mock_client.query_nodes.side_effect = _query_nodes
+    return mock_client
 
 
 # Token values as fixtures
