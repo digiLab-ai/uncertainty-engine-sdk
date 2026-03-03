@@ -1,7 +1,9 @@
 import os
 import time
+from unittest.mock import Mock, patch
 
 import pytest
+from requests import HTTPError
 from uncertainty_engine_types import (
     JobStatus,
     NodeQuery,
@@ -308,3 +310,51 @@ class TestClientMethods:
         node_info = result["Add@latest"]
         assert node_info.id == "Add"
         assert node_info.label == "Add"
+
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Query node versions feature only available in dev environment",
+    )
+    def test_query_nodes_http_404(self, client: Client):
+        """Verify that query_nodes re-raises 404 HTTP errors unchanged."""
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+        response_404.json.return_value = {"detail": {"message": "not found"}}
+        http_error = HTTPError(response=response_404)
+
+        with patch.object(client.core_api, "post", side_effect=http_error):
+            with pytest.raises(HTTPError) as exc_info:
+                client.query_nodes([NodeQuery(node_id="MissingNode", version="latest")])
+
+        assert exc_info.value.response.status_code == 404
+        assert exc_info.value.response.reason == "Not Found"
+
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Query node versions feature only available in dev environment",
+    )
+    def test_query_nodes_http_error_non_404(self, client: Client):
+        """Verify that query_nodes re-raises non-404 HTTP errors unchanged."""
+        response_500 = Mock()
+        response_500.status_code = 500
+        response_500.reason = "Internal Server Error"
+        response_500.json.return_value = {"detail": {"message": "server error"}}
+        http_error = HTTPError(response=response_500)
+
+        with patch.object(client.core_api, "post", side_effect=http_error):
+            with pytest.raises(HTTPError) as exc_info:
+                client.query_nodes([NodeQuery(node_id="Add", version="latest")])
+
+        assert exc_info.value.response.status_code == 500
+        assert exc_info.value.response.reason == "Internal Server Error"
+
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Query node versions feature only available in dev environment",
+    )
+    def test_query_nodes_other_exception(self, client: Client):
+        """Verify that query_nodes re-raises non-HTTP exceptions unchanged."""
+        with patch.object(client.core_api, "post", side_effect=RuntimeError("boom")):
+            with pytest.raises(RuntimeError, match="boom"):
+                client.query_nodes([NodeQuery(node_id="Add", version="latest")])
