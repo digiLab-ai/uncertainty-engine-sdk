@@ -580,7 +580,7 @@ class Client:
 
             try:
                 errors = e.response.json().get("detail", {}).get("errors")
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 errors = None
 
             if errors:
