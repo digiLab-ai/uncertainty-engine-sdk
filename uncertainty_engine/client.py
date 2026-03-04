@@ -575,17 +575,19 @@ class Client:
             response = self.core_api.post("/nodes/query", request_body)
             return {k: NodeInfo(**v) for k, v in response.items()}
         except HTTPError as e:
-            detail = None
-            if hasattr(e, "response") and e.response is not None:
-                try:
-                    detail = e.response.json().get("detail", {})
-                except Exception:
-                    detail = {}
-                if detail.get("errors"):
-                    raise HTTPError(
-                        f"Node query errors: {detail['errors']}",
-                        response=e.response,
-                    ) from e
+            if e.response is None:
+                raise
+
+            try:
+                errors = e.response.json().get("detail", {}).get("errors")
+            except (ValueError, TypeError, AttributeError):
+                errors = None
+
+            if errors:
+                raise HTTPError(
+                    f"Node query errors: {errors}",
+                    response=e.response,
+                ) from e
             raise
 
     def _wait_for_job(self, job: Job) -> JobInfo:
