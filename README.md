@@ -64,12 +64,12 @@ If a custom environment has been provided for you, pass an `Environment` that de
 from uncertainty_engine import Client, Environment
 
 client = Client(
-   env=Environment(
+    env=Environment(
         cognito_user_pool_client_id="…",
         core_api="…",
         region="…",
         resource_api="…",
-   ),
+    ),
 )
 ```
 
