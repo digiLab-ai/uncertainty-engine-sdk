@@ -87,6 +87,10 @@ class TestClientMethods:
         assert isinstance(tokens, int)
         assert tokens >= 0
 
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") == "prod",
+        reason="Get node info feature is not available in prod environment",
+    )
     def test_get_node_info(self, e2e_client: Client) -> None:
         """
         Test that the `Add` node info returns the correct id, and that
@@ -286,7 +290,7 @@ class TestClientMethods:
 
     @pytest.mark.skipif(
         os.getenv("UE_ENVIRONMENT") == "prod",
-        reason="Query node versions feature only available in dev environment",
+        reason="Query nodes feature is not available in prod environment",
     )
     def test_query_nodes(self, e2e_client: Client):
         """
@@ -304,7 +308,7 @@ class TestClientMethods:
 
     @pytest.mark.skipif(
         os.getenv("UE_ENVIRONMENT") == "prod",
-        reason="Query node versions feature only available in dev environment",
+        reason="Query nodes feature is not available in prod environment",
     )
     def test_query_nodes_http_error(self, e2e_client: Client):
         """
