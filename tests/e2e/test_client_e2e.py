@@ -87,11 +87,6 @@ class TestClientMethods:
         assert isinstance(tokens, int)
         assert tokens >= 0
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
-        reason="Query node versions feature only available in dev "
-        "environment, and is called by this method.",
-    )
     def test_get_node_info(self, e2e_client: Client) -> None:
         """
         Test that the `Add` node info returns the correct id, and that
@@ -276,10 +271,6 @@ class TestClientMethods:
         job_info = e2e_client.job_status(job)
         assert job_info.status == JobStatus.CANCELLED
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
-        reason="Get node versions feature only available in dev environment",
-    )
     def test_get_node_versions(self, e2e_client: Client):
         """
         Verify that the node versions can be retrieved successfully.
@@ -294,7 +285,7 @@ class TestClientMethods:
         assert len(versions) > 0
 
     @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
+        os.getenv("UE_ENVIRONMENT") == "prod",
         reason="Query node versions feature only available in dev environment",
     )
     def test_query_nodes(self, e2e_client: Client):
@@ -312,7 +303,7 @@ class TestClientMethods:
         assert node_info.label == "Add"
 
     @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") != "dev",
+        os.getenv("UE_ENVIRONMENT") == "prod",
         reason="Query node versions feature only available in dev environment",
     )
     def test_query_nodes_http_error(self, e2e_client: Client):
