@@ -19,11 +19,11 @@ pip install uncertainty-engine
 
 The SDK has optional extras that provide additional functionality:
 
-| Name       | Description                             |
-| ---------- | --------------------------------------- |
-| `data`     | Installs data processing packages       |
-| `notebook` | Installs support for Jupyter notebooks  |
-| `vis`      | Installs support for visualising graphs |
+| Name       | Description                                               |
+| ---------- | --------------------------------------------------------- |
+| `data`     | Installs data processing packages                         |
+| `notebook` | Installs support for running the SDK in Jupyter notebooks |
+| `vis`      | Installs support for visualising graphs                   |
 
 Install one or more of these via `pip` by providing them as a comma-separated list:
 
