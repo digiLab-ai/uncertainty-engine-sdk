@@ -4,19 +4,9 @@ This directory contains example notebooks demonstrating the core functionality o
 
 ## Prerequisites
 
-You will need to have a valid Uncertainty Engine account and deployment URL (these are used to configure the Uncertainty Engine client).
+Follow the instructions in [README.md](../README.md) to install and configure the SDK.
 
-Before running any examples, install the SDK with the required extras:
-
-```bash
-pip install "uncertainty_engine[vis,notebook,data]"
-```
-
-Or, if installing from source using Poetry:
-
-```bash
-poetry install --extras "vis notebook data"
-```
+For these examples, install the SDK with all of its optional extras.
 
 ## Available Examples
 
@@ -64,76 +54,3 @@ poetry install --extras "vis notebook data"
    - View available resources
    - Download resources
    - Work with projects
-
-## Basic Usage
-
-You will need to make sure you have all the [prerequisites](#prerequisites) above before following these steps. Then, within your Jupyter Notebook you can start defining nodes as follows:
-
-1. **Setting Your Username and Password**
-
-   To run and queue workflows you must have your Uncertainty Engine username and password set up. To do this you can run the following in your terminal:
-
-    ```bash
-    export UE_USERNAME="your_username"
-    export UE_PASSWORD="your_password"
-    ```
-
-1. **Configure Your Client**
-
-    ```python
-    from uncertainty_engine import Client, Environment
-
-    client = Client(
-        env=Environment(
-            cognito_user_pool_client_id="<COGNITO USER POOL APPLICATION CLIENT ID>",
-            core_api="<UNCERTAINTY ENGINE CORE API URL>",
-            region="<REGION>",
-            resource_api="<UNCERTAINTY ENGINE RESOURCE SERVICE API URL>",
-        ),
-    )
-    ```
-
-1. **Create Your First Node**
-
-   There are two ways to create nodes:
-
-   Using a specific node class (note that these only exist for `Add`, `Workflow` and the `SensorDesigner` nodes for now), of which the attributes are the input parameters of the node as well an optional attribute for the `label`:
-
-   ```python
-   from uncertainty_engine.nodes.basic import Add
-
-   add_node = Add(lhs=1, rhs=2)
-   result = client.run_node(add_node)
-   ```
-
-   Using the generic Node class which has the following attributes:
-
-   - `node_name`: The name of the node.
-   - `label`: A human-readable label for the node. Defaults to None.
-   - `**kwargs`: Keyword arguments representing the input parameters of the node.
-
-   ```python
-   from uncertainty_engine.nodes.base import Node
-
-   add_node = Node(
-       node_name="Add",
-       label="My Addition",
-       lhs=1,
-       rhs=2
-   )
-   result = client.run_node(add_node)
-   ```
-
-1. **Run Your First Node**
-
-   Run your node and view your results.
-
-   ```python
-   response = client.run_node(add)
-   result = response.outputs
-
-   pprint(result)
-   ```
-
-1. Start with [`node.ipynb`](./node.ipynb) to learn the basics
-1. Progress to more complex examples as needed

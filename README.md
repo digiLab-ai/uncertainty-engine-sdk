@@ -17,10 +17,18 @@
 pip install uncertainty-engine
 ```
 
-With optional dependencies:
+The SDK has optional extras that provide additional functionality:
+
+| Name       | Description                             |
+| ---------- | --------------------------------------- |
+| `data`     | Installs data processing packages       |
+| `notebook` | Installs support for Jupyter notebooks  |
+| `vis`      | Installs support for visualising graphs |
+
+Install one or more of these via `pip` by providing them as a comma-separated list:
 
 ```bash
-pip install "uncertainty_engine[vis,notebook,data]"
+pip install "uncertainty-engine[data,notebook,vis]"
 ```
 
 ## Usage
