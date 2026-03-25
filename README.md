@@ -82,6 +82,22 @@ client = Client(
 
 **Note:** Every password is tied to a specific environment. A password for the production environment, for example, won't grant access to the development environment. Ensure you set the correct `UE_PASSWORD` value for the environment you configure.
 
+### Troubleshooting
+
+Authorisation tokens are cached under `.ue_auth` in your home directory. If the SDK fails to authenticate you (for example, after switching from one environment to another), delete `.ue_auth` to generate and cache new tokens.
+
+To delete the cache in macOS or Linux:
+
+```bash
+rm -rf ~/.ue_auth
+```
+
+To delete the cache in Windows:
+
+```bat
+rmdir /s %USERPROFILE%\.ue_auth
+```
+
 ### Running a node
 
 ```python
