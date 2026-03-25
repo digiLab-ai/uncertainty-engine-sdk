@@ -84,18 +84,18 @@ client = Client(
 
 ### Troubleshooting
 
-Authorisation tokens are cached under `.ue_auth` in your home directory. If the SDK fails to authenticate you (for example, after switching from one environment to another), delete `.ue_auth` to generate and cache new tokens.
+Authorisation tokens are cached in `.ue_auth` in your home directory. If the SDK fails to authenticate you (for example, after switching from one environment to another), delete `.ue_auth` to generate and cache new tokens.
 
 To delete the cache in macOS or Linux:
 
 ```bash
-rm -rf ~/.ue_auth
+rm ~/.ue_auth
 ```
 
 To delete the cache in Windows:
 
 ```bat
-rmdir /s %USERPROFILE%\.ue_auth
+del %USERPROFILE%\.ue_auth
 ```
 
 ### Running a node
