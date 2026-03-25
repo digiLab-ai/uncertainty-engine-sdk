@@ -50,6 +50,54 @@ With an instantiated `Client` object, and username and password set as environme
 client.authenticate()
 ```
 
+### Using different environments
+
+The `Client` defaults to using the Uncertainty Engine production environment. To use a different named environment, pass it as the `env` argument:
+
+```python
+client = Client(env="dev")
+```
+
+If a custom environment has been provided for you, pass an `Environment` that describes the details:
+
+```python
+from uncertainty_engine import Client, Environment
+
+client = Client(
+    env=Environment(
+        cognito_user_pool_client_id="…",
+        core_api="…",
+        region="…",
+        resource_api="…",
+    ),
+)
+```
+
+| Argument                      | Format                                        | Example                                                  |
+| ----------------------------- | --------------------------------------------- | -------------------------------------------------------- |
+| `cognito_user_pool_client_id` | Alphanumeric string                           | `3vj5pe253j4v070euqjdk38a24`                             |
+| `core_api`                    | Starts with `https://`, does not end with `/` | `https://de1v75vvk6.execute-api.eu-west-2.amazonaws.com` |
+| `region`                      | Geographic region code                        | `eu-west-2`                                              |
+| `resource_api`                | Starts with `https://`, does not end with `/` | `https://m90q55iux6.execute-api.eu-west-2.amazonaws.com` |
+
+**Note:** Every password is tied to a specific environment. A password for the production environment, for example, won't grant access to the development environment. Ensure you set the correct `UE_PASSWORD` value for the environment you configure.
+
+### Troubleshooting
+
+Authorisation tokens are cached in `.ue_auth` in your home directory. If the SDK fails to authenticate you (for example, after switching from one environment to another), delete `.ue_auth` to generate and cache new tokens.
+
+To delete the cache in macOS or Linux:
+
+```bash
+rm ~/.ue_auth
+```
+
+To delete the cache in Windows:
+
+```bat
+del "%USERPROFILE%\.ue_auth"
+```
+
 ### Running a node
 
 ```python
