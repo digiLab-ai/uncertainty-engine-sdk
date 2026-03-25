@@ -95,7 +95,7 @@ rm ~/.ue_auth
 To delete the cache in Windows:
 
 ```bat
-del %USERPROFILE%\.ue_auth
+del "%USERPROFILE%\.ue_auth"
 ```
 
 ### Running a node
