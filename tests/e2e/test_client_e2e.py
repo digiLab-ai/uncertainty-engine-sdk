@@ -87,10 +87,6 @@ class TestClientMethods:
         assert isinstance(tokens, int)
         assert tokens >= 0
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") == "prod",
-        reason="Get node info feature is not available in prod environment",
-    )
     def test_get_node_info(self, e2e_client: Client) -> None:
         """
         Test that the `Add` node info returns the correct id, and that
@@ -288,10 +284,6 @@ class TestClientMethods:
         assert all(isinstance(v, (str, int)) for v in versions)
         assert len(versions) > 0
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") == "prod",
-        reason="Query nodes feature is not available in prod environment",
-    )
     def test_query_nodes(self, e2e_client: Client):
         """
         Verify that query_nodes returns expected node info dict on success.
@@ -306,10 +298,6 @@ class TestClientMethods:
         assert node_info.id == "Add"
         assert node_info.label == "Add"
 
-    @pytest.mark.skipif(
-        os.getenv("UE_ENVIRONMENT") == "prod",
-        reason="Query nodes feature is not available in prod environment",
-    )
     def test_query_nodes_http_error(self, e2e_client: Client):
         """
         Verify that query_nodes re-raises HTTPError when detail is not a dict.
