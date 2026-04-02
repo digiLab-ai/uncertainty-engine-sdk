@@ -290,10 +290,10 @@ class TestClientMethods:
         Args:
             e2e_client: A Client instance.
         """
-        queries = [NodeQuery(node_id="Add", version="latest")]
+        queries = [NodeQuery(node_id="Add", version="0.2.0")]
         result = e2e_client.query_nodes(queries)
-        assert "Add@latest" in result
-        node_info = result["Add@latest"]
+        assert "Add@0.2.0" in result
+        node_info = result["Add@0.2.0"]
         assert node_info.id == "Add"
         assert node_info.label == "Add"
 
