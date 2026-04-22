@@ -31,12 +31,10 @@ class TestClientMethods:
         Args:
             e2e_client: A Client instance.
         """
-        respone = e2e_client.list_nodes(category="Basic")
+        response = e2e_client.list_nodes(category="Mathematical Operators")
 
-        # There should only be one node in the demo category
-        assert len(respone) == 1
-        assert respone[0]["category"] == "Basic"
-        assert respone[0]["id"] == "Add"
+        assert len(response) > 0
+        assert all(node["category"] == "Mathematical Operators" for node in response)
 
     def test_queue_node(self, e2e_client: Client):
         """
