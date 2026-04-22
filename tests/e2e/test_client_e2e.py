@@ -27,7 +27,7 @@ class TestClientMethods:
 
     @pytest.mark.skipif(
         os.getenv("UE_ENVIRONMENT") == "prod",
-        reason=f"Mathematical Operators category is 'Basic' in prod until we deploy there",
+        reason="Mathematical Operators category is 'Basic' in prod until we deploy there",
     )
     def test_list_nodes_category(self, e2e_client: Client):
         """
