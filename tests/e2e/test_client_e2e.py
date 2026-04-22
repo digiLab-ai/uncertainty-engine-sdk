@@ -1,3 +1,4 @@
+import os
 import time
 from unittest.mock import Mock, patch
 
@@ -24,6 +25,10 @@ class TestClientMethods:
         """
         e2e_client.list_nodes()
 
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") == "prod",
+        reason=f"Mathematical Operators category is 'Basic' in prod until we deploy there",
+    )
     def test_list_nodes_category(self, e2e_client: Client):
         """
         Verify that nodes can be filtered by category.
