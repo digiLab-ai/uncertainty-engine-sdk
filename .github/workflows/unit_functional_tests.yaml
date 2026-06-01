@@ -11,10 +11,6 @@ on:
 env:
   UE_USERNAME: ${{ secrets.UE_USER_EMAIL }}
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   unit_tests:
     runs-on: ${{ matrix.os }}
