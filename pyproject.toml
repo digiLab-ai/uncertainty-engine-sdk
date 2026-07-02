@@ -27,7 +27,7 @@ boto3-stubs = {version = "^1.38.20", extras = ["cognito-idp"]}
 uncertainty-engine-resource-client = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
+pytest = "^9.0.3"
 pytest-cov = "^6.1.1"
 coverage = "^7.8.0"
 flake8 = "^7.1.1"
