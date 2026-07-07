@@ -207,7 +207,7 @@ def mock_resource_token() -> str:
         {
             "account_id": "test_account",
         },
-        "",
+        "mock_signing_key",
     )
 
 
