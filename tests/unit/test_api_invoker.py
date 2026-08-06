@@ -59,7 +59,7 @@ def test_get(api: HttpApiInvoker, req: Mock) -> None:
 
 def test_get_with_one_failure(api: HttpApiInvoker) -> None:
     response = Mock()
-    type(response).status_code = PropertyMock(side_effect=[400, 200])
+    type(response).status_code = PropertyMock(side_effect=[401, 200])
 
     with patch(REQUEST_TARGET, return_value=response) as request:
         api.get("/foo")
@@ -87,13 +87,37 @@ def test_get_with_one_failure(api: HttpApiInvoker) -> None:
 def test_get_with_two_failures(api: HttpApiInvoker) -> None:
     response = Mock()
     response.raise_for_status = Mock(side_effect=Exception("raised for status"))
-    type(response).status_code = PropertyMock(side_effect=[400, 400])
+    type(response).status_code = PropertyMock(side_effect=[401, 401])
 
     with patch(REQUEST_TARGET, return_value=response):
         with raises(Exception) as ex:
             api.get("/foo")
 
     assert str(ex.value) == "raised for status"
+
+
+def test_get_with_non_auth_failure_does_not_refresh(
+    api: HttpApiInvoker,
+    auth_service: Mock,
+) -> None:
+    """
+    A non-authorisation failure (e.g. a transient 5xx) raises
+    immediately without refreshing the token.
+    """
+    response = Mock()
+    response.raise_for_status = Mock(
+        side_effect=Exception("raised for status"),
+    )
+
+    type(response).status_code = PropertyMock(side_effect=[500])
+
+    with patch(REQUEST_TARGET, return_value=response) as request:
+        with raises(Exception) as ex:
+            api.get("/foo")
+
+    assert str(ex.value) == "raised for status"
+    assert request.call_count == 1
+    auth_service.refresh.assert_not_called()
 
 
 def test_post(api: HttpApiInvoker, req: Mock) -> None:
