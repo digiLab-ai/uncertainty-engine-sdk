@@ -234,7 +234,6 @@ class AuthService:
         """
         if not self.token or not self.token.refresh_token:
             raise ValueError("No refresh token available. Please authenticate first.")
-
         try:
             self.token = self.authenticator.refresh_tokens(
                 self.token.refresh_token,

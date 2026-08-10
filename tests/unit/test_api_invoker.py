@@ -59,6 +59,10 @@ def test_get(api: HttpApiInvoker, req: Mock) -> None:
 
 def test_get_with_one_failure(api: HttpApiInvoker) -> None:
     response = Mock()
+
+    # Only HTTP 401 (unauthorised) and 403 (forbidden) trigger token
+    # refreshes, so we need to throw one of these specifically rather
+    # than any other error code.
     type(response).status_code = PropertyMock(side_effect=[401, 200])
 
     with patch(REQUEST_TARGET, return_value=response) as request:
@@ -87,6 +91,10 @@ def test_get_with_one_failure(api: HttpApiInvoker) -> None:
 def test_get_with_two_failures(api: HttpApiInvoker) -> None:
     response = Mock()
     response.raise_for_status = Mock(side_effect=Exception("raised for status"))
+
+    # Only HTTP 401 (unauthorised) and 403 (forbidden) trigger token
+    # refreshes, so we need to throw these specifically rather than any
+    # other error code.
     type(response).status_code = PropertyMock(side_effect=[401, 401])
 
     with patch(REQUEST_TARGET, return_value=response):
@@ -109,6 +117,9 @@ def test_get_with_non_auth_failure_does_not_refresh(
         side_effect=Exception("raised for status"),
     )
 
+    # Only HTTP 401 (unauthorised) and 403 (forbidden) trigger token
+    # refreshes, so a 500 should cause authentication to fail
+    # immediately.
     type(response).status_code = PropertyMock(side_effect=[500])
 
     with patch(REQUEST_TARGET, return_value=response) as request:
