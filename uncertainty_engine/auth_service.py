@@ -315,19 +315,13 @@ class AuthService:
             # an interrupted write may have left the file corrupt. The
             # cache is only an optimisation, so treat it like a missing
             # file.
-            warn(
-                "The authentication cache is unreadable and will be "
-                "ignored. Please authenticate again."
-            )
+            warn("The authentication cache is unreadable and will be ignored.")
 
             self.token = None
             return
 
         except Exception as e:
-            raise Exception(
-                f"Error loading authentication details: {str(e)}. "
-                "Please ensure you are authenticated."
-            )
+            raise Exception(f"Error loading authentication details: {str(e)}")
 
         if all(k in auth_data for k in AUTH_CACHE_KEYS):
             self.token = CognitoToken(
