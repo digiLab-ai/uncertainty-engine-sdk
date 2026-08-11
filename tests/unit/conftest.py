@@ -364,10 +364,9 @@ def auth_service_with_file(
         AuthService, "auth_file_path", new_callable=PropertyMock, return_value=mock_path
     )
     open_patch = patch("builtins.open", m)
-    chmod_patch = patch("os.chmod")  # Mock os.chmod
 
     # Apply patches
-    with path_patch, open_patch, chmod_patch:
+    with path_patch, open_patch:
         # Create AuthService instance
         auth_service = AuthService(
             mock_cognito_authenticator,

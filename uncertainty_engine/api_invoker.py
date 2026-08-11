@@ -117,8 +117,18 @@ class HttpApiInvoker(ApiInvoker):
                 **kwargs,  # type: ignore
             )
 
-            if 200 <= response.status_code < 300:
+            status_code = response.status_code
+
+            if 200 <= status_code < 300:
                 return response.json()
+
+            if status_code not in (401, 403):
+                # Only an authorisation failure can be fixed by
+                # refreshing the token; refreshing on anything else
+                # (e.g. a transient 5xx) churns the shared token cache
+                # for nothing.
+                response.raise_for_status()
+                return
 
             if has_refreshed_token:
                 # If we've already refreshed the authorisation token then the

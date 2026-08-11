@@ -1,6 +1,7 @@
 import json
+import os
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, PropertyMock, mock_open, patch
 
 import pytest
 from pytest import MonkeyPatch, mark
@@ -8,6 +9,31 @@ from pytest import MonkeyPatch, mark
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator, CognitoToken
 from uncertainty_engine.types import GetResourceToken
+
+
+@pytest.fixture
+def auth_service_with_real_file(
+    tmp_path: Path,
+    mock_cognito_authenticator: CognitoAuthenticator,
+    mock_get_resource_token: GetResourceToken,
+    mock_auth_file_data: dict[str, str],
+):
+    """Creates an AuthService instance backed by a real auth file on disk."""
+    auth_file = tmp_path / ".ue_auth"
+    auth_file.write_text(json.dumps(mock_auth_file_data))
+
+    with patch.object(
+        AuthService,
+        "auth_file_path",
+        new_callable=PropertyMock,
+        return_value=auth_file,
+    ):
+        auth_service = AuthService(
+            mock_cognito_authenticator,
+            mock_get_resource_token,
+        )
+
+        yield auth_service, auth_file
 
 
 def test_init_no_file(auth_service_no_file: AuthService):
@@ -170,7 +196,9 @@ def test_clear(auth_service_with_file: tuple[AuthService, MagicMock]):
     assert auth_service.token is None
 
     # Verify unlink was called
-    auth_service.auth_file_path.unlink.assert_called_once()
+    auth_service.auth_file_path.unlink.assert_called_once_with(
+        missing_ok=True,
+    )
 
 
 def test_refresh_successful(
@@ -207,26 +235,60 @@ def test_refresh_no_token(auth_service_no_file: AuthService):
 
 
 def test_refresh_exception(
-    auth_service_with_file: tuple[AuthService, MagicMock],
+    auth_service_with_real_file: tuple[AuthService, Path],
     mock_cognito_authenticator: CognitoAuthenticator,
+    mock_auth_file_data: dict[str, str],
 ):
-    """Test refresh error handling"""
-    auth_service, _ = auth_service_with_file
+    """
+    A failed refresh clears the in-memory token but leaves the shared
+    cache file alone: a concurrent process may have just saved fresh,
+    valid tokens to it.
+    """
+    auth_service, auth_file = auth_service_with_real_file
 
     # Setup authenticator to raise exception
     error_message = "Token expired"
     mock_cognito_authenticator.refresh_tokens.side_effect = Exception(error_message)
 
-    # Mock clear method
-    with patch.object(auth_service, "clear"):
-        # Verify refresh raises error
-        with pytest.raises(ValueError) as excinfo:
-            auth_service.refresh()
+    # Verify refresh raises error
+    with pytest.raises(ValueError) as excinfo:
+        auth_service.refresh()
 
-        assert f"Failed to refresh token: {error_message}" in str(excinfo.value)
+    assert f"Failed to refresh token: {error_message}" in str(excinfo.value)
 
-        # Verify clear was called
-        auth_service.clear.assert_called_once()
+    # The in-memory token is cleared...
+    assert auth_service.token is None
+
+    # ...but the shared cache file is untouched.
+    assert json.loads(auth_file.read_text()) == mock_auth_file_data
+
+
+def test_refresh_save_failure_keeps_token(
+    auth_service_with_real_file: tuple[AuthService, Path],
+    mock_refreshed_cognito_tokens: CognitoToken,
+    mock_auth_file_data: dict[str, str],
+):
+    """
+    If the refresh succeeds but saving to the cache fails, the new
+    token is kept and returned with a warning, and the cache file is
+    neither replaced nor deleted.
+    """
+    auth_service, auth_file = auth_service_with_real_file
+
+    with patch.object(
+        auth_service,
+        "_save_to_file",
+        side_effect=OSError("disk full"),
+    ):
+        with pytest.warns(UserWarning, match="disk full"):
+            result = auth_service.refresh()
+
+    # The refreshed token is kept in memory and returned.
+    assert result is auth_service.token
+    assert auth_service.token == mock_refreshed_cognito_tokens
+
+    # The cache file still holds the previous tokens.
+    assert json.loads(auth_file.read_text()) == mock_auth_file_data
 
 
 def test_get_auth_header(
@@ -272,9 +334,9 @@ def test_get_auth_header_not_authenticated(auth_service_no_file: AuthService):
     assert "Not authenticated" in str(excinfo.value)
 
 
-def test_save_to_file(auth_service_with_file: tuple[AuthService, MagicMock]):
+def test_save_to_file(auth_service_with_real_file: tuple[AuthService, Path]):
     """Test saving to file"""
-    auth_service, mock_file = auth_service_with_file
+    auth_service, auth_file = auth_service_with_real_file
 
     # Set new values
     auth_service.token.access_token = "new_access_token"
@@ -283,13 +345,87 @@ def test_save_to_file(auth_service_with_file: tuple[AuthService, MagicMock]):
     # Call _save_to_file
     auth_service._save_to_file()
 
-    # Check what was written to the file
-    # Get all write calls and join them
-    written_data = "".join(call.args[0] for call in mock_file().write.call_args_list)
-    parsed_data = json.loads(written_data)
+    parsed_data = json.loads(auth_file.read_text())
 
     assert parsed_data["access_token"] == "new_access_token"
     assert parsed_data["account_id"] == "new_account_id"
+
+    # The temporary file used for the atomic write must not be left behind
+    assert [p.name for p in auth_file.parent.iterdir()] == [auth_file.name]
+
+
+# os.name == "nt": skip on Windows.
+@mark.skipif(os.name == "nt", reason="Checks POSIX file permissions")
+def test_save_to_file_permissions(
+    auth_service_with_real_file: tuple[AuthService, Path],
+) -> None:
+    """The saved auth file is only readable by its owner."""
+    auth_service, auth_file = auth_service_with_real_file
+
+    auth_service._save_to_file()
+
+    assert auth_file.stat().st_mode & 0o777 == 0o600
+
+
+def test_save_to_file_retries_replace_on_permission_error(
+    auth_service_with_real_file: tuple[AuthService, Path],
+) -> None:
+    """
+    A transient sharing violation (Windows) is retried rather than
+    raised.
+    """
+    auth_service, _ = auth_service_with_real_file
+
+    with patch(
+        "os.replace",
+        side_effect=[PermissionError("sharing violation"), None],
+    ) as mock_replace:
+        auth_service._save_to_file()
+
+    assert mock_replace.call_count == 2
+
+
+def test_save_to_file_replace_retries_exhausted(
+    auth_service_with_real_file: tuple[AuthService, Path],
+    mock_auth_file_data: dict[str, str],
+) -> None:
+    """
+    A persistent sharing violation is raised, leaving no temporary
+    files.
+    """
+    auth_service, auth_file = auth_service_with_real_file
+
+    with patch(
+        "os.replace",
+        side_effect=PermissionError("sharing violation"),
+    ):
+        with patch("time.sleep") as mock_sleep:
+            with pytest.raises(PermissionError):
+                auth_service._save_to_file()
+
+    assert mock_sleep.call_count == 4
+    assert json.loads(auth_file.read_text()) == mock_auth_file_data
+    assert [p.name for p in auth_file.parent.iterdir()] == [
+        auth_file.name,
+    ]
+
+
+def test_save_to_file_cleans_up_temp_file_on_failure(
+    auth_service_with_real_file: tuple[AuthService, Path],
+    mock_auth_file_data: dict[str, str],
+) -> None:
+    """
+    A failed save leaves the previous auth file intact and no temporary
+    files.
+    """
+    auth_service, auth_file = auth_service_with_real_file
+
+    with patch("json.dump", side_effect=OSError("disk full")):
+        with pytest.raises(OSError):
+            auth_service._save_to_file()
+
+    assert json.loads(auth_file.read_text()) == mock_auth_file_data
+    assert [p.name for p in auth_file.parent.iterdir()] == [auth_file.name]
 
 
 def test_load_from_file_exception(auth_service_no_file: AuthService):
@@ -302,6 +438,51 @@ def test_load_from_file_exception(auth_service_no_file: AuthService):
                 auth_service_no_file._load_from_file()
 
             assert "Error loading authentication details" in str(excinfo.value)
+
+
+def test_load_from_file_deleted_mid_read(
+    auth_service_no_file: AuthService,
+) -> None:
+    """
+    A file deleted between the existence check and the read is treated
+    as missing.
+    """
+    with patch.object(
+        auth_service_no_file.auth_file_path,
+        "exists",
+        return_value=True,
+    ):
+        with patch("builtins.open", side_effect=FileNotFoundError()):
+            auth_service_no_file._load_from_file()
+
+    assert auth_service_no_file.token is None
+
+
+@mark.parametrize(
+    "content",
+    [
+        "",  # e.g. read mid-write by a non-atomic writer
+        '{"account_id": "test_ac',  # e.g. an interrupted write
+        "null",  # valid JSON, but not an object
+    ],
+)
+def test_load_from_file_unreadable(
+    auth_service_no_file: AuthService,
+    content: str,
+) -> None:
+    """
+    An empty, corrupt or non-object cache file is ignored with a warning.
+    """
+    with patch.object(
+        auth_service_no_file.auth_file_path,
+        "exists",
+        return_value=True,
+    ):
+        with patch("builtins.open", mock_open(read_data=content)):
+            with pytest.warns(UserWarning, match="authentication cache"):
+                auth_service_no_file._load_from_file()
+
+    assert auth_service_no_file.token is None
 
 
 def test_load_from_file_missing_keys(auth_service_no_file: AuthService):

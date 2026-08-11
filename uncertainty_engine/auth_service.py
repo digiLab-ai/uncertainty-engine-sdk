@@ -1,5 +1,8 @@
 import json
 import os
+import tempfile
+import time
+from contextlib import suppress
 from pathlib import Path
 from typing import Optional
 from warnings import warn
@@ -31,6 +34,13 @@ All the keys that are expected to exist in the authorisation cache file.
 """
 
 AUTH_FILE_NAME = ".ue_auth"
+
+REPLACE_ATTEMPTS = 5
+"""
+How many times to attempt to move a new authorisation cache file into
+place. On Windows, the move fails with a sharing violation while
+another process holds the file open, so it is retried briefly.
+"""
 
 
 class AuthService:
@@ -130,9 +140,9 @@ class AuthService:
     def clear(self) -> None:
         """Clear authentication state"""
         self.token = None
-        auth_file = self.auth_file_path
-        if auth_file.exists():
-            auth_file.unlink()
+        # missing_ok: another process may delete the file between any
+        # existence check and the unlink.
+        self.auth_file_path.unlink(missing_ok=True)
 
     def _save_to_file(self) -> None:
         """Save authentication details to a file"""
@@ -150,11 +160,43 @@ class AuthService:
             "refresh_token": self.token.refresh_token,
         }
 
-        with open(self.auth_file_path, "w") as f:
-            json.dump(auth_data, f)
+        # Resolve symlinks so the write lands in the link target's
+        # directory: os.replace would otherwise overwrite the link
+        # itself, and the temporary file must be on the same filesystem
+        # as the target for the replace to be atomic.
+        auth_file = self.auth_file_path.resolve()
 
-        # Set file permissions (owner read/write only - 0600)
-        os.chmod(self.auth_file_path, 0o600)
+        # Write to a temporary file in the same directory, then
+        # atomically replace the target: readers in other processes see
+        # either the old or the new file, never a truncated one.
+        # mkstemp creates the file with owner-only (0600) permissions
+        # on POSIX, so the tokens are never readable by other users; on
+        # Windows the profile directory's ACLs apply.
+        fd, tmp_path = tempfile.mkstemp(
+            dir=auth_file.parent,
+            prefix=f"{AUTH_FILE_NAME}.",
+        )
+
+        try:
+            with os.fdopen(fd, "w") as f:
+                json.dump(auth_data, f)
+
+            for attempt in range(REPLACE_ATTEMPTS):
+                try:
+                    os.replace(tmp_path, auth_file)
+                    break
+
+                except PermissionError:
+                    if attempt == REPLACE_ATTEMPTS - 1:
+                        raise
+
+                    time.sleep(0.01 * (attempt + 1))
+
+        except BaseException:
+            with suppress(FileNotFoundError):
+                os.unlink(tmp_path)
+
+            raise
 
     @staticmethod
     def _get_account_id(resource_token: str) -> str:
@@ -196,11 +238,28 @@ class AuthService:
             self.token = self.authenticator.refresh_tokens(
                 self.token.refresh_token,
             )
-            self._save_to_file()
-            return self.token
         except Exception as e:
-            self.clear()
+            # The cache file is deliberately left in place: it is shared
+            # by every process on the machine, and a concurrent process
+            # may have just saved fresh, valid tokens to it. If the
+            # refresh token is genuinely dead, each process will fail
+            # its own refresh and re-authenticate.
+            self.token = None
             raise ValueError(f"Failed to refresh token: {str(e)}")
+
+        try:
+            self._save_to_file()
+        except Exception as e:
+            # The refresh succeeded, so the in-memory token is valid and
+            # usable; failing to persist it only means other processes
+            # can't share it.
+            warn(
+                "Failed to save the refreshed tokens to the "
+                f"authentication cache: {e}. Continuing with the "
+                "in-memory token."
+            )
+
+        return self.token
 
     def get_auth_header(
         self,
@@ -241,15 +300,34 @@ class AuthService:
         try:
             with open(auth_file, "r") as f:
                 auth_data = json.load(f)
-            if all(k in auth_data for k in AUTH_CACHE_KEYS):
-                self.token = CognitoToken(
-                    access_token=auth_data["access_token"],
-                    refresh_token=auth_data["refresh_token"],
-                    id_token=auth_data[AUTH_CACHE_ID_TOKEN],
-                )
-                self.account_id = auth_data["account_id"]
-                self.resource_token = auth_data[AUTH_CACHE_RESOURCE_TOKEN]
+
+            if not isinstance(auth_data, dict):
+                raise ValueError("Expected a JSON object")
+
+        except FileNotFoundError:
+            # Another process deleted the file between the existence
+            # check and the read.
+            self.token = None
+            return
+
+        except ValueError:
+            # Unreadable content: another process may be mid-write, or
+            # an interrupted write may have left the file corrupt. The
+            # cache is only an optimisation, so treat it like a missing
+            # file.
+            warn("The authentication cache is unreadable and will be ignored.")
+
+            self.token = None
+            return
+
         except Exception as e:
-            raise Exception(
-                f"Error loading authentication details: {str(e)}. Please ensure you are authenticated."
+            raise Exception(f"Error loading authentication details: {str(e)}")
+
+        if all(k in auth_data for k in AUTH_CACHE_KEYS):
+            self.token = CognitoToken(
+                access_token=auth_data["access_token"],
+                refresh_token=auth_data["refresh_token"],
+                id_token=auth_data[AUTH_CACHE_ID_TOKEN],
             )
+            self.account_id = auth_data["account_id"]
+            self.resource_token = auth_data[AUTH_CACHE_RESOURCE_TOKEN]
