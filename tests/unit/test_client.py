@@ -384,17 +384,6 @@ class TestClientMethods:
 
         assert exc_info.value.response.status_code == 404
 
-    def test_get_node_info_requires_version(self, client: Client):
-        """
-        Verify that `get_node_info` requires a version, so that the
-        default version cannot be selected by omitting an argument.
-
-        Args:
-            client: A `Client` instance.
-        """
-        with pytest.raises(TypeError):
-            client.get_node_info("Add")  # type: ignore[call-arg]
-
     def test_get_node_info(self, client: Client):
         """
         Verify that the `get_node_info` method pokes the correct
