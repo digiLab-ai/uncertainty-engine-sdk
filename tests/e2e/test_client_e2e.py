@@ -89,6 +89,33 @@ class TestClientMethods:
         assert isinstance(tokens, int)
         assert tokens >= 0
 
+    def test_get_default_node_info(self, e2e_client: Client) -> None:
+        """
+        Test that the `Add` node's default version is resolved by the
+        Node Registry, and that its inputs and outputs are not empty.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+
+        node_info = e2e_client.get_default_node_info("Add")
+        assert node_info.id == "Add"
+        assert node_info.version_node
+        assert node_info.inputs
+        assert node_info.outputs
+
+    def test_get_default_node_info_missing_node(self, e2e_client: Client) -> None:
+        """
+        Test that `get_default_node_info` raises an `HTTPError` for a
+        node that does not exist.
+
+        Args:
+            e2e_client: A Client instance.
+        """
+
+        with pytest.raises(HTTPError):
+            e2e_client.get_default_node_info("NodeThatDoesNotExist")
+
     def test_get_node_info(self, e2e_client: Client) -> None:
         """
         Test that the `Add` node info returns the correct id, and that
