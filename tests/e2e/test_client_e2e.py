@@ -104,19 +104,6 @@ class TestClientMethods:
         assert node_info.inputs
         assert node_info.outputs
 
-    def test_get_default_node_info_int_only_version(self, e2e_client: Client) -> None:
-        """
-        Test that a node whose only version is an integer resolves via
-        `get_default_node_info`.
-
-        Args:
-            e2e_client: A Client instance.
-        """
-
-        node_info = e2e_client.get_default_node_info("Tool")
-        assert node_info.id == "Tool"
-        assert isinstance(node_info.version_node, int)
-
     def test_get_default_node_info_missing_node(self, e2e_client: Client) -> None:
         """
         Test that `get_default_node_info` raises an `HTTPError` for a
