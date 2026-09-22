@@ -186,6 +186,37 @@ class Client:
 
         return node_list
 
+    def get_default_node_info(self, node: str) -> NodeInfo:
+        """
+        Obtain a `NodeInfo` object for a node's default version.
+
+        The Node Registry decides which version is the default: it
+        prefers "latest", and otherwise takes the highest available
+        version. Nodes that are versioned with an integer only are
+        resolved the same way. The SDK never works the version out
+        itself, which is why `get_node_info` keeps its `version`
+        argument required: "latest" cannot be selected by accidentally
+        omitting an argument.
+
+        Args:
+            node: The ID of the node to get information about.
+
+        Returns:
+            Information about the node's default version as a `NodeInfo`
+            object.
+
+        Raises:
+            HTTPError: If the node does not exist (404) or another HTTP
+                error occurs.
+
+        Example:
+            >>> node_info = client.get_default_node_info("Add")
+            >>> print(node_info.version_node)
+            >>> print(node_info.inputs)
+        """
+
+        return NodeInfo(**self.core_api.get(f"/nodes/{node}"))
+
     def get_node_info(
         self,
         node: str,
@@ -194,6 +225,9 @@ class Client:
         """
         Obtain a `NodeInfo` object containing metadata, input/output
         schema, and configuration details for a given node and version.
+
+        The `version` is required. Use `get_default_node_info` to let
+        the Node Registry pick the default version instead.
 
         Args:
             node: The ID of the node to get information about.
