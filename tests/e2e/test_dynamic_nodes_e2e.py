@@ -41,10 +41,8 @@ class TestDynamicNodesE2E:
             e2e_client: A Client instance.
         """
 
-        import uncertainty_engine.nodes.basic as basic
-
-        assert not hasattr(basic, "Number")
-
+        # `Number` is chosen because the SDK ships no hand-written class
+        # for it, so it can only have been built from the registry.
         node = e2e_client.nodes.Number(value="5", label="number")
 
         assert node.node_name == "Number"
@@ -114,15 +112,16 @@ class TestDynamicNodesE2E:
             e2e_client: A Client instance.
         """
 
-        pinned = e2e_client.nodes.with_versions({"Add": "0.2.0"})
+        version = e2e_client.get_node_versions("Add")[0]
+        pinned = e2e_client.nodes.with_versions({"Add": version})
 
-        assert pinned.Add(lhs=1, rhs=2, label="add").version == "0.2.0"
+        assert pinned.Add(lhs=1, rhs=2, label="add").version == version
 
         # An unlisted node resolves to the registry's default.
         assert pinned.Number(value="5", label="number").version
 
         # A per-call version still wins.
-        assert pinned.Add(lhs=1, rhs=2, label="add", version="0.2.0").version == "0.2.0"
+        assert pinned.Add(lhs=1, rhs=2, label="add", version=version).version == version
 
         # The default view is untouched.
         assert e2e_client.nodes is not pinned

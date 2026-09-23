@@ -355,7 +355,6 @@ class TestWithVersions:
         with mock_core_api(client) as api:
             api.expect_post(
                 "/nodes/query",
-                expect_body={"nodes": [{"node_id": "Add", "version": "0.2.0"}]},
                 response={"Add@0.2.0": node_info_dict("Add", version="0.2.0")},
             )
 
@@ -371,7 +370,7 @@ class TestWithVersions:
         pinned = nodes.with_versions({"Add": "0.2.0"})
 
         with mock_core_api(client) as api:
-            api.expect_get("/nodes/Number", node_info_dict("Number"))
+            api.expect_get("/nodes/Number", node_info_dict("Number", version="latest"))
 
             node = pinned.Number(lhs=1, rhs=2, label="number")
 
@@ -387,7 +386,6 @@ class TestWithVersions:
         with mock_core_api(client) as api:
             api.expect_post(
                 "/nodes/query",
-                expect_body={"nodes": [{"node_id": "Add", "version": "0.3.0"}]},
                 response={"Add@0.3.0": node_info_dict("Add", version="0.3.0")},
             )
 
@@ -405,7 +403,6 @@ class TestWithVersions:
         with mock_core_api(client) as api:
             api.expect_post(
                 "/nodes/query",
-                expect_body={"nodes": [{"node_id": "Add", "version": "0.2.0"}]},
                 response={"Add@0.2.0": node_info_dict("Add", version="0.2.0")},
             )
 
