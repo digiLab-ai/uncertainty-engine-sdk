@@ -277,9 +277,11 @@ class DynamicNodes:
         except HTTPError as error:
             response = error.response
 
-            if response is not None and response.status_code != 404:
-                # Only a missing node becomes a `NodeNotFoundError`; any
-                # other failure is reported as-is.
+            if response is None or response.status_code != 404:
+                # Only a confirmed 404 means the node is missing from the
+                # registry; anything else (including an error with no
+                # response, e.g. a connection failure) is a real failure
+                # and is reported as-is.
                 raise
 
             raise NodeNotFoundError(node, resolved_version) from error

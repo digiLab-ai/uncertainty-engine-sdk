@@ -16,13 +16,14 @@ class NodeNotFoundError(Exception):
         self.version = version
         """The version that was requested, if one was pinned."""
 
-        described = (
-            f"Node '{node}'"
-            if version is None
-            else f"Node '{node}' with version '{version}'"
-        )
+        if version is None:
+            described = f"Node '{node}'"
+            hint = "Use `client.nodes.available()` to see the available nodes."
+        else:
+            described = f"Node '{node}' with version '{version}'"
+            hint = (
+                f"Use `client.get_node_versions('{node}')` to see the "
+                "available versions."
+            )
 
-        super().__init__(
-            f"{described} was not found. "
-            "Use `client.nodes.available()` to see the available nodes."
-        )
+        super().__init__(f"{described} was not found. {hint}")

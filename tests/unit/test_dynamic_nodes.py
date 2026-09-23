@@ -217,6 +217,7 @@ class TestNodeNotFound:
 
         assert exc_info.value.version == "9.9.9"
         assert "9.9.9" in str(exc_info.value)
+        assert "get_node_versions" in str(exc_info.value)
 
     def test_non_404_error_is_not_reported_as_missing(
         self, client: Client, nodes: DynamicNodes
@@ -232,6 +233,22 @@ class TestNodeNotFound:
                 nodes.Add(lhs=1, rhs=2, label="add")
 
         assert exc_info.value.response.status_code == 500
+
+    def test_response_less_error_is_not_reported_as_missing(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that an HTTP error with no attached response propagates
+        rather than being mislabelled as a missing node (there is no 404
+        evidence).
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", HTTPError(response=None))
+
+            with pytest.raises(HTTPError) as exc_info:
+                nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert exc_info.value.response is None
 
 
 class TestDiscovery:
