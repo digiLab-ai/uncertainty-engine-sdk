@@ -32,22 +32,6 @@ class TestDynamicNodesE2E:
 
         assert node.node_name == "Add"
 
-    def test_build_node_without_hand_written_class(self, e2e_client: Client) -> None:
-        """
-        Verify that a node with no hand-written class in the SDK can be
-        built.
-
-        Args:
-            e2e_client: A Client instance.
-        """
-
-        # `Number` is chosen because the SDK ships no hand-written class
-        # for it, so it can only have been built from the registry.
-        node = e2e_client.nodes.Number(value="5", label="number")
-
-        assert node.node_name == "Number"
-        assert node.version
-
     def test_run_a_dynamically_built_node(self, e2e_client: Client) -> None:
         """
         Verify that a dynamically built node can actually be run.

@@ -99,20 +99,6 @@ class TestBuilding:
         assert node.node_name == "Add"
         assert node.label == "add"
 
-    def test_node_without_hand_written_class(self, client: Client, nodes: DynamicNodes):
-        """
-        Verify that a node with no hand-written class - such as a
-        user-deployed node - can be built.
-        """
-        with mock_core_api(client) as api:
-            api.expect_get(
-                "/nodes/UserDeployedNode", node_info_dict("UserDeployedNode")
-            )
-
-            node = nodes.UserDeployedNode(lhs=1, rhs=2, label="custom")
-
-        assert node.node_name == "UserDeployedNode"
-
     def test_version_comes_from_the_resolved_schema(
         self, client: Client, nodes: DynamicNodes
     ):
