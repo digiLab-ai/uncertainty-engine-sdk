@@ -429,63 +429,6 @@ class TestSharedCache:
     every view shares them and `clear_node_cache` empties them.
     """
 
-    def test_listing_seeds_the_listed_version_only(
-        self, client: Client, nodes: DynamicNodes
-    ):
-        """
-        Verify that after `available()`, building a listed node at the
-        listed version makes no further request, while a default build
-        still asks the registry for its default.
-        """
-        pinned = nodes.with_versions({"Add": "0.2.0"})
-
-        with mock_core_api(client) as api:
-            api.expect_get(
-                "/nodes/list", {"Add": node_info_dict("Add", version="0.2.0")}
-            )
-            # Only the default build fetches; a query for the pinned
-            # version would fail the mock.
-            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.3.0"))
-
-            nodes.available()
-            listed = pinned.Add(lhs=1, rhs=2, label="listed")
-            default = nodes.Add(lhs=1, rhs=2, label="default")
-
-        assert listed.version == "0.2.0"
-        assert default.version == "0.3.0"
-
-    def test_a_malformed_catalogue_entry_is_listed_but_not_seeded(
-        self, client: Client, nodes: DynamicNodes
-    ):
-        """
-        Verify that an entry that is not a valid `NodeInfo` is still
-        listed, does not stop the valid entries seeding the cache, and
-        is fetched on its own when built.
-        """
-        pinned = nodes.with_versions({"Add": "0.2.0", "Broken": "0.2.0"})
-
-        with mock_core_api(client) as api:
-            api.expect_get(
-                "/nodes/list",
-                {
-                    "Add": node_info_dict("Add", version="0.2.0"),
-                    "Broken": {"id": "Broken", "category": "Basic"},
-                },
-            )
-            # Only the malformed entry needs a schema fetch; one for
-            # `Add` would fail the mock.
-            api.expect_post(
-                "/nodes/query",
-                response={"Broken@0.2.0": node_info_dict("Broken", version="0.2.0")},
-            )
-
-            assert nodes.available() == ["Add", "Broken"]
-
-            pinned.Add(lhs=1, rhs=2, label="add")
-            broken = pinned.Broken(lhs=1, rhs=2, label="broken")
-
-        assert broken.node_name == "Broken"
-
     def test_a_missing_node_is_not_cached(self, client: Client, nodes: DynamicNodes):
         """
         Verify that a node not found by the registry is looked up again

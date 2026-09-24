@@ -4,7 +4,7 @@ from os import environ
 from time import sleep
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 from requests import HTTPError
 from typeguard import typechecked
 from uncertainty_engine_types import (
@@ -249,11 +249,7 @@ class Client:
         Note:
             The catalogue is fetched once and cached for the life of the
             client, so a node deployed afterwards will not appear until
-            `clear_node_cache()` is called. Every node it returns also
-            seeds the node schema cache at the version listed, so
-            building a listed node at that version makes no further
-            request. A build at the default version still asks the
-            registry for its default.
+            `clear_node_cache()` is called.
 
         Example:
             >>> all_nodes = client.list_nodes()
@@ -263,19 +259,6 @@ class Client:
         if self._node_list_cache is None:
             nodes = self.core_api.get("/nodes/list")
             self._node_list_cache = [node_info for node_info in nodes.values()]
-
-            for node_info in self._node_list_cache:
-                try:
-                    # Seeded under its version only, not as the node's
-                    # default: the Core API picks the version it lists
-                    # by its own ranking, separately from the registry's
-                    # choice behind `/nodes/{id}`, and the two are not
-                    # guaranteed to agree.
-                    self._cache_node_info(NodeInfo(**node_info), is_default=False)
-                except ValidationError:
-                    # A malformed entry must not stop the catalogue from
-                    # being listed; it simply does not seed the cache.
-                    continue
 
         # A deep copy, so that a caller mutating what they get back -
         # the list or the dicts in it - cannot corrupt the cache. The
