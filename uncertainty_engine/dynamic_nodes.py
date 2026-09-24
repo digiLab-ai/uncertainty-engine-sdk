@@ -164,8 +164,9 @@ class DynamicNodes:
 
         This is the only operation that loads the catalogue; building a
         node does not. The client caches the catalogue, and loading it
-        also seeds the schema of every node it returns, so building any
-        listed node afterwards makes no further request.
+        also seeds the schema of every node it returns at the version
+        listed, so building a listed node pinned to that version makes
+        no further request.
 
         Returns:
             The IDs of all available nodes, sorted.

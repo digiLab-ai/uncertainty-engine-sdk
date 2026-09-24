@@ -250,8 +250,10 @@ class Client:
             The catalogue is fetched once and cached for the life of the
             client, so a node deployed afterwards will not appear until
             `clear_node_cache()` is called. Every node it returns also
-            seeds the node schema cache, so building any listed node
-            afterwards makes no further request.
+            seeds the node schema cache at the version listed, so
+            building a listed node at that version makes no further
+            request. A build at the default version still asks the
+            registry for its default.
 
         Example:
             >>> all_nodes = client.list_nodes()
@@ -264,10 +266,12 @@ class Client:
 
             for node_info in self._node_list_cache:
                 try:
-                    # `/nodes/list` returns one entry per node, at the
-                    # version the registry considers default, so each
-                    # seeds both of that node's cache keys.
-                    self._cache_node_info(NodeInfo(**node_info), is_default=True)
+                    # Seeded under its version only, not as the node's
+                    # default: the Core API picks the version it lists
+                    # by its own ranking, separately from the registry's
+                    # choice behind `/nodes/{id}`, and the two are not
+                    # guaranteed to agree.
+                    self._cache_node_info(NodeInfo(**node_info), is_default=False)
                 except ValidationError:
                     # A malformed entry must not stop the catalogue from
                     # being listed; it simply does not seed the cache.

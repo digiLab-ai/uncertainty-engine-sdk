@@ -90,24 +90,24 @@ class TestDynamicNodesE2E:
     def test_seeded_schema_matches_a_direct_lookup(self, e2e_client: Client) -> None:
         """
         Verify that the schema seeded by `available()` is the same one a
-        direct lookup returns.
+        direct lookup of that version returns.
 
-        The catalogue and the single-node endpoint each choose a node's
-        default version by their own logic, so this guards against the
-        seeded schema drifting from the one a build would otherwise have
-        used, and against the catalogue seeding an incomplete schema.
+        Guards against the catalogue seeding an incomplete or different
+        schema from the one a build at that version would otherwise
+        have fetched.
 
         Args:
             e2e_client: A Client instance.
         """
 
-        e2e_client.nodes.available()
+        [listed] = [node for node in e2e_client.list_nodes() if node.get("id") == "Add"]
+        version = listed["version_node"]
 
-        seeded = e2e_client.nodes.describe("Add")
+        seeded = e2e_client.nodes.describe("Add", version=version)
 
         e2e_client.clear_node_cache()
 
-        fetched = e2e_client.nodes.describe("Add")
+        fetched = e2e_client.nodes.describe("Add", version=version)
 
         assert seeded.outputs
         assert seeded.version_node == fetched.version_node
