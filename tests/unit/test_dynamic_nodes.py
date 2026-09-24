@@ -1,45 +1,14 @@
-from typing import Any
 from unittest.mock import Mock
 
 import pytest
 from requests import HTTPError
 
 from tests.mock_api_invoker import mock_core_api
+from tests.node_info import node_info_dict
 from uncertainty_engine import Client
 from uncertainty_engine.dynamic_nodes import DynamicNodes
 from uncertainty_engine.exceptions import NodeNotFoundError, NodeValidationError
 from uncertainty_engine.nodes.base import Node
-
-
-def node_info_dict(node_id: str, version: str | int = "latest") -> dict[str, Any]:
-    """
-    Build a `NodeInfo` response body for a two-input node.
-
-    Args:
-        node_id: The ID of the node.
-        version: The node's version.
-
-    Returns:
-        A `NodeInfo` shaped dictionary.
-    """
-    return {
-        "id": node_id,
-        "label": node_id,
-        "category": "test_category",
-        "description": "A test node",
-        "long_description": "A long description for the test node.",
-        "image_name": "test_image.png",
-        "cost": 0,
-        "inputs": {
-            "lhs": {"type": "float", "label": "LHS", "description": "Left"},
-            "rhs": {"type": "float", "label": "RHS", "description": "Right"},
-        },
-        "outputs": {
-            "ans": {"type": "float", "label": "Answer", "description": "Result"},
-        },
-        "version_base_image": 1,
-        "version_node": version,
-    }
 
 
 def http_error(status_code: int) -> HTTPError:
@@ -61,10 +30,11 @@ def http_error(status_code: int) -> HTTPError:
 @pytest.fixture
 def nodes(client: Client) -> DynamicNodes:
     """
-    A fresh `DynamicNodes` for each test.
+    A `DynamicNodes` over the test's `client`.
 
-    `client` is class-scoped, and a `DynamicNodes` caches for the life
-    of its client, so tests would otherwise share resolved schemas.
+    This is only a shorthand. Node schemas and the catalogue are cached
+    on the client, not on this object, so a fresh one does not isolate
+    tests; the autouse `clear_node_cache` fixture in `conftest.py` does.
     """
     return DynamicNodes(client)
 
@@ -241,14 +211,15 @@ class TestDiscovery:
 
     def test_available(self, client: Client, nodes: DynamicNodes):
         """
-        Verify that `available` lists all node names.
+        Verify that `available` lists all node names, sorted, whatever
+        order the catalogue arrives in.
         """
         with mock_core_api(client) as api:
             api.expect_get(
                 "/nodes/list",
                 {
-                    "Add": {"id": "Add", "category": "Basic"},
                     "Number": {"id": "Number", "category": "Basic"},
+                    "Add": {"id": "Add", "category": "Basic"},
                 },
             )
 
@@ -431,7 +402,7 @@ class TestClientWiring:
     def test_nodes_is_a_cached_dynamic_nodes(self):
         """
         Verify that `client.nodes` is a `DynamicNodes` and that the same
-        object is returned each time, so its cache is not discarded.
+        object is returned each time, so pins are not silently dropped.
         """
         client = Client(env="local")
 
@@ -450,3 +421,119 @@ class TestClientWiring:
 
         assert client.nodes is default
         assert default._versions == {}
+
+
+class TestSharedCache:
+    """
+    The schema cache and the catalogue live on the client (SDK-190), so
+    every view shares them and `clear_node_cache` empties them.
+    """
+
+    def test_a_missing_node_is_not_cached(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a node not found by the registry is looked up again
+        on the next attempt, so a node deployed in between is picked up.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", http_error(404))
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            with pytest.raises(NodeNotFoundError):
+                nodes.Add(lhs=1, rhs=2, label="add")
+
+            node = nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert node.node_name == "Add"
+
+    def test_a_missing_version_is_not_cached(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a version not found by the registry is looked up
+        again on the next attempt.
+        """
+        with mock_core_api(client) as api:
+            # The query answers, but without the requested version.
+            api.expect_post("/nodes/query", response={})
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@0.2.0": node_info_dict("Add", version="0.2.0")},
+            )
+
+            with pytest.raises(NodeNotFoundError):
+                nodes.Add(lhs=1, rhs=2, label="add", version="0.2.0")
+
+            node = nodes.Add(lhs=1, rhs=2, label="add", version="0.2.0")
+
+        assert node.version == "0.2.0"
+
+    def test_a_separate_view_shares_the_cache(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a view made before the catalogue was loaded still
+        shares it, rather than fetching its own copy.
+        """
+        pinned = nodes.with_versions({"Number": "1.0.0"})
+
+        with mock_core_api(client) as api:
+            # One catalogue fetch between the two views.
+            api.expect_get("/nodes/list", {"Add": node_info_dict("Add")})
+
+            assert nodes.available() == ["Add"]
+            assert pinned.available() == ["Add"]
+
+    def test_a_separate_view_shares_the_schema_cache(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a view made before a node was resolved reuses that
+        node's schema, rather than fetching its own copy.
+        """
+        pinned = nodes.with_versions({"Number": "1.0.0"})
+
+        with mock_core_api(client) as api:
+            # One schema fetch between the two views.
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            first = nodes.Add(lhs=1, rhs=2, label="one")
+            second = pinned.Add(lhs=3, rhs=4, label="two")
+
+        assert first.version == second.version
+
+    def test_clear_node_cache_forces_a_refetch(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that clearing the cache makes the next lookup fetch
+        again.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.1.0"))
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            first = nodes.Add(lhs=1, rhs=2, label="one")
+            client.clear_node_cache()
+            second = nodes.Add(lhs=1, rhs=2, label="two")
+
+        assert first.version == "0.1.0"
+        assert second.version == "0.2.0"
+
+    def test_a_fresh_client_starts_empty(self, client: Client):
+        """
+        Verify that a new client does not inherit another's cache: once
+        one client has loaded a node, a new client still fetches it.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            client.nodes.Add(lhs=1, rhs=2, label="one")
+
+        fresh = Client(env="local")
+
+        with mock_core_api(fresh) as api:
+            # A cache hit would make no request, and the result would
+            # carry the other client's version.
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            node = fresh.nodes.Add(lhs=1, rhs=2, label="two")
+
+        assert node.version == "0.2.0"
