@@ -152,7 +152,8 @@ class DynamicNodes:
         try:
             names.update(self.available())
         except Exception:
-            # Tab completion must never raise, so an unreachable or
+            # Interactive shells build their completion list from
+            # `dir()`, so this must never raise: an unreachable or
             # unauthenticated registry simply contributes no names.
             pass
 
