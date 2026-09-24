@@ -274,7 +274,17 @@ class DynamicNodes:
             if resolved_version is None:
                 node_info = self._client.get_default_node_info(node)
             else:
-                node_info = self._client.get_node_info(node, resolved_version)
+                # `get_node_info` signals an absent node or version
+                # this way. Scoped to this branch because
+                # `get_default_node_info` makes no such promise, so a
+                # `KeyError` from it is a real fault, not a miss.
+                try:
+                    node_info = self._client.get_node_info(
+                        node,
+                        resolved_version,
+                    )
+                except KeyError as error:
+                    raise NodeNotFoundError(node, resolved_version) from error
         except HTTPError as error:
             response = error.response
 
@@ -285,9 +295,6 @@ class DynamicNodes:
                 # and is reported as-is.
                 raise
 
-            raise NodeNotFoundError(node, resolved_version) from error
-        except KeyError as error:
-            # `get_node_info` reports an absent node or version this way.
             raise NodeNotFoundError(node, resolved_version) from error
 
         self._info_cache[key] = node_info
