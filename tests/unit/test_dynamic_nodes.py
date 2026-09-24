@@ -241,14 +241,15 @@ class TestDiscovery:
 
     def test_available(self, client: Client, nodes: DynamicNodes):
         """
-        Verify that `available` lists all node names.
+        Verify that `available` lists all node names, sorted, whatever
+        order the catalogue arrives in.
         """
         with mock_core_api(client) as api:
             api.expect_get(
                 "/nodes/list",
                 {
-                    "Add": {"id": "Add", "category": "Basic"},
                     "Number": {"id": "Number", "category": "Basic"},
+                    "Add": {"id": "Add", "category": "Basic"},
                 },
             )
 
@@ -431,7 +432,7 @@ class TestClientWiring:
     def test_nodes_is_a_cached_dynamic_nodes(self):
         """
         Verify that `client.nodes` is a `DynamicNodes` and that the same
-        object is returned each time, so its cache is not discarded.
+        object is returned each time, so pins are not silently dropped.
         """
         client = Client(env="local")
 
@@ -450,3 +451,97 @@ class TestClientWiring:
 
         assert client.nodes is default
         assert default._versions == {}
+
+
+class TestSharedCache:
+    """
+    The schema cache and the catalogue live on the client (SDK-190), so
+    every view shares them and `clear_node_cache` empties them.
+    """
+
+    def test_same_node_twice_fetches_once(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that building the same node twice makes one request.
+        """
+        with mock_core_api(client) as api:
+            # A single expectation; a second request would fail the mock.
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            nodes.Add(lhs=1, rhs=2, label="one")
+            nodes.Add(lhs=3, rhs=4, label="two")
+
+    def test_listing_seeds_the_schema_cache(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that after `available()`, building a listed node makes no
+        further request.
+        """
+        with mock_core_api(client) as api:
+            # Only the catalogue is expected; a schema fetch would fail
+            # the mock.
+            api.expect_get("/nodes/list", {"Add": node_info_dict("Add")})
+
+            nodes.available()
+            node = nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert node.node_name == "Add"
+
+    def test_a_separate_view_shares_the_cache(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a view made before the catalogue was loaded still
+        shares it, rather than fetching its own copy.
+        """
+        pinned = nodes.with_versions({"Number": "1.0.0"})
+
+        with mock_core_api(client) as api:
+            # One catalogue fetch between the two views.
+            api.expect_get("/nodes/list", {"Add": node_info_dict("Add")})
+
+            assert nodes.available() == ["Add"]
+            assert pinned.available() == ["Add"]
+
+    def test_a_separate_view_shares_the_schema_cache(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a view made before a node was resolved reuses that
+        node's schema, rather than fetching its own copy.
+        """
+        pinned = nodes.with_versions({"Number": "1.0.0"})
+
+        with mock_core_api(client) as api:
+            # One schema fetch between the two views.
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            first = nodes.Add(lhs=1, rhs=2, label="one")
+            second = pinned.Add(lhs=3, rhs=4, label="two")
+
+        assert first.version == second.version
+
+    def test_clear_node_cache_forces_a_refetch(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that clearing the cache makes the next lookup fetch
+        again.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.1.0"))
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            first = nodes.Add(lhs=1, rhs=2, label="one")
+            client.clear_node_cache()
+            second = nodes.Add(lhs=1, rhs=2, label="two")
+
+        assert first.version == "0.1.0"
+        assert second.version == "0.2.0"
+
+    def test_a_fresh_client_starts_empty(self):
+        """
+        Verify that a new client caches nothing to begin with.
+        """
+        client = Client(env="local")
+
+        assert client._node_info_cache == {}
+        assert client._node_list_cache is None

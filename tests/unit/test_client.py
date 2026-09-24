@@ -17,6 +17,32 @@ from uncertainty_engine.client import Job
 from uncertainty_engine.nodes.base import Node
 
 
+def node_info_dict(node_id: str, version: str | int = "latest") -> dict:
+    """
+    Build a `NodeInfo` response body.
+
+    Args:
+        node_id: The ID of the node.
+        version: The node's version.
+
+    Returns:
+        A `NodeInfo` shaped dictionary.
+    """
+    return {
+        "id": node_id,
+        "label": node_id,
+        "category": "test_category",
+        "description": "A test node",
+        "long_description": "A long description.",
+        "image_name": "test_image.png",
+        "cost": 0,
+        "inputs": {"lhs": {"type": "float", "label": "L", "description": "d"}},
+        "outputs": {"ans": {"type": "float", "label": "A", "description": "d"}},
+        "version_base_image": 1,
+        "version_node": version,
+    }
+
+
 def test_init_default() -> None:
     """
     Verify that the Client class can be instantiated with the default deployment.
@@ -68,6 +94,122 @@ class TestClientMethods:
             response = client.list_nodes()
 
             assert response == [{"node_a": "I'm a node."}]
+
+    def test_list_nodes_is_cached(self, client: Client):
+        """
+        Verify that the catalogue is fetched once and reused.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            # A single expectation; a second request would fail the mock.
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "I'm a node."}})
+
+            client.list_nodes()
+
+            assert client.list_nodes() == [{"node_a": "I'm a node."}]
+
+    def test_list_nodes_category_filters_the_cached_catalogue(self, client: Client):
+        """
+        Verify that a category filter is applied to the cached
+        catalogue rather than re-fetching it.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/nodes/list",
+                {
+                    "node_a": {"node_a": "I'm a node.", "category": "cat_a"},
+                    "node_b": {"node_b": "I'm another.", "category": "cat_b"},
+                },
+            )
+
+            client.list_nodes()
+            filtered = client.list_nodes(category="cat_b")
+
+        assert filtered == [{"node_b": "I'm another.", "category": "cat_b"}]
+
+    def test_list_nodes_does_not_hand_out_its_cache(self, client: Client):
+        """
+        Verify that mutating the returned list, or an entry in it,
+        does not corrupt the cached catalogue.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "I'm a node."}})
+
+            returned = client.list_nodes()
+            returned.append({"node_b": "I should not persist."})
+            returned[0]["node_a"] = "I should not persist either."
+
+            assert client.list_nodes() == [{"node_a": "I'm a node."}]
+
+    def test_clear_node_cache_forces_a_refetch(self, client: Client):
+        """
+        Verify that clearing the cache makes the next call fetch again.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "First."}})
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "Second."}})
+
+            assert client.list_nodes() == [{"node_a": "First."}]
+
+            client.clear_node_cache()
+
+            assert client.list_nodes() == [{"node_a": "Second."}]
+
+    def test_default_lookup_caches_the_resolved_version(self, client: Client):
+        """
+        Verify that resolving a node's default version also caches it
+        under that version, so asking for it by name costs nothing.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            # Only the default lookup is expected; a version query would
+            # fail the mock.
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            client.get_default_node_info("Add")
+            node_info = client.get_node_info("Add", "0.2.0")
+
+        assert node_info.version_node == "0.2.0"
+
+    def test_get_node_info_caches_the_requested_version(self, client: Client):
+        """
+        Verify that a version is cached as asked for, not only as
+        resolved - "latest" resolves to a number, and asking for
+        "latest" again must not re-fetch.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            # A single expectation; a second query would fail the mock.
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@latest": node_info_dict("Add", version="0.2.0")},
+            )
+
+            client.get_node_info("Add", "latest")
+            node_info = client.get_node_info("Add", "latest")
+
+        assert node_info.version_node == "0.2.0"
 
     def test_list_nodes_category(self, client: Client):
         """
