@@ -1,5 +1,6 @@
 from uncertainty_engine.exceptions.graph_validation_error import GraphValidationError
 from uncertainty_engine.exceptions.incomplete_credentials import IncompleteCredentials
+from uncertainty_engine.exceptions.node_not_found_error import NodeNotFoundError
 from uncertainty_engine.exceptions.node_validation_error import NodeValidationError
 from uncertainty_engine.exceptions.workflow_validation_error import (
     NodeErrorInfo,
@@ -11,6 +12,7 @@ from uncertainty_engine.exceptions.workflow_validation_error import (
 __all__ = [
     "IncompleteCredentials",
     "GraphValidationError",
+    "NodeNotFoundError",
     "NodeValidationError",
     "WorkflowValidationError",
     "NodeErrorInfo",

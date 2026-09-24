@@ -27,6 +27,7 @@ from uncertainty_engine.api_providers import (
 )
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
+from uncertainty_engine.dynamic_nodes import DynamicNodes
 from uncertainty_engine.environments import Environment
 from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
@@ -117,6 +118,8 @@ class Client:
             self.workflows,
         ]
 
+        self._nodes = DynamicNodes(self)
+
     def _get_resource_token(self) -> str:
         """Get a Resource Service API token."""
         self.auth.update_api_authentication()
@@ -144,6 +147,25 @@ class Client:
 
         # Propagate new authentication state to all providers
         self._update_all_providers()
+
+    @property
+    def nodes(self) -> DynamicNodes:
+        """
+        Build any node by name, resolving its schema from the Node
+        Registry on demand.
+
+        Node schemas are fetched one node at a time, as they are needed;
+        the catalogue is never loaded up front.
+
+        Example:
+            >>> add = client.nodes.Add(lhs=1, rhs=2, label="add")
+            >>> add = client.nodes("Add", lhs=1, rhs=2, label="add")
+            >>> client.nodes.available()
+            >>> client.nodes.describe("Add").inputs
+            >>> pinned = client.nodes.with_versions({"Add": "0.2.0"})
+        """
+
+        return self._nodes
 
     @property
     def email(self) -> str:
