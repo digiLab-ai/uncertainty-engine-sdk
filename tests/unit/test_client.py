@@ -12,35 +12,10 @@ from uncertainty_engine_types import (
 )
 
 from tests.mock_api_invoker import mock_core_api
+from tests.node_info import node_info_dict
 from uncertainty_engine import Client, Environment
 from uncertainty_engine.client import Job
 from uncertainty_engine.nodes.base import Node
-
-
-def node_info_dict(node_id: str, version: str | int = "latest") -> dict:
-    """
-    Build a `NodeInfo` response body.
-
-    Args:
-        node_id: The ID of the node.
-        version: The node's version.
-
-    Returns:
-        A `NodeInfo` shaped dictionary.
-    """
-    return {
-        "id": node_id,
-        "label": node_id,
-        "category": "test_category",
-        "description": "A test node",
-        "long_description": "A long description.",
-        "image_name": "test_image.png",
-        "cost": 0,
-        "inputs": {"lhs": {"type": "float", "label": "L", "description": "d"}},
-        "outputs": {"ans": {"type": "float", "label": "A", "description": "d"}},
-        "version_base_image": 1,
-        "version_node": version,
-    }
 
 
 def test_init_default() -> None:

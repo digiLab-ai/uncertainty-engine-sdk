@@ -101,7 +101,6 @@ class TestDynamicNodesE2E:
             e2e_client: A Client instance.
         """
 
-        e2e_client.clear_node_cache()
         e2e_client.nodes.available()
 
         seeded = e2e_client.nodes.describe("Add")
