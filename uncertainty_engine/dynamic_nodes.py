@@ -1,5 +1,5 @@
 import warnings
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 from requests import HTTPError
 from typeguard import typechecked
@@ -9,7 +9,7 @@ from uncertainty_engine.exceptions import NodeNotFoundError
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.protocols import Client
 
-Version = Union[str, int]
+Version = str | int
 
 
 @typechecked
@@ -38,18 +38,18 @@ class DynamicNodes:
     def __init__(
         self,
         client: Client,
-        versions: Optional[dict[str, Version]] = None,
+        versions: dict[str, Version] | None = None,
     ) -> None:
         self._client = client
         self._versions: dict[str, Version] = dict(versions) if versions else {}
-        self._info_cache: dict[tuple[str, Optional[Version]], NodeInfo] = {}
-        self._names_cache: Optional[list[str]] = None
+        self._info_cache: dict[tuple[str, Version | None], NodeInfo] = {}
+        self._names_cache: list[str] | None = None
 
     def __call__(
         self,
         node: str,
-        label: Optional[str] = None,
-        version: Optional[Version] = None,
+        label: str | None = None,
+        version: Version | None = None,
         **inputs: Any,
     ) -> Node:
         """
@@ -183,7 +183,7 @@ class DynamicNodes:
     def describe(
         self,
         node: str,
-        version: Optional[Version] = None,
+        version: Version | None = None,
     ) -> NodeInfo:
         """
         Describe a node, including its inputs and outputs.
@@ -246,7 +246,7 @@ class DynamicNodes:
 
         return view
 
-    def _resolve(self, node: str, version: Optional[Version] = None) -> NodeInfo:
+    def _resolve(self, node: str, version: Version | None = None) -> NodeInfo:
         """
         Resolve a node's information, using the cache where possible.
 
