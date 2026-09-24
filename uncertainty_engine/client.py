@@ -1,9 +1,10 @@
 import warnings
+from copy import deepcopy
 from os import environ
 from time import sleep
 from typing import Any, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from requests import HTTPError
 from typeguard import typechecked
 from uncertainty_engine_types import (
@@ -34,6 +35,11 @@ from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import handle_input_deprecation
 
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
+
+# Stands in for the version in a cache key when the Node Registry chose
+# the version, rather than the caller naming one. It is not a valid
+# version, so it cannot collide with a real one.
+DEFAULT_VERSION_KEY = "__default__"
 
 
 # TODO: Move this to the uncertainty_engine_types package.
@@ -118,7 +124,52 @@ class Client:
             self.workflows,
         ]
 
+        self._node_info_cache: dict[str, NodeInfo] = {}
+        """
+        Node schemas resolved so far, keyed by `<node>@<version>`. A
+        node's default version is additionally stored under
+        `<node>@{DEFAULT_VERSION_KEY}`, so that a default lookup and a
+        lookup of the version it resolved to share one entry.
+        """
+
+        self._node_list_cache: list[dict[str, Any]] | None = None
+        """
+        The node catalogue, as returned by `/nodes/list`, or `None`
+        while it has not been loaded.
+        """
+
         self._nodes = DynamicNodes(self)
+
+    def _cache_node_info(self, node_info: NodeInfo, is_default: bool) -> None:
+        """
+        Store a resolved node schema in the cache.
+
+        Args:
+            node_info: The schema to store.
+            is_default: Whether this is the node's default version, in
+                which case it is stored under the default key as well.
+        """
+
+        self._node_info_cache[f"{node_info.id}@{node_info.version_node}"] = node_info
+
+        if is_default:
+            self._node_info_cache[f"{node_info.id}@{DEFAULT_VERSION_KEY}"] = node_info
+
+    def clear_node_cache(self) -> None:
+        """
+        Forget every cached node schema and the node catalogue.
+
+        Node information is cached for the life of the client and never
+        expires on its own, so this is how to pick up a node that has
+        been deployed, or a new version of one, without building a new
+        client.
+
+        Example:
+            >>> client.clear_node_cache()
+        """
+
+        self._node_info_cache.clear()
+        self._node_list_cache = None
 
     def _get_resource_token(self) -> str:
         """Get a Resource Service API token."""
@@ -195,13 +246,37 @@ class Client:
         Returns:
             List of available nodes. Each list item is a dictionary of information about the node.
 
+        Note:
+            The catalogue is fetched once and cached for the life of the
+            client, so a node deployed afterwards will not appear until
+            `clear_node_cache()` is called. Every node it returns also
+            seeds the node schema cache, so building any listed node
+            afterwards makes no further request.
+
         Example:
             >>> all_nodes = client.list_nodes()
             >>> print(all_nodes)
         """
 
-        nodes = self.core_api.get("/nodes/list")
-        node_list = [node_info for node_info in nodes.values()]
+        if self._node_list_cache is None:
+            nodes = self.core_api.get("/nodes/list")
+            self._node_list_cache = [node_info for node_info in nodes.values()]
+
+            for node_info in self._node_list_cache:
+                try:
+                    # `/nodes/list` returns one entry per node, at the
+                    # version the registry considers default, so each
+                    # seeds both of that node's cache keys.
+                    self._cache_node_info(NodeInfo(**node_info), is_default=True)
+                except ValidationError:
+                    # A malformed entry must not stop the catalogue from
+                    # being listed; it simply does not seed the cache.
+                    continue
+
+        # A deep copy, so that a caller mutating what they get back -
+        # the list or the dicts in it - cannot corrupt the cache. The
+        # cost is trivial next to the request this replaces.
+        node_list = deepcopy(self._node_list_cache)
 
         if category is not None:
             node_list = [node for node in node_list if node["category"] == category]
@@ -231,13 +306,26 @@ class Client:
             HTTPError: If the node does not exist (404) or another HTTP
                 error occurs.
 
+        Note:
+            The resolved default is cached for the life of the client,
+            so a version deployed afterwards is not picked up until
+            `clear_node_cache()` is called.
+
         Example:
             >>> node_info = client.get_default_node_info("Add")
             >>> print(node_info.version_node)
             >>> print(node_info.inputs)
         """
 
-        return NodeInfo(**self.core_api.get(f"/nodes/{node}"))
+        key = f"{node}@{DEFAULT_VERSION_KEY}"
+
+        if key in self._node_info_cache:
+            return self._node_info_cache[key]
+
+        node_info = NodeInfo(**self.core_api.get(f"/nodes/{node}"))
+        self._cache_node_info(node_info, is_default=True)
+
+        return node_info
 
     def get_node_info(
         self,
@@ -262,18 +350,38 @@ class Client:
             KeyError: If the node information is not found in the
                 response.
 
+        Note:
+            The schema is cached for the life of the client, keyed by
+            the version as requested, so a moving alias such as
+            "latest" keeps returning the schema it first resolved to
+            until `clear_node_cache()` is called.
+
         Example:
             >>> node_info = client.get_node_info("Add", "0.2.0")
             >>> print(node_info.inputs)
             >>> print(node_info.outputs)
         """
 
+        key = f"{node}@{version}"
+
+        if key in self._node_info_cache:
+            return self._node_info_cache[key]
+
         query = NodeQuery(node_id=node, version=version)
         response = self.query_nodes([query])
         versioned_key = str(query)
 
         try:
-            return response[versioned_key]
+            node_info = response[versioned_key]
+
+            self._cache_node_info(node_info, is_default=False)
+
+            # The requested version is not always the one it resolves to
+            # (e.g. "latest"), so key the request as well, or asking for
+            # it again would miss the cache.
+            self._node_info_cache[key] = node_info
+
+            return node_info
         except KeyError:
             raise KeyError(
                 f"Node '{node}' with version '{version}' was not found. "
