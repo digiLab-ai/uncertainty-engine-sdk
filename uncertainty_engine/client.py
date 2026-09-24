@@ -377,15 +377,6 @@ class Client:
 
         try:
             node_info = response[versioned_key]
-
-            self._cache_node_info(node_info, is_default=False)
-
-            # The requested version is not always the one it resolves to
-            # (e.g. "latest"), so key the request as well, or asking for
-            # it again would miss the cache.
-            self._node_info_cache[key] = node_info
-
-            return node_info
         except KeyError:
             raise KeyError(
                 f"Node '{node}' with version '{version}' was not found. "
@@ -393,6 +384,15 @@ class Client:
                 "`list_nodes()` and `get_node_versions()` to see "
                 "available options."
             )
+
+        self._cache_node_info(node_info, is_default=False)
+
+        # The requested version is not always the one it resolves to
+        # (e.g. "latest"), so key the request as well, or asking for
+        # it again would miss the cache.
+        self._node_info_cache[key] = node_info
+
+        return node_info
 
     def get_node_versions(self, node_id: str) -> list[str | int]:
         """
