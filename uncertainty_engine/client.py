@@ -255,6 +255,22 @@ class Client:
                 ) from e
             raise
 
+    def get_node_deprecations(self) -> list[dict[str, Any]]:
+        """
+        Get all node deprecations.
+
+        Returns:
+            A list of node deprecations.
+
+        Raises:
+            HTTPError: If an HTTP error occurs.
+
+        Example:
+            >>> deprecations = client.get_node_deprecations()
+            >>> print(deprecations)
+        """
+        return self.core_api.get("/node-deprecations")
+
     def queue_node(
         self,
         node: Union[str, Node],
