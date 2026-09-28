@@ -316,6 +316,74 @@ class TestClientMethods:
 
             client.view_tokens()
 
+    def test_get_default_node_info(self, client: Client, default_node_info):
+        """
+        Verify that the `get_default_node_info` method pokes the correct
+        endpoint and returns the registry-resolved default version as a
+        `NodeInfo` object.
+
+        Args:
+            client: A `Client` instance.
+            default_node_info: A `NodeInfo` object.
+        """
+        node_id = "Add"
+        response = default_node_info.model_dump()
+        response["id"] = node_id
+        response["version_node"] = "0.2.0"
+
+        with mock_core_api(client) as api:
+            api.expect_get(f"/nodes/{node_id}", response)
+
+            node_info = client.get_default_node_info(node_id)
+
+        assert node_info.id == node_id
+        assert node_info.version_node == "0.2.0"
+
+    def test_get_default_node_info_int_only_version(
+        self, client: Client, default_node_info
+    ):
+        """
+        Verify that `get_default_node_info` resolves a node whose only
+        version is an integer.
+
+        Args:
+            client: A `Client` instance.
+            default_node_info: A `NodeInfo` object.
+        """
+        node_id = "Tool"
+        response = default_node_info.model_dump()
+        response["id"] = node_id
+        response["version_node"] = 0
+
+        with mock_core_api(client) as api:
+            api.expect_get(f"/nodes/{node_id}", response)
+
+            node_info = client.get_default_node_info(node_id)
+
+        assert node_info.id == node_id
+        assert node_info.version_node == 0
+
+    def test_get_default_node_info_404(self, client: Client):
+        """
+        Verify that `get_default_node_info` lets the `HTTPError` raised
+        for a missing node propagate.
+
+        Args:
+            client: A `Client` instance.
+        """
+        node_id = "MissingNode"
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+
+        with mock_core_api(client) as api:
+            api.expect_get(f"/nodes/{node_id}", HTTPError(response=response_404))
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_default_node_info(node_id)
+
+        assert exc_info.value.response.status_code == 404
+
     def test_get_node_info(self, client: Client):
         """
         Verify that the `get_node_info` method pokes the correct
