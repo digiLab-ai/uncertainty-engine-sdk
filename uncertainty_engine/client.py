@@ -140,21 +140,6 @@ class Client:
 
         self._nodes = DynamicNodes(self)
 
-    def _cache_node_info(self, node_info: NodeInfo, is_default: bool) -> None:
-        """
-        Store a resolved node schema in the cache.
-
-        Args:
-            node_info: The schema to store.
-            is_default: Whether this is the node's default version, in
-                which case it is stored under the default key as well.
-        """
-
-        self._node_info_cache[f"{node_info.id}@{node_info.version_node}"] = node_info
-
-        if is_default:
-            self._node_info_cache[f"{node_info.id}@{DEFAULT_VERSION_KEY}"] = node_info
-
     def clear_node_cache(self) -> None:
         """
         Forget every cached node schema and the node catalogue.
@@ -310,7 +295,14 @@ class Client:
             return self._node_info_cache[key]
 
         node_info = NodeInfo(**self.core_api.get(f"/nodes/{node}"))
-        self._cache_node_info(node_info, is_default=True)
+        resolved_key = f"{node}@{node_info.version_node}"
+
+        # Also store it under the version it resolved to, so asking for
+        # that version by name is a hit. An entry already held for that
+        # version is kept, so a cached schema only changes when the
+        # cache is cleared.
+        node_info = self._node_info_cache.setdefault(resolved_key, node_info)
+        self._node_info_cache[key] = node_info
 
         return node_info
 
@@ -349,17 +341,16 @@ class Client:
             >>> print(node_info.outputs)
         """
 
-        key = f"{node}@{version}"
+        query = NodeQuery(node_id=node, version=version)
+        key = str(query)
 
         if key in self._node_info_cache:
             return self._node_info_cache[key]
 
-        query = NodeQuery(node_id=node, version=version)
         response = self.query_nodes([query])
-        versioned_key = str(query)
 
         try:
-            node_info = response[versioned_key]
+            node_info = response[key]
         except KeyError:
             raise KeyError(
                 f"Node '{node}' with version '{version}' was not found. "
@@ -368,11 +359,6 @@ class Client:
                 "available options."
             )
 
-        self._cache_node_info(node_info, is_default=False)
-
-        # The requested version is not always the one it resolves to
-        # (e.g. "latest"), so key the request as well, or asking for
-        # it again would miss the cache.
         self._node_info_cache[key] = node_info
 
         return node_info
