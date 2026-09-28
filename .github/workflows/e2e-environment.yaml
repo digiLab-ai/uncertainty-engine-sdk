@@ -51,15 +51,20 @@ on:
         description: Uncertainty Engine user username.
         required: true
 
+      # TODO: Remove ue-project-id and ue-workflow-id once an SDK release
+      # includes the project_id and workflow_id fixtures in
+      # tests/conftest.py, which create a throwaway project and the Number
+      # and Add workflow. Tests at older release tags still read
+      # UE_PROJECT_ID and UE_WORKFLOW_ID.
       ue-project-id:
         description: project id for running e2e tests for queue_workflow and
           run_workflow
-        required: true
+        required: false
 
       ue-workflow-id:
         description: workflow id for the workflow queue_workflow and
           run_workflow to execute
-        required: true
+        required: false
 jobs:
   e2e:
     runs-on: ubuntu-latest

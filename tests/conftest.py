@@ -1,12 +1,19 @@
 import os
+from uuid import uuid4
 
 import pytest
+from uncertainty_engine_resource_client.models import (
+    PostProjectRecordRequest,
+    ProjectRecordInput,
+)
 from uncertainty_engine_types import NodeInfo
 
 from uncertainty_engine import Client, Environment
 from uncertainty_engine.client import Job
 from uncertainty_engine.graph import Graph
+from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.nodes.basic import Add
+from uncertainty_engine.nodes.workflow import Workflow
 
 
 @pytest.fixture(scope="class")
@@ -74,30 +81,44 @@ def mock_job():
     return Job(node_id="node_a", job_id="job_a")
 
 
-@pytest.fixture(scope="session")
-def project_id():
+@pytest.fixture(scope="module")
+def project_id(e2e_client: Client):
     """
-    Test project ID for e2e tests.
-
-    You must set UE_PROJECT_ID environment variable.
+    A throwaway e2e test project, deleted along with its workflows after
+    the tests.
     """
-    project_id = os.environ.get("UE_PROJECT_ID")
-    if not project_id:
-        raise ValueError("UE_PROJECT_ID environment variable must be set")
-    return project_id
+    projects_client = e2e_client.projects.projects_client
+    project_record = ProjectRecordInput(
+        name=f"sdk-e2e-{uuid4()}",
+        owner_id=e2e_client.projects.account_id,
+    )
+    response = projects_client.post_project_record(
+        PostProjectRecordRequest(project_record=project_record)
+    )
+    yield response.project_record.id
+    projects_client.delete_project_record(response.project_record.id)
 
 
-@pytest.fixture(scope="session")
-def workflow_id():
+@pytest.fixture(scope="module")
+def workflow_id(e2e_client: Client, project_id: str) -> str:
     """
-    Test workflow ID for e2e tests.
-
-    You must set UE_WORKFLOW_ID environment variable.
+    An e2e test workflow that adds 4 to the value of a number node (5).
     """
-    workflow_id = os.environ.get("UE_WORKFLOW_ID")
-    if not workflow_id:
-        raise ValueError("UE_WORKFLOW_ID environment variable must be set")
-    return workflow_id
+    number = Node(node_name="Number", version="0.2.0", label="num node", value="5")
+    add = Add(lhs=4, rhs=number.make_handle("value"), label="add node")
+    graph = Graph()
+    graph.add_nodes_from([number, add])
+
+    workflow = Workflow(
+        graph=graph.nodes,
+        inputs=graph.external_input,
+        requested_output={"add result": add.make_handle("ans").model_dump()},
+    )
+    return e2e_client.workflows.save(
+        project_id=project_id,
+        workflow=workflow,
+        workflow_name="e2e workflow",
+    )
 
 
 @pytest.fixture
