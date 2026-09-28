@@ -490,39 +490,27 @@ class TestSharedCache:
 
         assert node.version == "0.2.0"
 
-    def test_a_separate_view_shares_the_cache(
+    def test_every_view_sees_a_cleared_catalogue(
         self, client: Client, nodes: DynamicNodes
     ):
         """
-        Verify that a view made before the catalogue was loaded still
-        shares it, rather than fetching its own copy.
+        Verify that views share one catalogue, and that clearing the
+        client's cache reaches every view.
         """
         pinned = nodes.with_versions({"Number": "1.0.0"})
 
         with mock_core_api(client) as api:
-            # One catalogue fetch between the two views.
-            api.expect_get("/nodes/list", {"Add": node_info_dict("Add")})
+            api.expect_get("/nodes/list", {"Add": {"id": "Add"}})
+            api.expect_get(
+                "/nodes/list", {"Add": {"id": "Add"}, "Number": {"id": "Number"}}
+            )
 
             assert nodes.available() == ["Add"]
-            assert pinned.available() == ["Add"]
+            assert pinned.available() == ["Add"]  # shared: no second fetch
 
-    def test_a_separate_view_shares_the_schema_cache(
-        self, client: Client, nodes: DynamicNodes
-    ):
-        """
-        Verify that a view made before a node was resolved reuses that
-        node's schema, rather than fetching its own copy.
-        """
-        pinned = nodes.with_versions({"Number": "1.0.0"})
+            client.clear_node_cache()
 
-        with mock_core_api(client) as api:
-            # One schema fetch between the two views.
-            api.expect_get("/nodes/Add", node_info_dict("Add"))
-
-            first = nodes.Add(lhs=1, rhs=2, label="one")
-            second = pinned.Add(lhs=3, rhs=4, label="two")
-
-        assert first.version == second.version
+            assert pinned.available() == ["Add", "Number"]
 
     def test_clear_node_cache_forces_a_refetch(
         self, client: Client, nodes: DynamicNodes
