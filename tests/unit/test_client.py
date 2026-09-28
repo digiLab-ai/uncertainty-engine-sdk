@@ -965,6 +965,55 @@ class TestClientMethods:
         assert exc_info.value.response
         assert exc_info.value.response.status_code == 500
 
+    def test_get_node_deprecation(self, client: Client) -> None:
+        """
+        Verify that the `get_node_deprecation` method uses the correct endpoint
+        and returns the node's deprecation.
+        """
+        deprecation: dict[str, str | None] = {
+            "node_id": "Add@1.0.0",
+            "notes": "Use 'Basic Maths' instead.",
+        }
+
+        with mock_core_api(client) as api:
+            api.expect_get("/node-deprecations/Add@1.0.0", deprecation)
+            result = client.get_node_deprecation("Add@1.0.0")
+
+        assert result == deprecation
+
+    def test_get_node_deprecation_not_deprecated(self, client: Client) -> None:
+        """Verify that `get_node_deprecation` returns `None` on a 404."""
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/node-deprecations/Add@1.0.0",
+                HTTPError(response=response_404),
+            )
+            result = client.get_node_deprecation("Add@1.0.0")
+
+        assert result is None
+
+    def test_get_node_deprecation_http_error(self, client: Client) -> None:
+        """Verify that `get_node_deprecation` lets a non-404 `HTTPError` propagate."""
+        response_500 = Mock()
+        response_500.status_code = 500
+        response_500.reason = "Internal Server Error"
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/node-deprecations/Add@1.0.0",
+                HTTPError(response=response_500),
+            )
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_node_deprecation("Add@1.0.0")
+
+        assert exc_info.value.response
+        assert exc_info.value.response.status_code == 500
+
     def test_query_nodes(self, client: Client, default_node_info):
         """
         Verify that query_nodes returns expected node info dict on success.
