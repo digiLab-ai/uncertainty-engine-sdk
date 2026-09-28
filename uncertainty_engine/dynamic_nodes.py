@@ -1,4 +1,3 @@
-import warnings
 from typing import Any, Callable
 
 from requests import HTTPError
@@ -81,29 +80,15 @@ class DynamicNodes:
 
         node_info = self._resolve(node, version)
 
-        # `Node` fetches its own `node_info` whenever it is given a
-        # client, which would bypass the cache and repeat the request we
-        # have just made. Build it without a client instead, then supply
-        # the information we already hold. `client` and `node_info` are
-        # both excluded from a node's inputs, so assigning them here
-        # does not affect the built node's inputs.
-        with warnings.catch_warnings():
-            # Suppress the "a `client` is required" warning; a client is
-            # available, it is just attached after construction.
-            warnings.simplefilter("ignore", UserWarning)
-
-            built = Node(
-                node_name=node,
-                version=node_info.version_node,
-                label=label,
-                **inputs,
-            )
-
-        built.client = self._client
-        built.node_info = node_info
-        built.validate()
-
-        return built
+        # `Node` looks its schema up through the client, which serves the
+        # one just resolved from its cache.
+        return Node(
+            node_name=node,
+            version=node_info.version_node,
+            label=label,
+            client=self._client,
+            **inputs,
+        )
 
     def __getattr__(self, node: str) -> Callable[..., Node]:
         """
