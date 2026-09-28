@@ -20,7 +20,9 @@ class DynamicNodes:
     Node schemas are fetched one node at a time, as they are needed; the
     catalogue is never loaded up front. Resolved schemas and the
     catalogue are cached on the client, so every view - pinned or not,
-    and whenever it was created - shares them.
+    and whenever it was created - shares them. Call
+    `client.clear_node_cache()` to pick up nodes or versions deployed
+    since they were first resolved.
 
     Args:
         client: The client used to resolve node information.

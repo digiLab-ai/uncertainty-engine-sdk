@@ -427,7 +427,7 @@ class TestClientWiring:
     def test_nodes_is_a_cached_dynamic_nodes(self):
         """
         Verify that `client.nodes` is a `DynamicNodes` and that the same
-        object is returned each time, so pins are not silently dropped.
+        object is returned each time.
         """
         client = Client(env="local")
 
