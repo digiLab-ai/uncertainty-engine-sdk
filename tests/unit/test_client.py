@@ -931,40 +931,6 @@ class TestClientMethods:
             with pytest.raises(RuntimeError, match="boom"):
                 client.get_node_versions(node_id)
 
-    def test_get_node_deprecations(self, client: Client) -> None:
-        """
-        Verify that the `get_node_deprecations` method uses the correct endpoint
-        and returns the node deprecations.
-        """
-        deprecations: list[dict[str, str | None]] = [
-            {"node_id": "Add@1.0.0", "notes": "Use 'Basic Maths' instead."},
-            {"node_id": "Subtract@1.0.0", "notes": None},
-        ]
-
-        with mock_core_api(client) as api:
-            api.expect_get("/node-deprecations", deprecations)
-            result = client.get_node_deprecations()
-
-        assert result == deprecations
-
-    def test_get_node_deprecations_http_error(self, client: Client) -> None:
-        """Verify that `get_node_deprecations` lets an `HTTPError` propagate."""
-        response_500 = Mock()
-        response_500.status_code = 500
-        response_500.reason = "Internal Server Error"
-
-        with mock_core_api(client) as api:
-            api.expect_get(
-                "/node-deprecations",
-                HTTPError(response=response_500),
-            )
-
-            with pytest.raises(HTTPError) as exc_info:
-                client.get_node_deprecations()
-
-        assert exc_info.value.response
-        assert exc_info.value.response.status_code == 500
-
     def test_get_node_deprecation(self, client: Client) -> None:
         """
         Verify that the `get_node_deprecation` method uses the correct endpoint
@@ -1010,6 +976,40 @@ class TestClientMethods:
 
             with pytest.raises(HTTPError) as exc_info:
                 client.get_node_deprecation("Add@1.0.0")
+
+        assert exc_info.value.response
+        assert exc_info.value.response.status_code == 500
+
+    def test_get_node_deprecations(self, client: Client) -> None:
+        """
+        Verify that the `get_node_deprecations` method uses the correct endpoint
+        and returns the node deprecations.
+        """
+        deprecations: list[dict[str, str | None]] = [
+            {"node_id": "Add@1.0.0", "notes": "Use 'Basic Maths' instead."},
+            {"node_id": "Subtract@1.0.0", "notes": None},
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_get("/node-deprecations", deprecations)
+            result = client.get_node_deprecations()
+
+        assert result == deprecations
+
+    def test_get_node_deprecations_http_error(self, client: Client) -> None:
+        """Verify that `get_node_deprecations` lets an `HTTPError` propagate."""
+        response_500 = Mock()
+        response_500.status_code = 500
+        response_500.reason = "Internal Server Error"
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/node-deprecations",
+                HTTPError(response=response_500),
+            )
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_node_deprecations()
 
         assert exc_info.value.response
         assert exc_info.value.response.status_code == 500
