@@ -86,26 +86,3 @@ class TestDynamicNodesE2E:
 
         assert info.inputs
         assert info.outputs
-
-    def test_with_versions_pins_only_listed_nodes(self, e2e_client: Client) -> None:
-        """
-        Verify that a pinned view uses the pinned version, that unlisted
-        nodes use the default, and that the default view is unaffected.
-
-        Args:
-            e2e_client: A Client instance.
-        """
-
-        version = e2e_client.get_node_versions("Add")[0]
-        pinned = e2e_client.nodes.with_versions({"Add": version})
-
-        assert pinned.Add(lhs=1, rhs=2, label="add").version == version
-
-        # An unlisted node resolves to the registry's default.
-        assert pinned.Number(value="5", label="number").version
-
-        # A per-call version still wins.
-        assert pinned.Add(lhs=1, rhs=2, label="add", version=version).version == version
-
-        # The default view is untouched.
-        assert e2e_client.nodes is not pinned

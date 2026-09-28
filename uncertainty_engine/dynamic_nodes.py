@@ -47,6 +47,7 @@ class DynamicNodes:
     def __call__(
         self,
         node: str,
+        /,
         label: str | None = None,
         version: Version | None = None,
         **inputs: Any,
@@ -55,7 +56,8 @@ class DynamicNodes:
         Build a node by name.
 
         Args:
-            node: The ID of the node to build.
+            node: The ID of the node to build. Positional-only, so that
+                a node may have an input called `node`.
             label: A human-readable label for the node. Defaults to
                 `None`.
             version: The version of the node to build. Takes precedence

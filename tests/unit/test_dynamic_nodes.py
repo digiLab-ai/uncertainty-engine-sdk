@@ -69,6 +69,31 @@ class TestBuilding:
         assert node.node_name == "Add"
         assert node.label == "add"
 
+    @pytest.mark.parametrize("style", ["call", "attribute"])
+    def test_an_input_called_node_is_an_input(
+        self, client: Client, nodes: DynamicNodes, style: str
+    ):
+        """
+        Verify that an input called `node` is passed to the node as an
+        input, rather than colliding with the node's name.
+        """
+        wrap_info = {
+            **node_info_dict("Wrap"),
+            "inputs": {
+                "node": {"type": "str", "label": "Node", "description": "Inner"},
+            },
+        }
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Wrap", wrap_info)
+
+            if style == "call":
+                node = nodes("Wrap", node="inner", label="wrap")
+            else:
+                node = nodes.Wrap(node="inner", label="wrap")
+
+        assert node() == ("Wrap", {"node": "inner"})
+
     def test_version_comes_from_the_resolved_schema(
         self, client: Client, nodes: DynamicNodes
     ):
