@@ -27,6 +27,15 @@ class Client(Protocol):
         "<job-id>"
     """
 
+    def get_node_deprecations(self) -> list[dict[str, Any]]:
+        """
+        Get all node deprecations.
+
+        Returns:
+            A list of node deprecations.
+        """
+        ...
+
     def get_node_info(self, node: str, version: str | int) -> NodeInfo:
         """
         Obtain a `NodeInfo` object containing metadata, input/output
