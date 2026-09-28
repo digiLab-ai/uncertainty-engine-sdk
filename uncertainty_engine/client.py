@@ -330,10 +330,10 @@ class Client:
                 response.
 
         Note:
-            The schema is cached for the life of the client, keyed by
-            the version as requested, so a moving alias such as
-            "latest" keeps returning the schema it first resolved to
-            until `clear_node_cache()` is called.
+            The schema is cached for the life of the client, so a
+            version that is redeployed in place, such as "latest",
+            keeps returning the schema first fetched until
+            `clear_node_cache()` is called.
 
         Example:
             >>> node_info = client.get_node_info("Add", "0.2.0")

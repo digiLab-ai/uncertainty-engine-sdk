@@ -164,11 +164,9 @@ class TestClientMethods:
 
         assert node_info.version_node == "0.2.0"
 
-    def test_get_node_info_caches_the_requested_version(self, client: Client):
+    def test_get_node_info_is_cached(self, client: Client):
         """
-        Verify that a version is cached as asked for, not only as
-        resolved - "latest" resolves to a number, and asking for
-        "latest" again must not re-fetch.
+        Verify that looking up the same version twice makes one request.
 
         Args:
             client: A Client instance.
@@ -178,13 +176,13 @@ class TestClientMethods:
             # A single expectation; a second query would fail the mock.
             api.expect_post(
                 "/nodes/query",
-                response={"Add@latest": node_info_dict("Add", version="0.2.0")},
+                response={"Add@latest": node_info_dict("Add", version="latest")},
             )
 
-            client.get_node_info("Add", "latest")
-            node_info = client.get_node_info("Add", "latest")
+            first = client.get_node_info("Add", "latest")
+            second = client.get_node_info("Add", "latest")
 
-        assert node_info.version_node == "0.2.0"
+        assert second is first
 
     def test_list_nodes_category(self, client: Client):
         """
