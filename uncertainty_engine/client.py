@@ -126,16 +126,21 @@ class Client:
 
         self._node_info_cache: dict[str, NodeInfo] = {}
         """
-        Node schemas resolved so far, keyed by `<node>@<version>`. A
-        node's default version is additionally stored under
-        `<node>@{DEFAULT_VERSION_KEY}`, so that a default lookup and a
-        lookup of the version it resolved to share one entry.
+        Node schemas looked up one at a time by `get_node_info` and
+        `get_default_node_info`, keyed by `<node>@<version>` as asked for.
+        A default lookup is stored under `<node>@{DEFAULT_VERSION_KEY}` and
+        also under the version it resolved to, so asking for that version by
+        name later is a hit.
         """
 
         self._node_list_cache: list[dict[str, Any]] | None = None
         """
-        The node catalogue, as returned by `/nodes/list`, or `None`
-        while it has not been loaded.
+        The whole catalogue from `/nodes/list`, used by `list_nodes()` and
+        `available()`, or `None` while it has not been loaded. The endpoint
+        returns node records keyed by node ID; they are kept as a list, which
+        is what `list_nodes()` returns. Each record is a full node description,
+        including its `version_node`, at the version the Core API chose to
+        list. Schema lookups do not read from it.
         """
 
         self._nodes = DynamicNodes(self)
