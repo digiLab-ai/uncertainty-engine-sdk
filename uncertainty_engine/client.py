@@ -224,17 +224,16 @@ class Client:
         """
         List all available nodes in the specified deployment.
 
+        The catalogue is fetched once and cached for the life of the
+        client, so a node deployed afterwards will not appear until
+        `clear_node_cache()` is called.
+
         Args:
             category: The category of nodes to list. If not specified, all nodes are listed.
                 Defaults to ``None``.
 
         Returns:
             List of available nodes. Each list item is a dictionary of information about the node.
-
-        Note:
-            The catalogue is fetched once and cached for the life of the
-            client, so a node deployed afterwards will not appear until
-            `clear_node_cache()` is called.
 
         Example:
             >>> all_nodes = client.list_nodes()
@@ -267,6 +266,10 @@ class Client:
         argument required: "latest" cannot be selected by accidentally
         omitting an argument.
 
+        The resolved default is cached for the life of the client, so a
+        version deployed afterwards is not picked up until
+        `clear_node_cache()` is called.
+
         Args:
             node: The ID of the node to get information about.
 
@@ -277,11 +280,6 @@ class Client:
         Raises:
             HTTPError: If the node does not exist (404) or another HTTP
                 error occurs.
-
-        Note:
-            The resolved default is cached for the life of the client,
-            so a version deployed afterwards is not picked up until
-            `clear_node_cache()` is called.
 
         Example:
             >>> node_info = client.get_default_node_info("Add")
@@ -318,6 +316,10 @@ class Client:
         The `version` is required. Use `get_default_node_info` to let
         the Node Registry pick the default version instead.
 
+        The schema is cached for the life of the client, so a version
+        that is redeployed in place, such as "latest", keeps returning
+        the schema first fetched until `clear_node_cache()` is called.
+
         Args:
             node: The ID of the node to get information about.
             version: The version of the node to get information about.
@@ -328,12 +330,6 @@ class Client:
         Raises:
             KeyError: If the node information is not found in the
                 response.
-
-        Note:
-            The schema is cached for the life of the client, so a
-            version that is redeployed in place, such as "latest",
-            keeps returning the schema first fetched until
-            `clear_node_cache()` is called.
 
         Example:
             >>> node_info = client.get_node_info("Add", "0.2.0")
