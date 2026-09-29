@@ -240,6 +240,9 @@ class TestDiscovery:
         order the catalogue arrives in.
         """
         with mock_core_api(client) as api:
+            # Deliberately not in alphabetical order, so the test shows that
+            # `available()` sorts the names rather than keeping the
+            # catalogue's order.
             api.expect_get(
                 "/nodes/list",
                 {
