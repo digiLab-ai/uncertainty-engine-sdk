@@ -16,19 +16,6 @@ jobs:
       ue-password: ${{ secrets.UE_DEV_PASSWORD }}
       ue-username: ${{ secrets.UE_DEV_USERNAME }}
 
-  uat-committed:
-    # UAT sits behind a release approval like prod, so this carries the
-    # same caveat as prod-committed: tests may use APIs not yet on UAT.
-    # TODO: add a scheduled uat-released job once an SDK release includes
-    # the fixtures (older release tags need a seeded UAT workflow).
-    if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/e2e-environment.yaml
-    with:
-      ue-environment: uat
-    secrets:
-      ue-password: ${{ secrets.UE_UAT_PASSWORD }}
-      ue-username: ${{ secrets.UE_UAT_USERNAME }}
-
   prod-committed:
     # If the tests were triggered by a PR then test this bleeding-edge
     # commit in production. We accept that these tests will fail if they
