@@ -112,14 +112,13 @@ del "%USERPROFILE%\.ue_auth"
 from pprint import pprint
 
 from uncertainty_engine import Client, Environment
-from uncertainty_engine.nodes.basic import Add
 
 # Set up the client
 client = Client()
 client.authenticate()
 
 # Create a node
-add = Add(lhs=1, rhs=2)
+add = client.nodes.Add(lhs=1, rhs=2)
 
 # Run the node on the server
 response = client.run_node(add)
