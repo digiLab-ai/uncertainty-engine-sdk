@@ -6,7 +6,7 @@ from uncertainty_engine_types import NodeInfo
 from uncertainty_engine import Client, Environment
 from uncertainty_engine.client import Job
 from uncertainty_engine.graph import Graph
-from uncertainty_engine.nodes.basic import Add
+from uncertainty_engine.nodes.base import Node
 
 
 @pytest.fixture(scope="class")
@@ -78,7 +78,7 @@ def simple_graph(simple_node_label):
     A simple graph with a single node.
     """
     graph = Graph()
-    add = Add(lhs=1, rhs=2)
+    add = Node(node_name="Add", version="0.2.0", lhs=1, rhs=2)
     graph.add_node(add, simple_node_label)
     return graph
 

@@ -4,7 +4,31 @@ from uncertainty_engine_types import Handle, NodeInputInfo, NodeOutputInfo
 from uncertainty_engine.exceptions import GraphValidationError
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.nodes.basic import Add
+
+
+class Add(Node):
+    """
+    A stand-in for a node class, so that adding a node by class stays
+    covered now that the SDK no longer ships hand-written node classes.
+    """
+
+    node_name = "Add"
+
+    def __init__(
+        self,
+        lhs,
+        rhs,
+        label=None,
+        client=None,
+    ):
+        super().__init__(
+            node_name=self.node_name,
+            version="0.2.0",
+            label=label,
+            client=client,
+            lhs=lhs,
+            rhs=rhs,
+        )
 
 
 @pytest.mark.parametrize(
