@@ -1,4 +1,3 @@
-import warnings
 from typing import Any, Callable
 
 from requests import HTTPError
@@ -19,8 +18,11 @@ class DynamicNodes:
     on demand.
 
     Node schemas are fetched one node at a time, as they are needed; the
-    catalogue is never loaded up front. Each resolved schema is cached
-    for the lifetime of this object.
+    catalogue is never loaded up front. Resolved schemas and the
+    catalogue are cached on the client, so every view - pinned or not,
+    and whenever it was created - shares them. Call
+    `client.clear_node_cache()` to pick up nodes or versions deployed
+    since they were first resolved.
 
     Args:
         client: The client used to resolve node information.
@@ -42,8 +44,6 @@ class DynamicNodes:
     ) -> None:
         self._client = client
         self._versions: dict[str, Version] = dict(versions) if versions else {}
-        self._info_cache: dict[tuple[str, Version | None], NodeInfo] = {}
-        self._names_cache: list[str] | None = None
 
     def __call__(
         self,
@@ -82,29 +82,15 @@ class DynamicNodes:
 
         node_info = self._resolve(node, version)
 
-        # `Node` fetches its own `node_info` whenever it is given a
-        # client, which would bypass the cache and repeat the request we
-        # have just made. Build it without a client instead, then supply
-        # the information we already hold. `client` and `node_info` are
-        # both excluded from a node's inputs, so assigning them here
-        # does not affect the built node's inputs.
-        with warnings.catch_warnings():
-            # Suppress the "a `client` is required" warning; a client is
-            # available, it is just attached after construction.
-            warnings.simplefilter("ignore", UserWarning)
-
-            built = Node(
-                node_name=node,
-                version=node_info.version_node,
-                label=label,
-                **inputs,
-            )
-
-        built.client = self._client
-        built.node_info = node_info
-        built.validate()
-
-        return built
+        # `Node` looks its schema up through the client, which serves the
+        # one just resolved from its cache.
+        return Node(
+            node_name=node,
+            version=node_info.version_node,
+            label=label,
+            client=self._client,
+            **inputs,
+        )
 
     def __getattr__(self, node: str) -> Callable[..., Node]:
         """
@@ -166,7 +152,7 @@ class DynamicNodes:
         List the IDs of all available nodes.
 
         This is the only operation that loads the catalogue; building a
-        node does not. The result is cached.
+        node does not. The client caches the catalogue.
 
         Returns:
             The IDs of all available nodes, sorted.
@@ -176,12 +162,7 @@ class DynamicNodes:
             ['Add', 'Display', 'Number', ...]
         """
 
-        if self._names_cache is None:
-            self._names_cache = sorted(
-                node["id"] for node in self._client.list_nodes() if "id" in node
-            )
-
-        return list(self._names_cache)
+        return sorted(node["id"] for node in self._client.list_nodes() if "id" in node)
 
     def describe(
         self,
@@ -230,9 +211,9 @@ class DynamicNodes:
                 Merged over any versions already pinned on this object.
 
         Returns:
-            A new `DynamicNodes` pinned to the given versions. Resolved
-            schemas are shared with this object, as they are cached per
-            node *and* version.
+            A new `DynamicNodes` pinned to the given versions. Schemas
+            and the catalogue are cached on the client, so the view
+            shares them however it was made.
 
         Example:
             >>> pinned = client.nodes.with_versions({"Add": "0.2.0"})
@@ -240,18 +221,14 @@ class DynamicNodes:
             >>> client.nodes.Add(lhs=1, rhs=2, label="add")  # default
         """
 
-        view = DynamicNodes(self._client, versions={**self._versions, **versions})
-
-        # Share the caches; schemas are keyed by node and version, so
-        # entries remain correct under a different set of pins.
-        view._info_cache = self._info_cache
-        view._names_cache = self._names_cache
-
-        return view
+        return DynamicNodes(self._client, versions={**self._versions, **versions})
 
     def _resolve(self, node: str, version: Version | None = None) -> NodeInfo:
         """
-        Resolve a node's information, using the cache where possible.
+        Resolve a node's information.
+
+        The client caches what it resolves, so asking twice for the same
+        node and version makes one request.
 
         Args:
             node: The ID of the node to resolve.
@@ -267,10 +244,6 @@ class DynamicNodes:
         """
 
         resolved_version = version if version is not None else self._versions.get(node)
-        key = (node, resolved_version)
-
-        if key in self._info_cache:
-            return self._info_cache[key]
 
         try:
             if resolved_version is None:
@@ -298,7 +271,5 @@ class DynamicNodes:
                 raise
 
             raise NodeNotFoundError(node, resolved_version) from error
-
-        self._info_cache[key] = node_info
 
         return node_info

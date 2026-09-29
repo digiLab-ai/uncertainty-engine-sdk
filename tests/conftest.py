@@ -16,6 +16,23 @@ def client() -> Client:
     return Client(env="local")
 
 
+@pytest.fixture(autouse=True)
+def clear_node_cache(request):
+    """
+    Empty the client's node cache before each test.
+
+    `client` is class-scoped and `e2e_client` module-scoped, and node
+    schemas and the catalogue are cached on the client for its
+    lifetime, so without this a schema resolved by one test would be
+    reused by the next. Only tests that actually take one of those
+    fixtures are affected.
+    """
+
+    for name in ("client", "e2e_client"):
+        if name in request.fixturenames:
+            request.getfixturevalue(name).clear_node_cache()
+
+
 @pytest.fixture(scope="module")
 def e2e_client():
     """
