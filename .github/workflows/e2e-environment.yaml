@@ -53,7 +53,7 @@ on:
 
       # TODO: Remove ue-project-id and ue-workflow-id once an SDK release
       # includes the project_id and workflow_id fixtures in
-      # tests/conftest.py, which create a throwaway project and the Number
+      # tests/e2e/conftest.py, which create a throwaway project and the Number
       # and Add workflow. Tests at older release tags still read
       # UE_PROJECT_ID and UE_WORKFLOW_ID.
       ue-project-id:
