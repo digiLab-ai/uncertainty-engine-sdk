@@ -143,7 +143,25 @@ class Client:
         list. Schema lookups do not read from it.
         """
 
-        self._nodes = DynamicNodes(self)
+        self.nodes: DynamicNodes = DynamicNodes(self)
+        """
+        Build any node by name, resolving its schema from the Node
+        Registry on demand.
+
+        Node schemas are fetched one node at a time, as they are needed;
+        the catalogue is never loaded up front.
+
+        A plain attribute rather than a property, so that interactive
+        shells can tab-complete node names: completers will not run a
+        property's code, and would never reach `DynamicNodes.__dir__`.
+
+        Example:
+            >>> add = client.nodes.Add(lhs=1, rhs=2, label="add")
+            >>> add = client.nodes("Add", lhs=1, rhs=2, label="add")
+            >>> client.nodes.available()
+            >>> client.nodes.describe("Add").inputs
+            >>> pinned = client.nodes.with_versions({"Add": "0.2.0"})
+        """
 
     def clear_node_cache(self) -> None:
         """
@@ -188,25 +206,6 @@ class Client:
 
         # Propagate new authentication state to all providers
         self._update_all_providers()
-
-    @property
-    def nodes(self) -> DynamicNodes:
-        """
-        Build any node by name, resolving its schema from the Node
-        Registry on demand.
-
-        Node schemas are fetched one node at a time, as they are needed;
-        the catalogue is never loaded up front.
-
-        Example:
-            >>> add = client.nodes.Add(lhs=1, rhs=2, label="add")
-            >>> add = client.nodes("Add", lhs=1, rhs=2, label="add")
-            >>> client.nodes.available()
-            >>> client.nodes.describe("Add").inputs
-            >>> pinned = client.nodes.with_versions({"Add": "0.2.0"})
-        """
-
-        return self._nodes
 
     @property
     def email(self) -> str:
