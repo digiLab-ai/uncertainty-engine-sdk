@@ -106,27 +106,59 @@ To delete the cache in Windows:
 del "%USERPROFILE%\.ue_auth"
 ```
 
-### Running a node
+### Building nodes
+
+Every node registered with the Uncertainty Engine can be built through `client.nodes`. There are no per-node classes to import: the SDK looks each node up when you use it, so new nodes, and nodes you register yourself, work straight away.
+
+#### Finding nodes
+
+```python
+client.nodes.available()              # the names of every node you can use
+client.nodes.describe("Add")          # a node's description, inputs and outputs
+client.nodes.describe("Add").inputs   # just the inputs it takes
+client.nodes.describe("Add").outputs  # and what it produces
+```
+
+In Jupyter or IPython you can also type `client.nodes.` and press **Tab** to autocomplete node names.
+
+#### Building and running a node
 
 ```python
 from pprint import pprint
 
-from uncertainty_engine import Client, Environment
+add = client.nodes.Add(lhs=1, rhs=2, label="add")
 
-# Set up the client
-client = Client()
-client.authenticate()
-
-# Create a node
-add = client.nodes.Add(lhs=1, rhs=2)
-
-# Run the node on the server
 response = client.run_node(add)
-
-# Get the result
-result = response.outputs
-
-pprint(result)
+pprint(response.outputs)
 ```
 
-For more some more in-depth examples checkout our [example notebooks](https://github.com/digiLab-ai/uncertainty-engine-sdk/tree/main/examples).
+If the node's name is in a variable, call `client.nodes` with it instead: `client.nodes("Add", lhs=1, rhs=2, label="add")`.
+
+Inputs are checked against the node's schema as the node is built. A missing or unknown input raises a `NodeValidationError`, and a node that doesn't exist raises a `NodeNotFoundError`; both are in `uncertainty_engine.exceptions`. Inputs are passed exactly as the node declares them, so a node that takes a resource ID, for example, expects `{"id": ...}`.
+
+#### Versions
+
+By default a node is built at the version the Uncertainty Engine considers its default: `"latest"` if there is one, otherwise the highest version. To build a specific version, pass `version`, or pin several nodes at once with `with_versions()`:
+
+```python
+add = client.nodes.Add(lhs=1, rhs=2, label="add", version="0.2.0")
+
+pinned = client.nodes.with_versions({"TrainModel": "0.2.0", "PredictModel": "0.2.0"})
+train = pinned.TrainModel(...)  # built at 0.2.0; nodes not in the mapping use their default
+```
+
+`client.get_node_versions("Add")` lists the versions available.
+
+#### Caching
+
+A node's schema is fetched the first time you build it, then kept for the life of the client, as is the list from `available()`. To pick up a node or version deployed since, clear the cache:
+
+```python
+client.clear_node_cache()
+```
+
+See [`examples/dynamic_nodes.ipynb`](./examples/dynamic_nodes.ipynb) for a full walkthrough, and our [example notebooks](https://github.com/digiLab-ai/uncertainty-engine-sdk/tree/main/examples) for more in-depth examples.
+
+### Upgrading from node classes
+
+Earlier versions of the SDK had a Python class for each node, such as `from uncertainty_engine.nodes.basic import Add`. Those classes have been removed in favour of `client.nodes`; see [MIGRATION.md](./MIGRATION.md) for how to update your code.
