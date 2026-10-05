@@ -1,9 +1,7 @@
-import os
-
 import pytest
 from uncertainty_engine_types import NodeInfo
 
-from uncertainty_engine import Client, Environment
+from uncertainty_engine import Client
 from uncertainty_engine.client import Job
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
@@ -33,37 +31,6 @@ def clear_node_cache(request):
             request.getfixturevalue(name).clear_node_cache()
 
 
-@pytest.fixture(scope="module")
-def e2e_client():
-    """
-    A Client instance for end-to-end testing.
-
-    You _must_ set the following environment variables:
-
-    - `UE_PASSWORD`: User account password.
-    - `UE_USERNAME`: User account email.
-
-    In addition, you must set _either_ `UE_ENVIRONMENT` to the name of the
-    environment to test or all of the following:
-
-    - `UE_COGNITO_CLIENT_ID`: Cognito User Pool Application Client ID.
-    - `UE_CORE_API`: Core API endpoint.
-    - `UE_REGION`: Region where the environment is deployed.
-    - `UE_RESOURCE_API`: Resource API endpoint.
-    """
-
-    env = os.environ.get("UE_ENVIRONMENT") or Environment(
-        cognito_user_pool_client_id=os.environ["UE_COGNITO_CLIENT_ID"],
-        core_api=os.environ["UE_CORE_API"],
-        region=os.environ["UE_REGION"],
-        resource_api=os.environ["UE_RESOURCE_API"],
-    )
-
-    client = Client(env=env)
-    client.authenticate()
-    return client
-
-
 @pytest.fixture(scope="class")
 def simple_node_label():
     """
@@ -89,32 +56,6 @@ def mock_job():
     A mock Job.
     """
     return Job(node_id="node_a", job_id="job_a")
-
-
-@pytest.fixture(scope="session")
-def project_id():
-    """
-    Test project ID for e2e tests.
-
-    You must set UE_PROJECT_ID environment variable.
-    """
-    project_id = os.environ.get("UE_PROJECT_ID")
-    if not project_id:
-        raise ValueError("UE_PROJECT_ID environment variable must be set")
-    return project_id
-
-
-@pytest.fixture(scope="session")
-def workflow_id():
-    """
-    Test workflow ID for e2e tests.
-
-    You must set UE_WORKFLOW_ID environment variable.
-    """
-    workflow_id = os.environ.get("UE_WORKFLOW_ID")
-    if not workflow_id:
-        raise ValueError("UE_WORKFLOW_ID environment variable must be set")
-    return workflow_id
 
 
 @pytest.fixture

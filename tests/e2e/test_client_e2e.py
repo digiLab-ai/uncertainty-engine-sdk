@@ -315,6 +315,35 @@ class TestClientMethods:
         assert all(isinstance(v, (str, int)) for v in versions)
         assert len(versions) > 0
 
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Node deprecation is in the dev environment only",
+    )
+    def test_get_node_deprecation(self, e2e_client: Client) -> None:
+        """Verify that each node deprecation can be retrieved individually."""
+        for deprecation in e2e_client.get_node_deprecations():
+            node_id = deprecation["node_id"]
+            assert e2e_client.get_node_deprecation(node_id) == deprecation
+
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Node deprecation is in the dev environment only",
+    )
+    def test_get_node_deprecation_not_deprecated(self, e2e_client: Client) -> None:
+        """Verify that `None` is returned for a node that isn't deprecated."""
+        assert e2e_client.get_node_deprecation("NodeThatDoesNotExist@0.0.0") is None
+
+    @pytest.mark.skipif(
+        os.getenv("UE_ENVIRONMENT") != "dev",
+        reason="Node deprecation is in the dev environment only",
+    )
+    def test_get_node_deprecations(self, e2e_client: Client) -> None:
+        """Verify that node deprecations can be retrieved successfully."""
+        deprecations = e2e_client.get_node_deprecations()
+        assert isinstance(deprecations, list)
+        assert all(isinstance(d, dict) for d in deprecations)
+        assert all("node_id" in d for d in deprecations)
+
     def test_query_nodes(self, e2e_client: Client):
         """
         Verify that query_nodes returns expected node info dict on success.

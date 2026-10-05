@@ -393,6 +393,48 @@ class Client:
                 ) from e
             raise
 
+    def get_node_deprecation(self, node_id: str) -> dict[str, Any] | None:
+        """
+        Get a node's deprecation.
+
+        Args:
+            node_id: The ID of the node, in `node@version` form (for
+                example, `Add@1.0.0`).
+
+        Returns:
+            The node's deprecation, or `None` if the node isn't
+            deprecated.
+
+        Raises:
+            HTTPError: If an HTTP error other than 404 occurs.
+
+        Example:
+            >>> deprecation = client.get_node_deprecation("Add@1.0.0")
+            >>> print(deprecation)
+        """
+        try:
+            return self.core_api.get(f"/node-deprecations/{node_id}")
+        except HTTPError as e:
+            if e.response is not None and e.response.status_code == 404:
+                return None
+            raise
+
+    def get_node_deprecations(self) -> list[dict[str, Any]]:
+        """
+        Get all node deprecations.
+
+        Returns:
+            A list of node deprecations.
+
+        Raises:
+            HTTPError: If an HTTP error occurs.
+
+        Example:
+            >>> deprecations = client.get_node_deprecations()
+            >>> print(deprecations)
+        """
+        return self.core_api.get("/node-deprecations")
+
     def queue_node(
         self,
         node: Union[str, Node],

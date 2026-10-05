@@ -37,6 +37,28 @@ class Client(Protocol):
         """
         ...
 
+    def get_node_deprecation(self, node_id: str) -> dict[str, Any] | None:
+        """
+        Get a node's deprecation.
+
+        Args:
+            node_id: The ID of the node, in `node@version` form.
+
+        Returns:
+            The node's deprecation, or `None` if the node isn't
+            deprecated.
+        """
+        ...
+
+    def get_node_deprecations(self) -> list[dict[str, Any]]:
+        """
+        Get all node deprecations.
+
+        Returns:
+            A list of node deprecations.
+        """
+        ...
+
     def get_node_info(self, node: str, version: str | int) -> NodeInfo:
         """
         Obtain a `NodeInfo` object containing metadata, input/output
