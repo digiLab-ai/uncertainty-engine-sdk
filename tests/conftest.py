@@ -4,7 +4,7 @@ from uncertainty_engine_types import NodeInfo
 from uncertainty_engine import Client
 from uncertainty_engine.client import Job
 from uncertainty_engine.graph import Graph
-from uncertainty_engine.nodes.basic import Add
+from uncertainty_engine.nodes.base import Node
 
 
 @pytest.fixture(scope="class")
@@ -12,6 +12,23 @@ def client() -> Client:
     """Fixture to initialize the Client class once per test class."""
 
     return Client(env="local")
+
+
+@pytest.fixture(autouse=True)
+def clear_node_cache(request):
+    """
+    Empty the client's node cache before each test.
+
+    `client` is class-scoped and `e2e_client` module-scoped, and node
+    schemas and the catalogue are cached on the client for its
+    lifetime, so without this a schema resolved by one test would be
+    reused by the next. Only tests that actually take one of those
+    fixtures are affected.
+    """
+
+    for name in ("client", "e2e_client"):
+        if name in request.fixturenames:
+            request.getfixturevalue(name).clear_node_cache()
 
 
 @pytest.fixture(scope="class")
@@ -28,7 +45,7 @@ def simple_graph(simple_node_label):
     A simple graph with a single node.
     """
     graph = Graph()
-    add = Add(lhs=1, rhs=2)
+    add = Node(node_name="Add", version="0.2.0", lhs=1, rhs=2)
     graph.add_node(add, simple_node_label)
     return graph
 

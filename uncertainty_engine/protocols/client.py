@@ -27,6 +27,16 @@ class Client(Protocol):
         "<job-id>"
     """
 
+    def get_default_node_info(self, node: str) -> NodeInfo:
+        """
+        Obtain a `NodeInfo` object for a node's default version, as
+        chosen by the Node Registry.
+
+        Args:
+            node: The ID of the node to get information about.
+        """
+        ...
+
     def get_node_deprecation(self, node_id: str) -> dict[str, Any] | None:
         """
         Get a node's deprecation.
