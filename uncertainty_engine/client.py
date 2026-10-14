@@ -1,4 +1,5 @@
 import warnings
+from copy import deepcopy
 from os import environ
 from time import sleep
 from typing import Any, Optional, Union
@@ -27,12 +28,18 @@ from uncertainty_engine.api_providers import (
 )
 from uncertainty_engine.auth_service import AuthService
 from uncertainty_engine.cognito_authenticator import CognitoAuthenticator
+from uncertainty_engine.dynamic_nodes import DynamicNodes
 from uncertainty_engine.environments import Environment
 from uncertainty_engine.exceptions import IncompleteCredentials
 from uncertainty_engine.nodes.base import Node
 from uncertainty_engine.utils import handle_input_deprecation
 
 STATUS_WAIT_TIME = 5  # An interval of 5 seconds to wait between status checks while waiting for a job to complete
+
+# Stands in for the version in a cache key when the Node Registry chose
+# the version, rather than the caller naming one. It is not a valid
+# version, so it cannot collide with a real one.
+DEFAULT_VERSION_KEY = "__default__"
 
 
 # TODO: Move this to the uncertainty_engine_types package.
@@ -117,6 +124,61 @@ class Client:
             self.workflows,
         ]
 
+        self._node_info_cache: dict[str, NodeInfo] = {}
+        """
+        Node schemas looked up one at a time by `get_node_info` and
+        `get_default_node_info`, keyed by `<node>@<version>` as asked for.
+        A default lookup is stored under `<node>@{DEFAULT_VERSION_KEY}` and
+        also under the version it resolved to, so asking for that version by
+        name later is a hit.
+        """
+
+        self._node_list_cache: list[dict[str, Any]] | None = None
+        """
+        The whole catalogue from `/nodes/list`, used by `list_nodes()` and
+        `available()`, or `None` while it has not been loaded. The endpoint
+        returns node records keyed by node ID; they are kept as a list, which
+        is what `list_nodes()` returns. Each record is a full node description,
+        including its `version_node`, at the version the Core API chose to
+        list. Schema lookups do not read from it.
+        """
+
+        self.nodes: DynamicNodes = DynamicNodes(self)
+        """
+        Build any node by name, resolving its schema from the Node
+        Registry on demand.
+
+        Node schemas are fetched one node at a time, as they are needed;
+        the catalogue is never loaded up front.
+
+        A plain attribute rather than a property, so that interactive
+        shells can tab-complete node names: completers will not run a
+        property's code, and would never reach `DynamicNodes.__dir__`.
+
+        Example:
+            >>> add = client.nodes.Add(lhs=1, rhs=2, label="add")
+            >>> add = client.nodes("Add", lhs=1, rhs=2, label="add")
+            >>> client.nodes.available()
+            >>> client.nodes.describe("Add").inputs
+            >>> pinned = client.nodes.with_versions({"Add": "0.2.0"})
+        """
+
+    def clear_node_cache(self) -> None:
+        """
+        Forget every cached node schema and the node catalogue.
+
+        Node information is cached for the life of the client and never
+        expires on its own, so this is how to pick up a node that has
+        been deployed, or a new version of one, without building a new
+        client.
+
+        Example:
+            >>> client.clear_node_cache()
+        """
+
+        self._node_info_cache.clear()
+        self._node_list_cache = None
+
     def _get_resource_token(self) -> str:
         """Get a Resource Service API token."""
         self.auth.update_api_authentication()
@@ -166,6 +228,10 @@ class Client:
         """
         List all available nodes in the specified deployment.
 
+        The catalogue is fetched once and cached for the life of the
+        client, so a node deployed afterwards will not appear until
+        `clear_node_cache()` is called.
+
         Args:
             category: The category of nodes to list. If not specified, all nodes are listed.
                 Defaults to ``None``.
@@ -178,13 +244,69 @@ class Client:
             >>> print(all_nodes)
         """
 
-        nodes = self.core_api.get("/nodes/list")
-        node_list = [node_info for node_info in nodes.values()]
+        if self._node_list_cache is None:
+            nodes = self.core_api.get("/nodes/list")
+            self._node_list_cache = [node_info for node_info in nodes.values()]
+
+        # A deep copy, so that a caller mutating what they get back -
+        # the list or the dicts in it - cannot corrupt the cache. The
+        # cost is trivial next to the request this replaces.
+        node_list = deepcopy(self._node_list_cache)
 
         if category is not None:
             node_list = [node for node in node_list if node["category"] == category]
 
         return node_list
+
+    def get_default_node_info(self, node: str) -> NodeInfo:
+        """
+        Obtain a `NodeInfo` object for a node's default version.
+
+        The Node Registry decides which version is the default: it
+        prefers "latest", and otherwise takes the highest available
+        version. Nodes that are versioned with an integer only are
+        resolved the same way. The SDK never works the version out
+        itself, which is why `get_node_info` keeps its `version`
+        argument required: "latest" cannot be selected by accidentally
+        omitting an argument.
+
+        The resolved default is cached for the life of the client, so a
+        version deployed afterwards is not picked up until
+        `clear_node_cache()` is called.
+
+        Args:
+            node: The ID of the node to get information about.
+
+        Returns:
+            Information about the node's default version as a `NodeInfo`
+            object.
+
+        Raises:
+            HTTPError: If the node does not exist (404) or another HTTP
+                error occurs.
+
+        Example:
+            >>> node_info = client.get_default_node_info("Add")
+            >>> print(node_info.version_node)
+            >>> print(node_info.inputs)
+        """
+
+        key = f"{node}@{DEFAULT_VERSION_KEY}"
+
+        if key in self._node_info_cache:
+            return self._node_info_cache[key]
+
+        node_info = NodeInfo(**self.core_api.get(f"/nodes/{node}"))
+        resolved_key = f"{node}@{node_info.version_node}"
+
+        # Also store it under the version it resolved to, so asking for
+        # that version by name is a hit. An entry already held for that
+        # version is kept, so a cached schema only changes when the
+        # cache is cleared.
+        node_info = self._node_info_cache.setdefault(resolved_key, node_info)
+        self._node_info_cache[key] = node_info
+
+        return node_info
 
     def get_node_info(
         self,
@@ -194,6 +316,13 @@ class Client:
         """
         Obtain a `NodeInfo` object containing metadata, input/output
         schema, and configuration details for a given node and version.
+
+        The `version` is required. Use `get_default_node_info` to let
+        the Node Registry pick the default version instead.
+
+        The schema is cached for the life of the client, so a version
+        that is redeployed in place, such as "latest", keeps returning
+        the schema first fetched until `clear_node_cache()` is called.
 
         Args:
             node: The ID of the node to get information about.
@@ -213,11 +342,15 @@ class Client:
         """
 
         query = NodeQuery(node_id=node, version=version)
+        key = str(query)
+
+        if key in self._node_info_cache:
+            return self._node_info_cache[key]
+
         response = self.query_nodes([query])
-        versioned_key = str(query)
 
         try:
-            return response[versioned_key]
+            node_info = response[key]
         except KeyError:
             raise KeyError(
                 f"Node '{node}' with version '{version}' was not found. "
@@ -225,6 +358,10 @@ class Client:
                 "`list_nodes()` and `get_node_versions()` to see "
                 "available options."
             )
+
+        self._node_info_cache[key] = node_info
+
+        return node_info
 
     def get_node_versions(self, node_id: str) -> list[str | int]:
         """

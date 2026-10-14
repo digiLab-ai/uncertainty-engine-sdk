@@ -10,7 +10,6 @@ from uncertainty_engine_resource_client.models import (
 from uncertainty_engine import Client, Environment
 from uncertainty_engine.graph import Graph
 from uncertainty_engine.nodes.base import Node
-from uncertainty_engine.nodes.basic import Add
 from uncertainty_engine.nodes.workflow import Workflow
 
 
@@ -69,7 +68,13 @@ def workflow_id(e2e_client: Client, project_id: str) -> str:
     An e2e test workflow that adds 4 to the value of a number node (5).
     """
     number = Node(node_name="Number", version="0.2.0", label="num node", value="5")
-    add = Add(lhs=4, rhs=number.make_handle("value"), label="add node")
+    add = Node(
+        node_name="Add",
+        version="0.2.0",
+        label="add node",
+        lhs=4,
+        rhs=number.make_handle("value"),
+    )
     graph = Graph()
     graph.add_nodes_from([number, add])
 

@@ -12,6 +12,7 @@ from uncertainty_engine_types import (
 )
 
 from tests.mock_api_invoker import mock_core_api
+from tests.node_info import node_info_dict
 from uncertainty_engine import Client, Environment
 from uncertainty_engine.client import Job
 from uncertainty_engine.nodes.base import Node
@@ -68,6 +69,120 @@ class TestClientMethods:
             response = client.list_nodes()
 
             assert response == [{"node_a": "I'm a node."}]
+
+    def test_list_nodes_is_cached(self, client: Client):
+        """
+        Verify that the catalogue is fetched once and reused.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            # A single expectation; a second request would fail the mock.
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "I'm a node."}})
+
+            client.list_nodes()
+
+            assert client.list_nodes() == [{"node_a": "I'm a node."}]
+
+    def test_list_nodes_category_filters_the_cached_catalogue(self, client: Client):
+        """
+        Verify that a category filter is applied to the cached
+        catalogue rather than re-fetching it.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_get(
+                "/nodes/list",
+                {
+                    "node_a": {"node_a": "I'm a node.", "category": "cat_a"},
+                    "node_b": {"node_b": "I'm another.", "category": "cat_b"},
+                },
+            )
+
+            client.list_nodes()
+            filtered = client.list_nodes(category="cat_b")
+
+        assert filtered == [{"node_b": "I'm another.", "category": "cat_b"}]
+
+    def test_list_nodes_does_not_hand_out_its_cache(self, client: Client):
+        """
+        Verify that mutating the returned list, or an entry in it,
+        does not corrupt the cached catalogue.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "I'm a node."}})
+
+            returned = client.list_nodes()
+            returned.append({"node_b": "I should not persist."})
+            returned[0]["node_a"] = "I should not persist either."
+
+            assert client.list_nodes() == [{"node_a": "I'm a node."}]
+
+    def test_clear_node_cache_forces_a_refetch(self, client: Client):
+        """
+        Verify that clearing the cache makes the next call fetch again.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "First."}})
+            api.expect_get("/nodes/list", {"node_a": {"node_a": "Second."}})
+
+            assert client.list_nodes() == [{"node_a": "First."}]
+
+            client.clear_node_cache()
+
+            assert client.list_nodes() == [{"node_a": "Second."}]
+
+    def test_default_lookup_caches_the_resolved_version(self, client: Client):
+        """
+        Verify that resolving a node's default version also caches it
+        under that version, so asking for it by name costs nothing.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            # Only the default lookup is expected; a version query would
+            # fail the mock.
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            client.get_default_node_info("Add")
+            node_info = client.get_node_info("Add", "0.2.0")
+
+        assert node_info.version_node == "0.2.0"
+
+    def test_get_node_info_is_cached(self, client: Client):
+        """
+        Verify that looking up the same version twice makes one request.
+
+        Args:
+            client: A Client instance.
+        """
+
+        with mock_core_api(client) as api:
+            # A single expectation; a second query would fail the mock.
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@latest": node_info_dict("Add", version="latest")},
+            )
+
+            first = client.get_node_info("Add", "latest")
+            second = client.get_node_info("Add", "latest")
+
+        assert second is first
 
     def test_list_nodes_category(self, client: Client):
         """
@@ -315,6 +430,74 @@ class TestClientMethods:
             )
 
             client.view_tokens()
+
+    def test_get_default_node_info(self, client: Client, default_node_info):
+        """
+        Verify that the `get_default_node_info` method pokes the correct
+        endpoint and returns the registry-resolved default version as a
+        `NodeInfo` object.
+
+        Args:
+            client: A `Client` instance.
+            default_node_info: A `NodeInfo` object.
+        """
+        node_id = "Add"
+        response = default_node_info.model_dump()
+        response["id"] = node_id
+        response["version_node"] = "0.2.0"
+
+        with mock_core_api(client) as api:
+            api.expect_get(f"/nodes/{node_id}", response)
+
+            node_info = client.get_default_node_info(node_id)
+
+        assert node_info.id == node_id
+        assert node_info.version_node == "0.2.0"
+
+    def test_get_default_node_info_int_only_version(
+        self, client: Client, default_node_info
+    ):
+        """
+        Verify that `get_default_node_info` resolves a node whose only
+        version is an integer.
+
+        Args:
+            client: A `Client` instance.
+            default_node_info: A `NodeInfo` object.
+        """
+        node_id = "Tool"
+        response = default_node_info.model_dump()
+        response["id"] = node_id
+        response["version_node"] = 0
+
+        with mock_core_api(client) as api:
+            api.expect_get(f"/nodes/{node_id}", response)
+
+            node_info = client.get_default_node_info(node_id)
+
+        assert node_info.id == node_id
+        assert node_info.version_node == 0
+
+    def test_get_default_node_info_404(self, client: Client):
+        """
+        Verify that `get_default_node_info` lets the `HTTPError` raised
+        for a missing node propagate.
+
+        Args:
+            client: A `Client` instance.
+        """
+        node_id = "MissingNode"
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+
+        with mock_core_api(client) as api:
+            api.expect_get(f"/nodes/{node_id}", HTTPError(response=response_404))
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_default_node_info(node_id)
+
+        assert exc_info.value.response.status_code == 404
 
     def test_get_node_info(self, client: Client):
         """

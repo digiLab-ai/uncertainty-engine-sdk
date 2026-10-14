@@ -1,0 +1,555 @@
+from unittest.mock import Mock
+
+import pytest
+from requests import HTTPError
+
+from tests.mock_api_invoker import mock_core_api
+from tests.node_info import node_info_dict
+from uncertainty_engine import Client
+from uncertainty_engine.dynamic_nodes import DynamicNodes
+from uncertainty_engine.exceptions import NodeNotFoundError, NodeValidationError
+from uncertainty_engine.nodes.base import Node
+
+
+def http_error(status_code: int) -> HTTPError:
+    """
+    Build an `HTTPError` carrying the given status code.
+
+    Args:
+        status_code: The HTTP status code.
+
+    Returns:
+        An `HTTPError`.
+    """
+    response = Mock()
+    response.status_code = status_code
+    response.reason = "Not Found" if status_code == 404 else "Server Error"
+    return HTTPError(response=response)
+
+
+@pytest.fixture
+def nodes(client: Client) -> DynamicNodes:
+    """
+    A `DynamicNodes` over the test's `client`.
+
+    This is only a shorthand. Node schemas and the catalogue are cached
+    on the client, not on this object, so a fresh one does not isolate
+    tests; the autouse `clear_node_cache` fixture in `conftest.py` does.
+    """
+    return DynamicNodes(client)
+
+
+class TestBuilding:
+
+    def test_attribute_style_fetches_only_that_node(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that building a node by attribute fetches only that
+        node's schema, and does not load the catalogue.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            node = nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert isinstance(node, Node)
+        assert node.node_name == "Add"
+        assert node() == ("Add", {"lhs": 1, "rhs": 2})
+
+    def test_call_style(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a node can be built by calling `nodes` directly.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            node = nodes("Add", lhs=1, rhs=2, label="add")
+
+        assert node.node_name == "Add"
+        assert node.label == "add"
+
+    @pytest.mark.parametrize("style", ["call", "attribute"])
+    def test_an_input_called_node_is_an_input(
+        self, client: Client, nodes: DynamicNodes, style: str
+    ):
+        """
+        Verify that an input called `node` is passed to the node as an
+        input, rather than colliding with the node's name.
+        """
+        wrap_info = {
+            **node_info_dict("Wrap"),
+            "inputs": {
+                "node": {"type": "str", "label": "Node", "description": "Inner"},
+            },
+        }
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Wrap", wrap_info)
+
+            if style == "call":
+                node = nodes("Wrap", node="inner", label="wrap")
+            else:
+                node = nodes.Wrap(node="inner", label="wrap")
+
+        assert node() == ("Wrap", {"node": "inner"})
+
+    def test_version_comes_from_the_resolved_schema(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that the built node carries the version the registry
+        resolved, rather than one worked out by the SDK.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.9.1"))
+
+            node = nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert node.version == "0.9.1"
+
+    def test_int_only_version(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a node whose only version is an integer can be
+        built.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Tool", node_info_dict("Tool", version=0))
+
+            node = nodes.Tool(lhs=1, rhs=2, label="tool")
+
+        assert node.version == 0
+
+    def test_schema_is_cached(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that building the same node twice resolves its schema
+        once.
+        """
+        with mock_core_api(client) as api:
+            # A single expectation; a second request would fail the mock.
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            first = nodes.Add(lhs=1, rhs=2, label="one")
+            second = nodes.Add(lhs=3, rhs=4, label="two")
+
+        assert first.node_info is second.node_info
+
+
+class TestValidation:
+
+    def test_unknown_input_raises(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that inputs are validated against the live schema.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            with pytest.raises(NodeValidationError) as exc_info:
+                nodes.Add(lhs=1, nope=2, label="add")
+
+        assert "nope" in str(exc_info.value)
+
+    def test_missing_required_input_raises(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a missing required input raises.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            with pytest.raises(NodeValidationError) as exc_info:
+                nodes.Add(lhs=1, label="add")
+
+        assert "rhs" in str(exc_info.value)
+
+
+class TestNodeNotFound:
+
+    def test_unknown_node_raises_node_not_found(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that an unknown node raises `NodeNotFoundError`, pointing
+        at `available()`.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Nope", http_error(404))
+
+            with pytest.raises(NodeNotFoundError) as exc_info:
+                nodes.Nope(lhs=1, rhs=2, label="nope")
+
+        assert exc_info.value.node == "Nope"
+        assert exc_info.value.version is None
+        assert "available()" in str(exc_info.value)
+
+    def test_unknown_pinned_version_raises_node_not_found(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a pinned version that does not exist raises
+        `NodeNotFoundError` naming the version.
+        """
+        pinned = nodes.with_versions({"Add": "9.9.9"})
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/query", response=KeyError("Add@9.9.9"))
+
+            with pytest.raises(NodeNotFoundError) as exc_info:
+                pinned.Add(lhs=1, rhs=2, label="add")
+
+        assert exc_info.value.version == "9.9.9"
+        assert "9.9.9" in str(exc_info.value)
+        assert "get_node_versions" in str(exc_info.value)
+
+    def test_non_404_error_is_not_reported_as_missing(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a non-404 HTTP error propagates rather than being
+        mislabelled as a missing node.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", http_error(500))
+
+            with pytest.raises(HTTPError) as exc_info:
+                nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert exc_info.value.response.status_code == 500
+
+    def test_response_less_error_is_not_reported_as_missing(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that an HTTP error with no attached response propagates
+        rather than being mislabelled as a missing node (there is no 404
+        evidence).
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", HTTPError(response=None))
+
+            with pytest.raises(HTTPError) as exc_info:
+                nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert exc_info.value.response is None
+
+
+class TestDiscovery:
+
+    def test_available(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that `available` lists all node names, sorted, whatever
+        order the catalogue arrives in.
+        """
+        with mock_core_api(client) as api:
+            # Deliberately not in alphabetical order, so the test shows that
+            # `available()` sorts the names rather than keeping the
+            # catalogue's order.
+            api.expect_get(
+                "/nodes/list",
+                {
+                    "Number": {"id": "Number", "category": "Basic"},
+                    "Add": {"id": "Add", "category": "Basic"},
+                },
+            )
+
+            names = nodes.available()
+
+        assert names == ["Add", "Number"]
+
+    def test_available_is_cached(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that the catalogue is loaded once.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"Add": {"id": "Add"}})
+
+            nodes.available()
+            names = nodes.available()
+
+        assert names == ["Add"]
+
+    def test_available_returns_a_copy(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that mutating the returned list does not corrupt the
+        cache.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"Add": {"id": "Add"}})
+
+            nodes.available().append("Mutated")
+            names = nodes.available()
+
+        assert names == ["Add"]
+
+    def test_dir_includes_node_names(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that node names are offered for tab completion.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"Add": {"id": "Add"}})
+
+            names = dir(nodes)
+
+        assert "Add" in names
+        assert "available" in names
+
+    def test_dir_survives_an_unreachable_registry(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that tab completion does not raise when the catalogue
+        cannot be loaded.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", http_error(500))
+
+            names = dir(nodes)
+
+        assert "available" in names
+
+    def test_describe(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that `describe` returns the node's inputs and outputs.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            info = nodes.describe("Add")
+
+        assert sorted(info.inputs) == ["lhs", "rhs"]
+        assert sorted(info.outputs) == ["ans"]
+
+    def test_private_attributes_are_not_nodes(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that private lookups raise `AttributeError`, so that
+        `copy`, `pickle` and interactive shells behave.
+        """
+        with pytest.raises(AttributeError):
+            nodes._repr_html_
+
+
+class TestWithVersions:
+
+    def test_pins_listed_nodes(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a pinned node is resolved at the pinned version.
+        """
+        pinned = nodes.with_versions({"Add": "0.2.0"})
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@0.2.0": node_info_dict("Add", version="0.2.0")},
+            )
+
+            node = pinned.Add(lhs=1, rhs=2, label="add")
+
+        assert node.version == "0.2.0"
+
+    def test_unlisted_nodes_use_the_default(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a node absent from the mapping resolves to the
+        registry's default version.
+        """
+        pinned = nodes.with_versions({"Add": "0.2.0"})
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Number", node_info_dict("Number", version="latest"))
+
+            node = pinned.Number(lhs=1, rhs=2, label="number")
+
+        assert node.version == "latest"
+
+    def test_call_version_overrides_the_map(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a version passed when building takes precedence over
+        the pinned version.
+        """
+        pinned = nodes.with_versions({"Add": "0.2.0"})
+
+        with mock_core_api(client) as api:
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@0.3.0": node_info_dict("Add", version="0.3.0")},
+            )
+
+            node = pinned.Add(lhs=1, rhs=2, label="add", version="0.3.0")
+
+        assert node.version == "0.3.0"
+
+    def test_call_version_overrides_the_default_view(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a version passed when building is used even when
+        nothing is pinned.
+        """
+        with mock_core_api(client) as api:
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@0.2.0": node_info_dict("Add", version="0.2.0")},
+            )
+
+            node = nodes.Add(lhs=1, rhs=2, label="add", version="0.2.0")
+
+        assert node.version == "0.2.0"
+
+    def test_returns_a_separate_view(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that pinning returns a new view and leaves the view it
+        was made from unpinned.
+        """
+        pinned = nodes.with_versions({"Add": "0.2.0"})
+
+        assert isinstance(pinned, DynamicNodes)
+        assert pinned is not nodes
+        assert nodes._versions == {}
+
+        with mock_core_api(client) as api:
+            # The original view still resolves the default version.
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            node = nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert node.version == "latest"
+
+    def test_pins_are_merged_when_chained(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that chaining `with_versions` merges the mappings.
+        """
+        pinned = nodes.with_versions({"Add": "0.2.0"}).with_versions(
+            {"Number": "1.0.0"}
+        )
+
+        assert pinned._versions == {"Add": "0.2.0", "Number": "1.0.0"}
+
+
+class TestClientWiring:
+
+    def test_nodes_is_a_cached_dynamic_nodes(self):
+        """
+        Verify that `client.nodes` is a `DynamicNodes` and that the same
+        object is returned each time.
+        """
+        client = Client(env="local")
+
+        assert isinstance(client.nodes, DynamicNodes)
+        assert client.nodes is client.nodes
+
+    def test_with_versions_leaves_client_nodes_untouched(self):
+        """
+        Verify that taking a pinned view does not change the default
+        `client.nodes`.
+        """
+        client = Client(env="local")
+        default = client.nodes
+
+        default.with_versions({"Add": "0.2.0"})
+
+        assert client.nodes is default
+        assert default._versions == {}
+
+
+class TestSharedCache:
+    """
+    The schema cache and the catalogue live on the client (SDK-190), so
+    every view shares them and `clear_node_cache` empties them.
+    """
+
+    def test_a_missing_node_is_not_cached(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a node not found by the registry is looked up again
+        on the next attempt, so a node deployed in between is picked up.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", http_error(404))
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            with pytest.raises(NodeNotFoundError):
+                nodes.Add(lhs=1, rhs=2, label="add")
+
+            node = nodes.Add(lhs=1, rhs=2, label="add")
+
+        assert node.node_name == "Add"
+
+    def test_a_missing_version_is_not_cached(self, client: Client, nodes: DynamicNodes):
+        """
+        Verify that a version not found by the registry is looked up
+        again on the next attempt.
+        """
+        with mock_core_api(client) as api:
+            # The query answers, but without the requested version.
+            api.expect_post("/nodes/query", response={})
+            api.expect_post(
+                "/nodes/query",
+                response={"Add@0.2.0": node_info_dict("Add", version="0.2.0")},
+            )
+
+            with pytest.raises(NodeNotFoundError):
+                nodes.Add(lhs=1, rhs=2, label="add", version="0.2.0")
+
+            node = nodes.Add(lhs=1, rhs=2, label="add", version="0.2.0")
+
+        assert node.version == "0.2.0"
+
+    def test_every_view_sees_a_cleared_catalogue(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that views share one catalogue, and that clearing the
+        client's cache reaches every view.
+        """
+        pinned = nodes.with_versions({"Number": "1.0.0"})
+
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/list", {"Add": {"id": "Add"}})
+            api.expect_get(
+                "/nodes/list", {"Add": {"id": "Add"}, "Number": {"id": "Number"}}
+            )
+
+            assert nodes.available() == ["Add"]
+            assert pinned.available() == ["Add"]  # shared: no second fetch
+
+            client.clear_node_cache()
+
+            assert pinned.available() == ["Add", "Number"]
+
+    def test_clear_node_cache_forces_a_refetch(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that clearing the cache makes the next lookup fetch
+        again.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.1.0"))
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            first = nodes.Add(lhs=1, rhs=2, label="one")
+            client.clear_node_cache()
+            second = nodes.Add(lhs=1, rhs=2, label="two")
+
+        assert first.version == "0.1.0"
+        assert second.version == "0.2.0"
+
+    def test_a_fresh_client_starts_empty(self, client: Client):
+        """
+        Verify that a new client does not inherit another's cache: once
+        one client has loaded a node, a new client still fetches it.
+        """
+        with mock_core_api(client) as api:
+            api.expect_get("/nodes/Add", node_info_dict("Add"))
+
+            client.nodes.Add(lhs=1, rhs=2, label="one")
+
+        fresh = Client(env="local")
+
+        with mock_core_api(fresh) as api:
+            # A cache hit would make no request, and the result would
+            # carry the other client's version.
+            api.expect_get("/nodes/Add", node_info_dict("Add", version="0.2.0"))
+
+            node = fresh.nodes.Add(lhs=1, rhs=2, label="two")
+
+        assert node.version == "0.2.0"

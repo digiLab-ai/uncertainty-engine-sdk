@@ -54,3 +54,14 @@ For these examples, install the SDK with all of its optional extras.
    - View available resources
    - Download resources
    - Work with projects
+
+6. **Building Nodes with `client.nodes`** ([dynamic_nodes.ipynb](./dynamic_nodes.ipynb))
+
+   Learn how to find, inspect and build any node from the registry:
+
+   - Discovering nodes and inspecting their inputs and outputs
+   - Building nodes, and the errors you get as you build them
+   - Building a specific version, or pinning versions for several nodes
+   - Wiring dynamically built nodes into a workflow
+   - Passing structured inputs, such as resource IDs
+   - Caching, and picking up newly deployed nodes
