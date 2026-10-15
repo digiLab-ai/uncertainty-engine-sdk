@@ -332,6 +332,8 @@ class Client:
             Information about the node as a `NodeInfo` object.
 
         Raises:
+            HTTPError: If the node or version does not exist (404) or
+                another HTTP error occurs.
             KeyError: If the node information is not found in the
                 response.
 
@@ -767,6 +769,21 @@ class Client:
                     f"Node query errors: {errors}",
                     response=e.response,
                 ) from e
+
+            if e.response.status_code == 404:
+                # Without `detail.errors` requests' message names only
+                # the URL, so name what was asked for instead.
+                requested = " or ".join(
+                    f"node '{query.node_id}' with version '{query.version}'"
+                    for query in queries
+                )
+                raise HTTPError(
+                    f"404 {e.response.reason}: Could not find {requested}. "
+                    "Use `client.get_node_versions(node_id)` to see the "
+                    "available versions.",
+                    response=e.response,
+                ) from e
+
             raise
 
     def _wait_for_job(self, job: Job) -> JobInfo:
