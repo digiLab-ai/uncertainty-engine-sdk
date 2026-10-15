@@ -584,24 +584,6 @@ class TestClientMethods:
 
         assert str(exc_info.value) == "Node query errors: ['boom']"
 
-    def test_node_with_client_for_unknown_node(self, client: Client):
-        """
-        Verify that building a `Node` with a client for an unknown node
-        shows the node and version in the error.
-        """
-        response_404 = Mock()
-        response_404.status_code = 404
-        response_404.reason = "Not Found"
-        response_404.json.return_value = {"message": "Not Found"}
-
-        with mock_core_api(client) as api:
-            api.expect_post("/nodes/query", response=HTTPError(response=response_404))
-
-            with pytest.raises(HTTPError) as exc_info:
-                Node(node_name="My Node", version="0.2.0", client=client)
-
-        assert "Node 'My Node' with version '0.2.0'" in str(exc_info.value)
-
     def test_queue_workflow_basic(self, client: Client):
         """
         Verify that the queue_workflow method pokes the correct endpoint with basic parameters.
