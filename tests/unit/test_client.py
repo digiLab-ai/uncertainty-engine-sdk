@@ -562,8 +562,8 @@ class TestClientMethods:
 
         assert exc_info.value.response.status_code == 404
         assert str(exc_info.value) == (
-            "404 Not Found: Node 'MissingNode' with version '0.2.0' was not "
-            "found. Use `client.get_node_versions('MissingNode')` to see the "
+            "404 Not Found: Could not find node 'MissingNode' with version "
+            "'0.2.0'. Use `client.get_node_versions(node_id)` to see the "
             "available versions."
         )
 
@@ -1255,3 +1255,31 @@ class TestClientMethods:
             assert node_info.id == mock_node_info.id
             assert node_info.label == mock_node_info.label
             assert node_info.category == mock_node_info.category
+
+    def test_query_nodes_404(self, client: Client):
+        """
+        Verify that a 404 with no `detail.errors` names every node and
+        version queried rather than the URL.
+        """
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+        response_404.json.return_value = {"message": "Not Found"}
+        node_queries = [
+            NodeQuery(node_id="Add", version="0.2.0"),
+            NodeQuery(node_id="Nope", version="9.9.9"),
+        ]
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/query", response=HTTPError(response=response_404))
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.query_nodes(node_queries)
+
+        assert exc_info.value.response.status_code == 404
+        assert str(exc_info.value) == (
+            "404 Not Found: Could not find node 'Add' with version '0.2.0' "
+            "or node 'Nope' with version '9.9.9'. Use "
+            "`client.get_node_versions(node_id)` to see the available "
+            "versions."
+        )

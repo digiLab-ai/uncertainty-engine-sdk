@@ -349,27 +349,7 @@ class Client:
         if key in self._node_info_cache:
             return self._node_info_cache[key]
 
-        try:
-            response = self.query_nodes([query])
-        except HTTPError as error:
-            # `query_nodes` rewraps a 404 that carries `detail.errors`,
-            # chaining the original as its cause. Without them it
-            # re-raises the bare requests error, which names only the
-            # URL, so name the node and version here instead.
-            if (
-                error.response is None
-                or error.response.status_code != 404
-                or error.__cause__ is not None
-            ):
-                raise
-
-            raise HTTPError(
-                f"404 {error.response.reason}: Node '{node}' with version "
-                f"'{version}' was not found. Use "
-                f"`client.get_node_versions('{node}')` to see the "
-                "available versions.",
-                response=error.response,
-            ) from error
+        response = self.query_nodes([query])
 
         try:
             node_info = response[key]
@@ -789,6 +769,21 @@ class Client:
                     f"Node query errors: {errors}",
                     response=e.response,
                 ) from e
+
+            if e.response.status_code == 404:
+                # Without `detail.errors` requests' message names only
+                # the URL, so name what was asked for instead.
+                requested = " or ".join(
+                    f"node '{query.node_id}' with version '{query.version}'"
+                    for query in queries
+                )
+                raise HTTPError(
+                    f"404 {e.response.reason}: Could not find {requested}. "
+                    "Use `client.get_node_versions(node_id)` to see the "
+                    "available versions.",
+                    response=e.response,
+                ) from e
+
             raise
 
     def _wait_for_job(self, job: Job) -> JobInfo:
