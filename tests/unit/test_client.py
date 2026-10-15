@@ -544,6 +544,64 @@ class TestClientMethods:
 
             client.get_node_info(node_id, "1.0.0")
 
+    def test_get_node_info_404(self, client: Client):
+        """
+        Verify that a 404 with no `detail.errors` raises an `HTTPError`
+        naming the node and version rather than the URL.
+        """
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+        response_404.json.return_value = {"message": "Not Found"}
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/query", response=HTTPError(response=response_404))
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_node_info("MissingNode", "0.2.0")
+
+        assert exc_info.value.response.status_code == 404
+        assert str(exc_info.value) == (
+            "404 Not Found: Node 'MissingNode' with version '0.2.0' was not "
+            "found. Use `client.get_node_versions('MissingNode')` to see the "
+            "available versions."
+        )
+
+    def test_get_node_info_404_with_detail_errors(self, client: Client):
+        """
+        Verify that a 404 carrying `detail.errors` keeps the errors from
+        `query_nodes`.
+        """
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.json.return_value = {"detail": {"errors": ["boom"]}}
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/query", response=HTTPError(response=response_404))
+
+            with pytest.raises(HTTPError) as exc_info:
+                client.get_node_info("MissingNode", "0.2.0")
+
+        assert str(exc_info.value) == "Node query errors: ['boom']"
+
+    def test_node_with_client_for_unknown_node(self, client: Client):
+        """
+        Verify that building a `Node` with a client for an unknown node
+        shows the node and version in the error.
+        """
+        response_404 = Mock()
+        response_404.status_code = 404
+        response_404.reason = "Not Found"
+        response_404.json.return_value = {"message": "Not Found"}
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/query", response=HTTPError(response=response_404))
+
+            with pytest.raises(HTTPError) as exc_info:
+                Node(node_name="My Node", version="0.2.0", client=client)
+
+        assert "Node 'My Node' with version '0.2.0'" in str(exc_info.value)
+
     def test_queue_workflow_basic(self, client: Client):
         """
         Verify that the queue_workflow method pokes the correct endpoint with basic parameters.

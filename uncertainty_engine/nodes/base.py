@@ -173,7 +173,7 @@ class Node:
             ...     lhs=1,
             ...     rhs=2,
             ... )
-            >>> add_node_info = client.get_node_info("Add")
+            >>> add_node_info = client.get_node_info("Add", "0.2.0")
             >>> add_node.add_tool_input("lhs", add_node_info)
         """
 
@@ -211,7 +211,7 @@ class Node:
             ...     lhs=1,
             ...     rhs=2,
             ... )
-            >>> add_node_info = client.get_node_info("Add")
+            >>> add_node_info = client.get_node_info("Add", "0.2.0")
             >>> add_node.add_tool_output("ans", add_node_info)
         """
 

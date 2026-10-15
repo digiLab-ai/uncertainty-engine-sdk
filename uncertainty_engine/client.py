@@ -332,6 +332,8 @@ class Client:
             Information about the node as a `NodeInfo` object.
 
         Raises:
+            HTTPError: If the node or version does not exist (404) or
+                another HTTP error occurs.
             KeyError: If the node information is not found in the
                 response.
 
@@ -347,7 +349,27 @@ class Client:
         if key in self._node_info_cache:
             return self._node_info_cache[key]
 
-        response = self.query_nodes([query])
+        try:
+            response = self.query_nodes([query])
+        except HTTPError as error:
+            # `query_nodes` rewraps a 404 that carries `detail.errors`,
+            # chaining the original as its cause. Without them it
+            # re-raises the bare requests error, which names only the
+            # URL, so name the node and version here instead.
+            if (
+                error.response is None
+                or error.response.status_code != 404
+                or error.__cause__ is not None
+            ):
+                raise
+
+            raise HTTPError(
+                f"404 {error.response.reason}: Node '{node}' with version "
+                f"'{version}' was not found. Use "
+                f"`client.get_node_versions('{node}')` to see the "
+                "available versions.",
+                response=error.response,
+            ) from error
 
         try:
             node_info = response[key]
