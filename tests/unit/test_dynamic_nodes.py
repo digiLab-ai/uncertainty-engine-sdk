@@ -200,6 +200,25 @@ class TestNodeNotFound:
         assert "9.9.9" in str(exc_info.value)
         assert "get_node_versions" in str(exc_info.value)
 
+    def test_pinned_version_404_raises_node_not_found(
+        self, client: Client, nodes: DynamicNodes
+    ):
+        """
+        Verify that a pinned version the query answers with a bare 404
+        still raises `NodeNotFoundError`.
+        """
+        pinned = nodes.with_versions({"Add": "9.9.9"})
+        error = http_error(404)
+        error.response.json.return_value = {"message": "Not Found"}
+
+        with mock_core_api(client) as api:
+            api.expect_post("/nodes/query", response=error)
+
+            with pytest.raises(NodeNotFoundError) as exc_info:
+                pinned.Add(lhs=1, rhs=2, label="add")
+
+        assert exc_info.value.version == "9.9.9"
+
     def test_non_404_error_is_not_reported_as_missing(
         self, client: Client, nodes: DynamicNodes
     ):
